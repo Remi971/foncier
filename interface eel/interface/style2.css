@@ -1,0 +1,164 @@
+:root {
+  --grey : #ADADAF;
+  --light : #E7E7E9;
+  --dark : #4B4B4B;
+  --citadia : #1F3869;
+}
+
+body {
+  font-family: "Caladea";
+}
+
+/* Style the tab */
+.tab {
+    overflow: hidden;
+    border: 1px solid var(--dark);
+    background-color: var(--grey);
+  }
+  
+  /* Style the buttons inside the tab */
+  .tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 0.6rem 1rem;
+    transition: 0.3s;
+    font-size: 1rem;
+    font-family: "Caladea";
+    color : var(--light);
+  }
+  
+  /* Change background color of buttons on hover */
+  .tab button:hover {
+    background-color: var(--dark);
+    color : var(--light);
+  }
+  
+  /* Create an active/current tablink class */
+  .tab button.active {
+    background-color: var(--light);
+    color : var(--dark);
+  }
+  
+  /* Style the tab content */
+  .tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid var(--dark);
+    border-top: none;
+  }
+.title {
+  background-color : var(--citadia);
+  padding : 0.8rem;
+  display : grid;
+  grid-template-columns: 3fr 1fr;
+}
+
+.title h1 {
+  font-family : "Caladea";
+  font-size : 1.3rem;
+  color : white;
+  margin : 0px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title .logo {
+  position: relative;
+  left : 1rem;
+  top: -8px;
+}
+
+.btn-test {
+  padding : 0.2rem 1rem;
+  width : 150px;
+  margin : 3px 0px;
+  background-color : var(--citadia);
+  border-radius: 1rem;
+  color : var(--light);
+  font-size : 0.8rem;
+  font-family: "Caladea";
+  text-decoration : none;
+  text-align: center;
+  box-shadow: 2px 2px 4px var(--grey);
+}
+
+.btn-test:hover {
+  background-color : var(--grey);
+  color : var(--dark);
+  text-decoration-line: none;
+}
+
+.data-import {
+  display : grid;
+  grid-template-areas : 
+  "choix selection liste"
+}
+
+.choix {
+  grid-area: choix;
+}
+
+.selection{
+  grid-area: selection;
+  align-self : center;
+  justify-self: center;
+}
+
+.liste {
+  grid-area : liste;
+}
+
+.data-info {
+  width : 100%;
+  height : 18px;
+  border : var(--dark) solid 1px;
+  border-radius: 1rem;
+  background-color: var(--light);
+  align-self : center;
+}
+
+.group {
+  display : grid;
+  grid-gap : 1rem;
+  grid-template-columns : 1fr 3fr;
+}
+
+h4 {
+  font-family: "Caladea";
+  margin-bottom : 0px;
+  
+}
+
+#selection #folder {
+  background-image: url(images/folder.png);
+  background-size : cover;
+  width : 40px;
+  height : 40px;
+  position : relative;
+  object-position: center;
+}
+
+#selection #database {
+  background-image: url(images/database.png);
+  background-size : cover;
+  width : 40px;
+  height : 40px;
+  position : relative;
+  object-position: center;
+}
+
+.donnees-base {
+  display : grid;
+  grid-template-areas : 
+  'btn-base label-btn-base';
+}
+
+.donnees-base .btn-base {
+  grid-area : btn-base;
+}
+
+.donnees-base .

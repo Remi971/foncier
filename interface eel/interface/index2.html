@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+    <link rel="stylesheet" href="style2.css">
+    <title>Citadia Foncier</title>
+    <script type="text/javascript" src="/eel.js"></script>
+    
+</head>
+<body>
+    <div class="title"><!--TITRE-->
+      <h1>Identification du potentiel foncier</h1>
+      <img src="images/Logo_Citadia.png" alt="Citadia logo" class="logo">
+    </div>
+    <div class="tab"><!--TAB-->
+      <button class="tablinks" onclick="openTab(event, 'Import')" id="defaultOpen"><i class="fas fa-file-import"></i> Données</button>
+      <button class="tablinks" onclick="openTab(event, 'Paramètres')"><i class="fas fa-cog"></i> Paramètres</button>
+      <button class="tablinks" onclick="openTab(event, 'Enveloppe')"><i class="fas fa-pencil-alt"></i> Enveloppe</button>
+    </div>
+    
+    <div id="Import" class="tabcontent"><!--TAB Données-->
+      <div class="data-import">
+        <div class="choix">
+          <h4>Import des données</h4>
+          <select name="" id="choix" class="dossier">
+            <option value="" selected disabled hidden>Source de la donnée</option>
+            <option value="dossier">Dossier</option>
+            <option value="BDgpkg">Base de donnée Geopackage</option>
+          </select>
+          <a href="" class="bouton" id="valider"><div class="btn-test">Valider</div></a>
+        </div> 
+
+        <div id="selection">
+            <!--<div id="image"></div>-->
+            <h2 id=sourceName></h2>
+        </div>
+
+        <div class="liste">
+          <h4>Liste des couches</h4>
+        </div>
+      </div>
+      
+      <div class="donnees-base"></div><!--Données de base-->
+        <h4>Données de base</h4>
+        <div class="btn-base">
+          <div class="group">
+            <a href="" class="bouton"><div class="btn-test">Parcelles</div></a>
+            <canvas id="parcelle-canvas" class="data-info"
+            >
+            </canvas>
+          </div>
+          <div class="group">
+            <a href="" class="bouton"><div class="btn-test">Bâti</div></a>
+            <canvas id="bati-canvas" class="data-info">
+            </canvas>
+          </div>
+          <div class="group">
+            <a href="" class="bouton"><div class="btn-test">Structuration territoriale</div></a>
+            <canvas id="struct-canvas" class="data-info">
+            </canvas>
+          </div>
+          
+        </div> 
+      
+        <div class="filtres">
+          <h4>Filtres excluants</h4>
+          <a href="" class="bouton"><div class="btn-test">Ajouter un filtre</div></a>
+          <a href="" class="bouton"><div class="btn-test">Annuler les filtres</div></a>
+          <a href="" class="bouton"><div class="btn-test"><i class="fas fa-file-export"></i> Export des données</div></a>
+        </div>  
+    </div>
+    
+    
+
+    <div id="Paramètres" class="tabcontent">
+      <h3>Paramètres</h3>
+      <p>Paramétrage des seuils à définir </p> 
+    </div>
+    <div id="Enveloppe" class="tabcontent">
+      <h3>Enveloppe</h3>
+      <p>Paramètres à prendre en compte dans le calcul de l'enveloppe urbaine</p>
+    </div>
+    <script type="text/javascript" src="js/script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</body>
+</html>
