@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="style2.css">
     <title>Citadia Foncier</title>
     <script type="text/javascript" src="/eel.js"></script>
-    
+    <script type="text/javascript" src="/jquery-3.4.1.min.js"></script>
+
 </head>
 <body>
     <div class="title"><!--TITRE-->
@@ -20,18 +21,20 @@
       <button class="tablinks" onclick="openTab(event, 'Paramètres')"><i class="fas fa-cog"></i> Paramètres</button>
       <button class="tablinks" onclick="openTab(event, 'Enveloppe')"><i class="fas fa-pencil-alt"></i> Enveloppe</button>
     </div>
-    
+
     <div id="Import" class="tabcontent"><!--TAB Données-->
       <div class="data-import">
         <div class="choix">
           <h4>Import des données</h4>
-          <select name="" id="choix" class="dossier">
+          <!-- <select name="" id="choix" class="dossier">
             <option value="" selected disabled hidden>Source de la donnée</option>
             <option value="dossier">Dossier</option>
             <option value="BDgpkg">Base de donnée Geopackage</option>
-          </select>
-          <a href="" class="bouton" id="valider"><div class="btn-test">Valider</div></a>
-        </div> 
+          </select> -->
+          <button class="btn-test" id=btn-gpkg>Geopackage</button>
+          <button class="btn-test" id=btn-folder>Dossier</button>
+          <!-- <a href="" class="bouton" id="valider"><div class="btn-test">Valider</div></a> -->
+        </div>
 
         <div id="selection">
             <!--<div id="image"></div>-->
@@ -42,7 +45,7 @@
           <h4>Liste des couches</h4>
         </div>
       </div>
-      
+
       <div class="donnees-base"></div><!--Données de base-->
         <h4>Données de base</h4>
         <div class="btn-base">
@@ -62,22 +65,20 @@
             <canvas id="struct-canvas" class="data-info">
             </canvas>
           </div>
-          
-        </div> 
-      
+
+        </div>
+
         <div class="filtres">
           <h4>Filtres excluants</h4>
           <a href="" class="bouton"><div class="btn-test">Ajouter un filtre</div></a>
           <a href="" class="bouton"><div class="btn-test">Annuler les filtres</div></a>
           <a href="" class="bouton"><div class="btn-test"><i class="fas fa-file-export"></i> Export des données</div></a>
-        </div>  
+        </div>
     </div>
-    
-    
 
     <div id="Paramètres" class="tabcontent">
       <h3>Paramètres</h3>
-      <p>Paramétrage des seuils à définir </p> 
+      <p>Paramétrage des seuils à définir </p>
     </div>
     <div id="Enveloppe" class="tabcontent">
       <h3>Enveloppe</h3>

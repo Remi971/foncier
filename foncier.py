@@ -27,8 +27,8 @@ class CoucheSIG:
         self.nom = nom
         self.chemin = chemin
         mes_var[self.nom] = clean_data(gpd.read_file(self.chemin))
-        
-        
+
+
 
 '''
 
@@ -39,34 +39,34 @@ class Appli(tk.Tk):
     def __init__(self):
         ''' Les différents widget qui composent l'interface sont initialisés ici. L'utilisation de "global" sur certaines variables, permet de les réutiliser ou les modifier dans d'autres fonctions '''
         super().__init__()
-        
+
         # Ajout du titre
         self.title("Identification du potentiel foncier")
         self.tabControl = ttk.Notebook(self)                     # Création du Tab Control
         global tab1
         tab1 = ttk.Frame(self.tabControl)                        # Création d'un 1er onglet
-        self.tabControl.add(tab1, text="Import des données") 
+        self.tabControl.add(tab1, text="Import des données")
         # Ajout du 1er onglet
         global tab2
         tab2 = ttk.Frame(self.tabControl)                        # Création d'un 2e onglet
         self.tabControl.add(tab2, text="Paramètre par défaut")   # Ajout du 2e onglet
 
-        self.tabControl.pack(expand=1, fill='both') 
+        self.tabControl.pack(expand=1, fill='both')
         # LabelFrame using tab1 as a the parent
         mighty = ttk.LabelFrame(tab1, text="DATA")
         mighty.grid(column=0, row=0, padx=8, pady=4)
-        
+
         #Bouton et canvas de la section du dossier utilisateur
         self.canvas_dossier = Canvas(tab1, bg = 'white', height = 20, width = 500)
         self.canvas_dossier.grid(row=1, column=2)
         txt_file = self.canvas_dossier.create_text(250, 10, text = 'Choix du dossier', fill = 'grey', tags='label')
-        
+
         bt_dossier = Button(tab1, text = 'Sélection du dossier', background = 'blue', width = 20,command = self.dossier)
         bt_dossier.grid(row=1,column=1)
-        
+
         bt_gpkg = Button(tab1, text = 'Sélection du Geopackage', background = 'green', width = 20,command = self.geopackage)
         bt_gpkg.grid(row=1,column=3)
-       
+
         #Bouton pour lister les données
         bt_lister = Button(tab1, text = "Lister les données", bg = 'white', width = 20,command = self.lister)
         bt_lister.grid(row=2,column=1, sticky = 'n')
@@ -77,15 +77,15 @@ class Appli(tk.Tk):
         canvas_export.grid(row = 18, column = 2)
         bt_export = Button(tab1, text = 'Export des données', bg = 'white', width = 20, command = self.dossier_export)
         bt_export.grid(row = 18, column = 1)
-        
-        # Bouton de lancement du script foncier 
+
+        # Bouton de lancement du script foncier
         bt_lancer = Button(tab1, text = 'Lancer le traitement', bg = 'red', width = 20, command = Traitement.script)
         bt_lancer.grid(row = 19, column = 1)
-        
+
         # Bouton de lancement du calcul de l'enveloppe urbaine
         bt_enveloppe = Button(tab1, text="Calcul de l'enveloppe urbaine", bg = 'yellow', width = 25)
         bt_enveloppe.grid(row=19, column=2)
-        
+
         #Ensemble des variables avec des identifiants
         global nom_variables
         nom_variables = {
@@ -99,24 +99,24 @@ class Appli(tk.Tk):
         global mes_var
         mes_var = {} # Dictionnaire qui va stocker les couches shape associé aux identifiants des variables du dictionnaire nom_variables sous la forme {id : chouche shape}
         global labels
-        labels = {}        
+        labels = {}
         global my_button
         my_button = {}
 
         global param
         param = {}
-        
+
         global paramEntry
         paramEntry = {}
-        
+
         global r
         r = 14
-        
+
         for i in nom_variables:
             my_button[nom_variables[i]] = Button(tab1, text = nom_variables[i], bg = 'grey', activebackground='white', width = 20, command=lambda x = i: self.bouton(x))
             my_button[nom_variables[i]].grid(row=4+i, column=1, sticky = 'n')
-         
-  
+
+
         def creationFiltre():
             global filtre
             filtre = StringVar()
@@ -124,35 +124,35 @@ class Appli(tk.Tk):
             global AjoutFiltre
             AjoutFiltre = Entry(tab1, textvariable=filtre, width=20)
             AjoutFiltre.grid(row=15, column=1)
-            
+
         creationFiltre()
-        
+
         def creationButton():
             nom_variables[len(nom_variables)] = filtre.get()
             my_button[filtre.get()] = Button(tab1, text = filtre.get(), bg = 'grey', activebackground='white', width = 20, command=lambda x = len(nom_variables)-1: self.bouton(x))
             my_button[filtre.get()].grid(row=3+len(nom_variables), column=1, sticky = 'n')
             AjoutFiltre.destroy()
             creationFiltre()
-            
+
 #            menu = self.popupMenu['menu']
 #            menu.delete(0, 'end')
 #            for data in list(nom_variables.values()):
 #                menu.add_command(label=data, command=lambda data = data : self.popupMenu.set(data))
 #            choices = {data for data in list(nom_variables.values())}
 #            self.popupMenu = OptionMenu(mainframe, tkvar, *choices)
-        
-            
+
+
         bt_test = Button(tab1, text="Ajouter un filtre", width=20, command = creationButton)
-        bt_test.grid(row=15, column=2, sticky='w')  
-        
+        bt_test.grid(row=15, column=2, sticky='w')
+
         #Bouton d'annulation des choix des filtres
         bouton_cancel = Button(tab1, text = 'Annuler', bg = 'orange', width = 20, command = self.cancel)
         bouton_cancel.grid(row=16, column=1)
-        
+
         # Bouton pour quitter l'application
         bouton_quit = Button(tab1, text = 'Quitter', bg = 'white', width = 20,command = self.destroy)
         bouton_quit.grid(row=17,column=1)
-        
+
         # Checkbutton pour choisir de sauvegarder la couche des CES
         global enregistrer_ces
         enregistrer_ces=False
@@ -197,9 +197,9 @@ class Appli(tk.Tk):
         value4.set(2000)
         entree4 = Entry(tab2, textvariable=value4, width=10)
         entree4.grid(row=9, column=5)
-        
-        
-        
+
+
+
         # Bouton de validation des paramètres par défaut
         bt_valider = Button(tab2, text='Valider les paramètres', command=self.defaut_ok, width=20)
         bt_valider.grid(row=11, column=4)
@@ -213,39 +213,39 @@ class Appli(tk.Tk):
         menu.add_command(label="Calcul de l'enveloppe", command=self.tabEnveloppe)
         #menu1.add_command(label='Quitter', command=self.win.destroy())
         menubar.add_cascade(label="Paramètres", menu=menu)
-        
+
         self.config(menu=menubar)
-        
+
         #Ajout d'un DropDown pour indiquer quelle couche des filtres corespond aux routes
         global mainframe
         mainframe = Frame(tab2)
         mainframe.grid(row=5, column=6, sticky=('N', 'W', 'E', 'S'))
-        
+
         tkvar = StringVar()
         choices = {data for data in list(nom_variables.values())}
         self.popupMenu = OptionMenu(tab2, tkvar, *choices)
         Label(mainframe, text="Sélectionnez la donnée correspondante aux routes").grid(row=5, column=6)
         self.popupMenu.grid(row=6, column=6)
         tkvar.set('Données des routes')
-        
+
         def change_dropdown(*args):
             print(tkvar.get())
-            
+
         tkvar.trace('w', change_dropdown)
 #        global mainframe
 #        mainframe = Frame(tab2)
 #        mainframe.grid(row=5, column=6, sticky=(N, W, E, S))
-        
+
 #        tkvar = StringVar()
 #        choices = {data for data in list(nom_variables.values())}
 #        self.popupMenu = OptionMenu(tab2, tkvar, *choices)
 #        Label(mainframe, text="Sélectionnez la donnée correspondante aux routes").grid(row=5, column=6)
 #        self.popupMenu.grid(row=6, column=6)
 #        tkvar.set('Données des routes')
-#        
+#
 #        def change_dropdown(*args):
 #            print(tkvar.get())
-#            
+#
 #        tkvar.trace('w', change_dropdown)
 
     #Fonction lister les données récupérées dans le dossier utilisateur
@@ -253,17 +253,17 @@ class Appli(tk.Tk):
         def ajoutShape(file):
             if file.endswith('.shp'):
                 donnee.append(file)
-        
+
         if choix_du_dossier.endswith('.gpkg'):
             for layerName in fiona.listlayers(choix_du_dossier):
                 donnee.append(layerName)
         else:
             for folderName, subfolders, filenames in os.walk(choix_du_dossier):
                 ajoutShape(folderName)
-    
+
                 for subfolder in subfolders:
                     ajoutShape(subfolder)
-    
+
                 for filename in filenames:
                     ajoutShape(filename)
 
@@ -308,7 +308,7 @@ class Appli(tk.Tk):
         choix_du_dossier = True
         choix_du_dossier = askdirectory()   # définition du dossier utilisateur
         print('Initialisation du dossier de donnée : {}'.format(choix_du_dossier))
-        
+
         self.canvas_dossier.delete('label')
         txt_file2 = self.canvas_dossier.create_text(250, 10, text = choix_du_dossier, tags='label')
 
@@ -326,7 +326,7 @@ class Appli(tk.Tk):
         choix_du_dossier = True
         choix_du_dossier = askopenfilename()   # définition du dossier utilisateur
         print('Initialisation du dossier de donnée : {}'.format(choix_du_dossier))
-        
+
         self.canvas_dossier.delete('label')
         txt_file2 = self.canvas_dossier.create_text(250, 10, text = choix_du_dossier, tags='label')
 
@@ -336,7 +336,7 @@ class Appli(tk.Tk):
         export = askdirectory()
         txt_export = canvas_export.create_text(250, 10, text = export)
 
-    
+
      # Fonction d'annulation de l'asociation des shapes aux boutons
     def cancel(self):
         keys = ['Parcelles', 'Bati', 'Structuration territoriale', 'Routes', 'Voies Ferrees']
@@ -354,7 +354,7 @@ class Appli(tk.Tk):
     def save_ces(self):
         global enregistrer_ces
         enregistrer_ces = True
-    
+
     # Fonction pour la création des boutons
     def bouton(self, x):
         index2 = liste_shp.curselection()
@@ -375,8 +375,8 @@ class Appli(tk.Tk):
             paramEntry[nom_variables[x]] = Entry(tab2, textvariable=param[nom_variables[x]], width=10)
             paramEntry[nom_variables[x]].grid(row=r, column=5)
             r += 1
-            
-            
+
+
         if x == 2:
             mes_var[nom_variables[x]].columns = map(str.lower, mes_var[nom_variables[x]].columns)
             # 1 - Choix du champ détenant l'information de la structuration du territoire par l'utilisateur
@@ -421,8 +421,8 @@ class Appli(tk.Tk):
             struct_terr.mainloop()
         else:
             mes_var[nom_variables[x]] = Traitement.clean_data(mes_var[nom_variables[x]], False)
-        
-            
+
+
     # Tab de la Personnalisation
     def param(self):
         tab3 = ttk.Frame(self.tabControl)                    # Création d'un 3e onglet
@@ -464,17 +464,17 @@ class Appli(tk.Tk):
             for i in list(enveloppe.index):
                 for j in range(4):
                     enveloppe.loc[i, D[j]] = V[i][j].get()
-                    
+
         # Boutons de la Tab3
         Button(tab3, text='Par défaut', bg = 'grey', command=defaut).grid(row = len(V)+2, column=2)
         Button(tab3, text='Valider', bg = 'orange', command= param_ok).grid(row = len(V)+2, column=3)
-        
-    
-        
+
+
+
     def tabEnveloppe(self):
         tab4 = ttk.Frame(self.tabControl)                    # Création d'un 4e onglet
         self.tabControl.add(tab4, text="Calcul de l'enveloppe urbaine")   # Ajout du 4e onglet
-        
+
         def param_enveloppe():
             global surf_min_AU
             surf_min_AU = value5.get()
@@ -482,7 +482,7 @@ class Appli(tk.Tk):
             TamponBati = value6.get()
             global TailleMiniEnv
             TailleMiniEnv = value7.get()
-            
+
         label5 = Label(tab4, text = 'Taille des trous de l''enveloppe à combler (en m²):')
         label5.grid(row=2, column=2)
         global value5
@@ -498,7 +498,7 @@ class Appli(tk.Tk):
         value6.set(30)
         entree6 = Entry(tab4, textvariable=value6, width=10)
         entree6.grid(row=3, column=3)
-         
+
         label7 = Label(tab4, text = 'Choix de la taille minimale des enveloppes à selectionner (en m²):')
         label7.grid(row=4, column=2)
         global value7
@@ -506,11 +506,11 @@ class Appli(tk.Tk):
         value7.set(30)
         entree7 = Entry(tab4, textvariable=value7, width=10)
         entree7.grid(row=4, column=3)
-        
+
         # Boutons de la Tab4
         Button(tab4, text='Valider', bg = 'orange', command = param_enveloppe).grid(row = 6, column=2)
-   
-   
+
+
     # Validation des paramètres par défaut appliqués à toutes les zones
     def defaut_ok(self):
         for i in enveloppe.index:
@@ -523,14 +523,14 @@ class Appli(tk.Tk):
 #        for i in list(nom_variables):
 #            if Traitement.typeGeom(mes_var[i]) == 'LineString':
 #                param[i] = param[nom_varialbes[i].get()]
-      
-    
-        
+
+
+
 class Traitement:
     '''Classe qui va contenir toutes les fonctions du traitements '''
     def __init__(self):
         pass
-    
+
     #Fonction intersection
     def spatial_overlays(df1, df2, how='intersection', reproject=True):
         df1 = df1.copy()
@@ -572,13 +572,13 @@ class Traitement:
             spatial_index = df2.sindex
             df1['bbox'] = df1.geometry.apply(lambda x: x.bounds)
             df1['sidx']=df1.bbox.apply(lambda x:list(spatial_index.intersection(x)))
-            df1['new_g'] = df1.apply(lambda x: reduce(lambda x, y: x.difference(y).buffer(0), 
+            df1['new_g'] = df1.apply(lambda x: reduce(lambda x, y: x.difference(y).buffer(0),
                                      [x.geometry]+list(df2.iloc[x.sidx].geometry)) , axis=1)
             df1.geometry = df1.new_g
             df1 = df1.loc[df1.geometry.is_empty==False].copy()
             df1.drop(['bbox', 'sidx', 'new_g'], axis=1, inplace=True)
             return df1
-    
+
     ##Fonction explode
     def explodePoly(gdf):
         gs = gdf.explode()
@@ -587,8 +587,8 @@ class Traitement:
         gdf_out = gdf_out.set_index(['level_0', 'level_1']).set_geometry('geometry')
         gdf_out = gdf_out[["geometry"]]
         gdf_out.crs = gdf.crs
-        return gdf_out   
-    
+        return gdf_out
+
     #Cleaning des couches SIG
     def clean_data (gdf, *argv):    #Possibilité de garder certaines colonnes
         gdf = gdf[gdf["geometry"].is_valid]
@@ -623,7 +623,7 @@ class Traitement:
         coeff.insert(len(coeff.columns), "shape2", ((coeff.boundary.length)/(np.sqrt(coeff["surf_par"]))))
         for i in list(coeff.columns):
              if i not in ['id_par','surf_par', 'surf_bat', 'ces','shape', 'shape2', 'geometry'] and i not in argv:
-                coeff = coeff.drop(i, axis=1)   
+                coeff = coeff.drop(i, axis=1)
         coeff.crs = ('+init=epsg:2154')
         if enregistrer_ces == True:
             coeff.to_file(export + '/' + 'ces.shp')
@@ -631,7 +631,7 @@ class Traitement:
         else:
             pass
         return(coeff)
-        
+
     #Sélection des parcelles
     def selectionParcelles(ces):
         parcelle_batie = ces.copy()
@@ -641,8 +641,8 @@ class Traitement:
         parcelle_vide = parcelle_vide[["id_par", choix_du_champs, "ces_max","nature"]]
         parcelle_batie = parcelle_batie[(parcelle_batie["ces"] < parcelle_batie["ces_max"]) & (parcelle_batie["ces"] >= 0.5) & (parcelle_batie["surf_par"] >= parcelle_batie["s_bati"])]
         return(parcelle_vide, parcelle_batie)
-  
-        
+
+
     def positionBati(parcelleBati, parcelleVide, bati, ces, choix_du_champs):
         centroid = parcelleBati.copy()
         centroid["geometry"] = centroid.geometry.centroid
@@ -668,13 +668,13 @@ class Traitement:
         potentiel["nature"] = potentiel["nature"].replace('1','parcelle vide')
         potentiel["nature"] = potentiel["nature"].replace(np.nan,'parcelle batie')
         return(potentiel)
-   
+
     # Détection du type de géométrie des filtres
     def typeGeom(filtre):
         echantillon = filtre.loc[0, 'geometry']
         return echantillon.geom_type
-        
-    
+
+
     # Suppression des polygones qui intersectent une couche de filtre
     def suppr_filtre(reference,filtre):
         ref = reference.copy()
@@ -697,9 +697,9 @@ class Traitement:
         ref = ref.set_geometry("geometry")
         ref = ref.drop("intersect", axis=1)
         ref = ref.drop("id_temp", axis=1)
-        return(ref) 
+        return(ref)
 
-    # Conservation du potentiel à proximité des routes et exclusion des routes cadastrées 
+    # Conservation du potentiel à proximité des routes et exclusion des routes cadastrées
 #    def routeDesserte(data):
 #            buffer_route = data.copy()
 #            buffer_route["geometry"] = buffer_route.geometry.buffer(desserte)
@@ -720,7 +720,7 @@ class Traitement:
 #            parcelle = mes_var['Parcelles'].copy()
 #            parcelle.insert(0, "id_par", range(1, 1 + len(parcelle)))
 #            parcelle.insert(1, "surf_par", parcelle["geometry"].area)
-#    
+#
 #            # CES des routes sur potentiel
 #            data.crs = {'init' : 'epsg:2154'}
 #            intersection = Traitement.spatial_overlays(data, parcelle, how='intersection')
@@ -732,7 +732,7 @@ class Traitement:
 #            ces_route['ces_route'] = ces_route['surf_route']/ces_route['surf_par']*100
 #            ces_route = ces_route.fillna(0)
 #            ces_route = ces_route[['id_par', 'surf_par', 'ces_route', 'geometry']]
-           
+
     def routeDesserte(data, potentiel):
         buffer_route = data.copy()
         buffer_route["geometry"] = buffer_route.geometry.buffer(desserte)
@@ -746,7 +746,7 @@ class Traitement:
         intersection = intersection[["id_par", "d_min_route"]]
         potentiel = potentiel.merge(intersection, how='left', on='id_par', suffixes=('', '_y'))
         print("Merge entre l'intersection et le potentiel : OK!\n")
-    
+
         # ### #10 Calcul du ces route
         # buffer de 5m sur les routes
         data["geometry"] = data.buffer(5)
@@ -754,7 +754,7 @@ class Traitement:
         parcelle = mes_var['Parcelles'].copy()
         parcelle.insert(0, "id_par", range(1, 1 + len(parcelle)))
         parcelle.insert(1, "surf_par", parcelle["geometry"].area)
-    
+
         # CES des routes sur potentiel
         intersection = Traitement.spatial_overlays(data, parcelle, how='intersection')
         dissolve = intersection.dissolve(by='id_par').reset_index()
@@ -765,21 +765,21 @@ class Traitement:
         ces_route['ces_route'] = ces_route['surf_route']/ces_route['surf_par']*100
         ces_route = ces_route.fillna(0)
         ces_route = ces_route[['id_par', 'surf_par', 'ces_route', 'geometry']]
-    
+
         # Selection de la voirie cadastrée (ces_route >= 40%)
         ces_route = ces_route[(ces_route["ces_route"] >= 40)]
         ces_route.crs = {'init': 'epsg:2154'}
-    
+
         #Suppression du cadastre d'étude de  la voirie cadastrée sélectionnée
         potentiel = gpd.overlay(potentiel, ces_route, how = 'difference')
-        return potentiel    
-    
+        return potentiel
+
 #    def Filtrage(potentiel, contrainte) :
 #        intersection = Traitement.spatial_overlays(potentiel, contrainte, how='intersection')
 #        intersection = intersection[intersection["geometry"].area>1]#Exclusion des surfaces intersectées inférieur à 1m²
 #        intersection.insert(len(intersection.columns)
-#        
-    
+#
+
     def filtrage(potentiel, contrainte):
         potentiel.crs = {'init': 'epsg:2154'}
         contrainte.crs = {'init': 'epsg:2154'}
@@ -788,8 +788,8 @@ class Traitement:
         liste_id = [i for i in intersection["id_par"]]
         potentiel = potentiel[~potentiel["id_par"].isin(liste_id)]
         return potentiel
-            
-    
+
+
 #    def Filtrage(potentiel):
 #        allFiltrePoly = []
 #        for data in list(mes_var):
@@ -817,7 +817,7 @@ class Traitement:
 #                    filtreLine["geometry"] = filtreLine.buffer(param[data])
 #                    potentiel = potentiel[potentiel.disjoint(data.unary_union)]
 #                    return potentiel
-    
+
      #Suppression des parcelles intersectant des voies ferrées
     def voiesFerrees(data):
         voie_ferree = mes_var['Voies ferrees'].copy()
@@ -826,8 +826,8 @@ class Traitement:
         #voie_ferree = Traitement.clean_data(voie_ferree)
         data = data[data.disjoint(voie_ferree.unary_union)]
         return data
-    
-    #Finalisation 
+
+    #Finalisation
     def finalisation(data):
         #data = Traitement.explodePoly(data)
         data2 = data[(data["nature"] == "parcelle batie") & (data["geometry"].area >= data["s_bati"]) | (data["nature"] == "parcelle vide") & (data["geometry"].area >= data["s_non_bati"])]
@@ -838,33 +838,33 @@ class Traitement:
         data2.crs = {'init': 'epsg:2154'}
         data2.reset_index(drop=True)
         return data2
-    
+
     # Script foncier
     def script():
         t0 = time.process_time()
         print('Lancement du traitement\n')
-        
+
         # ### #6 Prise en compte des zones U
         print("Prise en compte de l'enveloppe Urbaines : ")
         enveloppe_urbaine = Traitement.spatial_overlays(enveloppe, mes_var['Parcelles'], how='intersection')
         enveloppe_urbaine.crs = {'init': 'epsg:2154'}
         #enveloppe_urbaine =  enveloppe_urbaine[enveloppe_urbaine["geometry"].area>=enveloppe_urbaine['s_non_bati']]
         print('OK\n')
-        
+
         # ### #7 Calcul du CES
         print('Calcul du CES : ')
         global ces
         enveloppe_urbaine.crs = {'init': 'epsg:2154'}
         ces = Traitement.coeffEmpriseSol(mes_var['Bati'],enveloppe_urbaine,choix_du_champs, 'd_min_route', 's_non_bati', 'ces_max', 's_bati')
         print('OK\n')
-        
+
         # ### #8 Sélection parcelles
         print('Sélection des parcelles : ')
         parcelle_vide, parcelle_batie = Traitement.selectionParcelles(ces)
         parcelle_vide.crs = {'init': 'epsg:2154'}
         parcelle_batie.crs = {'init': 'epsg:2154'}
         print('OK \n')
-        
+
         # Position du bâti au sein de la parcelle
         print('Position du bâti au sein de la parcelle : ')
         parcelle_batie.crs = {'init': 'epsg:2154'}
@@ -872,14 +872,14 @@ class Traitement:
         potentiel = Traitement.positionBati(parcelle_batie, parcelle_vide, mes_var['Bati'], ces, choix_du_champs)
         potentiel.crs = {'init': 'epsg:2154'}
         print('OK \n')
-        
+
         # Conservation du potentiel à proximité des routes et exclusion des routes cadastrées
         print('Marquage des parcelles à proximité de la voirie')
         potentiel_2 = Traitement.routeDesserte(mes_var['Routes'], potentiel)
         potentiel_2.crs = {'init': 'epsg:2154'}
         potentiel = potentiel_2
         print('OK \n')
-        
+
         #Filtrage des parcelles à partir des données en entrée
         print('Filtrage des parcelles en fonction des données renseignées :')
         for data in list(mes_var):
@@ -889,7 +889,7 @@ class Traitement:
                 print('Pas de donnée filtre indiquée en entrée')
         potentiel = Traitement.routeDesserte(mes_var['Routes'], potentiel)
         print('OK \n')
-        
+
         # Suppression des parcelles intersectant des voies ferrées
         if 'Voies ferrees' in list(mes_var):
             print('Prise en compte des voies ferrées')
@@ -907,18 +907,18 @@ class Traitement:
 #                print('Prise en compte des filtres techniques : ')
 #                Traitement.Filtrage(potentiel)
 #                print('OK \n')
-            
+
         # make the geometry a multipolygon if it's not already
         print('Finalisation')
-        
-        potentiel = Traitement.finalisation(potentiel)    
+
+        potentiel = Traitement.finalisation(potentiel)
         potentiel.to_file(export + '/' + "potentiel.shp")
-        
+
         temps = (time.process_time() - t0)/60
         print(" \n Traitement terminé en {} min".format(round(temps, 2)))
         #print("\n Traitement terminé en {min} min et {sec} s! \n ".format(min =round(temps, 2), sec=(round(temps,4) - min)*60))
         temps = time.process_time() - t0
         print("\n Traitement terminé en {} min! \n ".format(round(temps/60, 2)))
-        
+
 oop = Appli()
 oop.mainloop()
