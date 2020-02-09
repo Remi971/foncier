@@ -33,8 +33,24 @@ def selectionBDgpkg():
 
 
 ### TODO: Fonction pour lister les données du dossier ou du Geopackage dans le div dédié!
-@eel.expose
-def liste_data(chemin):
+# @eel.expose
+# def liste_data(chemin):
+#     def ajoutShape(file):
+#         if file.endswith('.shp'):
+#             donnee.append(file)
+#
+#     if chemin.endswith('.gpkg'):
+#         for layerName in fiona.listlayers(chemin):
+#             donnee.append(layerName)
+#     else:
+#         for folderName, subfolders, filenames in os.walk(chemin):
+#             ajoutShape(folderName)
+#
+#             for subfolder in subfolders:
+#                 ajoutShape(subfolder)
+#
+#             for filename in filenames:
+#                 ajoutShape(filename)
 
 
 if __name__ == "__main__":
