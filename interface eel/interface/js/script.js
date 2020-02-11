@@ -29,15 +29,16 @@ const mesVar = {}
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
 
 //A REVOIR =>
-
+let folder = ''
 async function pickFolder() {
             let choixDossier = await eel.selectionDossier()();
             console.log(choixDossier)
+            folder = choixDossier
         }
 //Fonction qui récupère le nom du fichier gpkg
 eel.expose(pickGpkg)
 function pickGpkg(){
-  
+
 }
 
 
