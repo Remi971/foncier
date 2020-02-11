@@ -28,7 +28,7 @@ def selectionBDgpkg():
     choix_du_dossier = askopenfilename(title="Sélectionner la Base de donnée", filetypes=[("geopackage files", "*.gpkg")])
     root.withdraw()
     root.destroy()
-    print("dossier séléctionné : {}").format(choix_du_dossier)
+    print("dossier séléctionné : ", choix_du_dossier)
     return choix_du_dossier
 
 
@@ -55,4 +55,4 @@ def selectionBDgpkg():
 
 if __name__ == "__main__":
     eel.init('interface')
-    eel.start('index2.html', size=(800, 600))
+    eel.start('index2.html', size=(800, 500))

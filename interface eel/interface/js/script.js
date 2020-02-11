@@ -27,119 +27,30 @@ const nomVariables = {
 const mesVar = {}
 
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
-
-//A REVOIR =>
-let folder = ''
+let data = ''
+//Fonction qui récupère le nom du dossier de data
 async function pickFolder() {
             let choixDossier = await eel.selectionDossier()();
-            console.log(choixDossier)
-            folder = choixDossier
-        }
-//Fonction qui récupère le nom du fichier gpkg
-eel.expose(pickGpkg)
-function pickGpkg(){
+            console.log(choixDossier);
+            data = choixDossier;
+          }
+//Fonction qui récupère le nom du fichier de data gpkg
+async function pickGpkg(){
+            let choixGpkg = await eel.selectionBDgpkg()();
+            console.log(choixGpkg);
+            data = choixGpkg;
+          }
 
-}
-
-
+//Valider le choix de la source de donnée
 $(document).ready(function(){
-  $("#btn-folder").on('click', function(){
-    pickFolder();
-    $("#selection").html("<h3>DOSSIER</h3>");
+  $("#btn-valid").on('click', function(){
+    if ($("select")[0].value === "dossier"){
+      pickFolder();
+      $("#selection").html("<h3>DOSSIER</h3>");
+    }
+  else if ($("select")[0].value === "BDgpkg"){
+      pickGpkg();
+      $("#selection").html("<h3>DOSSIER</h3>");
+    }
   })
 })
-
-$(document).ready(function(){
-  $("#btn-gpkg").on('click', function(){
-    eel.selectionBDgpkg();
-    $("#selection").html("<h3>GEOPACKAGE</h3>");
-  })
-})
-
-// test
-// eel.expose(js_random);
-//         function js_random() {
-//             return Math.random();
-//         }
-//
-//         async function run() {
-//             // Synchronous call must be inside function marked 'async'
-//
-//             // Get result returned synchronously by
-//             //  using 'await' and passing nothing in second brackets
-//             //        v                   v
-//             let n = await eel.py_random()();
-//             console.log('Got this from Python: ' + n);
-//         }
-//
-//         run();
-
-// $(document).ready(function(){
-//   $("#valider").on('click', function(){
-//     if (document.getElementById("choix").value === "dossier"){
-//       $(document).ready(function(){
-//         eel.selectionDossier();
-//       })
-//     }else if (document.getElementById("choix").value === "BDgpkg"){
-//       $(document).ready(function(){
-//         eel.sectionBDgpkg();
-//       })
-//     }
-//   })
-// })
-//
-// if (document.getElementById("choix").value === 'dossier'){
-//   $(document).ready(function(){
-//     $("#selection").html("<h3>DOSSIER</h3>")
-//   })
-// }else if (document.getElementById("choix").value === "BDgpkg"){
-//   $(document).ready(function(){
-//     $("#selection").html("<h3>Geopackage</h3>")
-//   })
-// }
-//
-
-
-//
-// $(document).ready(function(){
-//   $("#valider").on('click', function(){
-//     if (document.getElementById("choix").value === "dossier"){
-//       eel.selectionDossier()().then(function (value) {
-//         const source = value;
-//         const divImage = document.createElement("div");
-//         divImage.id = "folder";
-//         $("#sourceName").text(source);
-//         const createDiv = document.getElementById("selection").appendChild(divImage);
-//   })
-//     }else if (document.getElementById("choix").value === "BDgpkg"){
-//
-//
-//
-//       eel.selectionBDgpkg()().then(function (value){
-//         const source = value;
-//         const divImage = document.createElement("div");
-//         divImage.id = "folder";
-//         $("#sourceName").text(source);
-//         const createDiv = document.getElementById("selection").appendChild(divImage);
-//         })}
-//   })
-// })
-
-
-/*
-// function importDonnees(){
-//   if (document.getElementById("choix").value === "dossier"){
-//     eel.selectionDossier()().then(function (value) {
-//       const source = value;
-//       const divImage = document.createElement("div");
-//       divImage.id = "folder";
-//       $("#sourceName").text(source);
-//       const createDiv = document.getElementById("selection").appendChild(divImage);
-//     })
-//   } else if (document.getElementById("choix").value === "BDgpkg"){
-//     const source = eel.selectionBDgpkg();
-//     window.divImage = document.createElement("div");
-//     divImage.id = "database";
-//     document.getElementById("selection").appendChild(divImage);
-// }
-// }*/
