@@ -30,19 +30,20 @@ const mesVar = {}
 
 //A REVOIR =>
 
-async function pick_file() {
-            let folder = document.getElementById('input-box').value;
-            let file_div = document.getElementById('file-name');
-
-            // Call into Python so we can access the file system
-            let random_filename = await eel.pick_file(folder)();
-            file_div.innerHTML = random_filename;
+async function pickFolder() {
+            let choixDossier = await eel.selectionDossier()();
+            console.log(choixDossier)
         }
+//Fonction qui récupère le nom du fichier gpkg
+eel.expose(pickGpkg)
+function pickGpkg(){
+  
+}
 
 
 $(document).ready(function(){
   $("#btn-folder").on('click', function(){
-    eel.selectionDossier();
+    pickFolder();
     $("#selection").html("<h3>DOSSIER</h3>");
   })
 })
@@ -53,6 +54,25 @@ $(document).ready(function(){
     $("#selection").html("<h3>GEOPACKAGE</h3>");
   })
 })
+
+// test
+// eel.expose(js_random);
+//         function js_random() {
+//             return Math.random();
+//         }
+//
+//         async function run() {
+//             // Synchronous call must be inside function marked 'async'
+//
+//             // Get result returned synchronously by
+//             //  using 'await' and passing nothing in second brackets
+//             //        v                   v
+//             let n = await eel.py_random()();
+//             console.log('Got this from Python: ' + n);
+//         }
+//
+//         run();
+
 // $(document).ready(function(){
 //   $("#valider").on('click', function(){
 //     if (document.getElementById("choix").value === "dossier"){

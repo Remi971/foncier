@@ -18,7 +18,7 @@ def selectionDossier():
     choix_du_dossier = askdirectory()
     #root.withdraw()
     root.destroy()
-    print("dossier séléctionné : {}").format(choix_du_dossier)
+    print('Dossier séléctionné : ', choix_du_dossier)
     return choix_du_dossier
 
 @eel.expose
