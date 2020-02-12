@@ -57,23 +57,33 @@ $(document).ready(function(){
 async function listingData(){
     liste = await eel.liste_data(data)();
     console.log('Liste des données : ', liste)
+    liste.forEach(shp => {
+      $('<li></li>').html(shp).appendTo(ul)
+    })
 }
 
 //Lister les données
 //Créer un li dans le ul pour chaque éléments de la liste et incrémenter l'élément dans le li
+let ul = $("ul.data")
 $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
-    for (let i = 0; i < liste.length; i++){
-      let ul = $("ul.data")
-      let li = ul.append("<li></li>")
-    }
-    $("ul.data").html("<li></li>")
-    }
-
   })
 })
-var names = [ "Jon", "Nick", "Bill", "Tom" ];
-$('#names-list li').each(function (index) {
-    $(this).text(names[index]);
-});
+
+// $(document).ready(function(){
+//   $("#btn-liste").on('click', function(){
+//     listingData();
+//     for (let i = 0; i < liste.length; i++){
+//       let ul = $("ul.data")
+//       let li = ul.append("<li></li>")
+//     }
+//     $("ul.data").html("<li></li>")
+//     }
+//
+//   })
+// })
+// var names = [ "Jon", "Nick", "Bill", "Tom" ];
+// $('#names-list li').each(function (index) {
+//     $(this).text(names[index]);
+// });

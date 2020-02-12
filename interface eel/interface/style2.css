@@ -15,7 +15,7 @@ body {
     border: 1px solid var(--dark);
     background-color: var(--grey);
   }
-  
+
   /* Style the buttons inside the tab */
   .tab button {
     background-color: inherit;
@@ -29,19 +29,19 @@ body {
     font-family: "Caladea";
     color : var(--light);
   }
-  
+
   /* Change background color of buttons on hover */
   .tab button:hover {
     background-color: var(--dark);
     color : var(--light);
   }
-  
+
   /* Create an active/current tablink class */
   .tab button.active {
     background-color: var(--light);
     color : var(--dark);
   }
-  
+
   /* Style the tab content */
   .tabcontent {
     display: none;
@@ -94,7 +94,7 @@ body {
 
 .data-import {
   display : grid;
-  grid-template-areas : 
+  grid-template-areas :
   "choix selection liste"
 }
 
@@ -110,6 +110,7 @@ body {
 
 .liste {
   grid-area : liste;
+  overflow: scroll;
 }
 
 .data-info {
@@ -130,7 +131,7 @@ body {
 h4 {
   font-family: "Caladea";
   margin-bottom : 0px;
-  
+
 }
 
 #selection #folder {
@@ -153,7 +154,7 @@ h4 {
 
 .donnees-base {
   display : grid;
-  grid-template-areas : 
+  grid-template-areas :
   'btn-base label-btn-base';
 }
 

@@ -13,6 +13,7 @@ eel.init('interface')
 #     print("Voila le text :", parametre)
 #     return'It seems to work'
 
+## TODO: Fusionner les deux fonctions en une seule!!
 @eel.expose
 def selectionDossier():
     root = tk.Tk()
@@ -34,9 +35,10 @@ def selectionBDgpkg():
     return choix_du_dossier
 
 
-### TODO: Fonction pour lister les données du dossier ou du Geopackage dans le div dédié!
+
 @eel.expose
 def liste_data(chemin):
+    '''Liste les données comprises dans le dossier ou le fichier correspondant au chemin indiqué'''
     donnee = []
     def ajoutShape(file):
         if file.endswith('.shp'):
