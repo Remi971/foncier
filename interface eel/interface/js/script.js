@@ -28,29 +28,40 @@ const mesVar = {}
 
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
 let data = ''
+let liste = []
 //Fonction qui récupère le nom du dossier de data
 async function pickFolder() {
-            let choixDossier = await eel.selectionDossier()();
-            console.log(choixDossier);
-            data = choixDossier;
-          }
+    data = await eel.selectionDossier()();
+    console.log('Dossier sélectionné : ', data);
+  }
 //Fonction qui récupère le nom du fichier de data gpkg
 async function pickGpkg(){
-            let choixGpkg = await eel.selectionBDgpkg()();
-            console.log(choixGpkg);
-            data = choixGpkg;
-          }
-
+    data = await eel.selectionBDgpkg()();
+    console.log('BD séléctionné : ', data);
+  }
 //Valider le choix de la source de donnée
 $(document).ready(function(){
   $("#btn-valid").on('click', function(){
-    if ($("select")[0].value === "dossier"){
+    if ($("select.dossier").val() === "dossier"){
       pickFolder();
       $("#selection").html("<h3>DOSSIER</h3>");
     }
-  else if ($("select")[0].value === "BDgpkg"){
+  else if ($("select.dossier").val() === "BDgpkg"){
       pickGpkg();
-      $("#selection").html("<h3>DOSSIER</h3>");
+      $("#selection").html("<h3>GEOPACKAGE</h3>");
     }
+  })
+})
+
+//Fonction qui va lister les données du dossier ou de la BD gpkg
+async function listingData(){
+    liste = await eel.liste_data(data)();
+    console.log('Liste des données : ', liste)
+}
+
+//Lister les donnéelse
+$(document).ready(function(){
+  $("#btn-liste").on('click', function(){
+    listingData();
   })
 })
