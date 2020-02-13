@@ -32,12 +32,10 @@ let liste = []
 //Fonction qui récupère le nom du dossier de data
 async function pickFolder() {
     data = await eel.selectionDossier()();
-    console.log('Dossier sélectionné : ', data);
   }
 //Fonction qui récupère le nom du fichier de data gpkg
 async function pickGpkg(){
     data = await eel.selectionBDgpkg()();
-    console.log('BD séléctionné : ', data);
   }
 //Valider le choix de la source de donnée
 $(document).ready(function(){
@@ -54,28 +52,23 @@ $(document).ready(function(){
 })
 
 //Fonction qui va lister les données du dossier ou de la BD gpkg
+//ET Permettre la sélection de la donnée à attribuer à une variable
 let ul = $("ul.data")
 async function listingData(){
     liste = await eel.liste_data(data)();
-    console.log('Liste des données : ', liste)
     liste.forEach(shp => {
       $('<li></li>').html(shp).appendTo(ul)
     })
+    $('li').on('click', function(){
+      $(this).siblings().removeClass("classLi");
+      $(this).toggleClass("classLi");
+    })
 }
 
-//Lister les données
-//Attribution de la donnée à une variable
-function dataAttribution(obj){
-  obj.on('click', function(){
-    this.css('background-color: "blue";');
-  })
-}
-//Créer un li dans le ul pour chaque éléments de la liste et incrémenter l'élément dans le li
-let li = ''
 $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
-    li = $("li")
-    dataAttribution(li);
   })
 })
+
+//Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
