@@ -94,22 +94,25 @@ body {
 
 .data-import {
   display : grid;
-  grid-template-areas :
-  "choix selection"
+  grid-template-columns : 80% 20%
 }
 
 .choix {
-  grid-area: choix;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .selection{
-  grid-area: selection;
+  grid-column: 2;
+  grid-row: 1;
   align-self : center;
   justify-self: center;
   margin: auto;
 }
 
 .liste {
+  grid-column: 1 / 3;
+  grid-row: 2;
   overflow: hidden;
   height: 200px;
   overflow-y: scroll;
@@ -153,10 +156,9 @@ h4 {
 
 .donnees-base {
   display : grid;
-  grid-template-areas :
-  'btn-base label-btn-base';
+  grid-template-columns : 1/3 1/3 1/3;
 }
 
 .donnees-base .btn-base {
-  grid-area : btn-base;
+  grid-column : 1 / 3;
 }

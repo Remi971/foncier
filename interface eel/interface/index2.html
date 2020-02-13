@@ -49,9 +49,9 @@
         </div>
       </div>
 
-      <div class="donnees-base"></div><!--Données de base-->
-        <h4>Données de base</h4>
+      <div class="donnees-base"><!--Données de base-->
         <div class="btn-base">
+          <h4>Données de base</h4>
           <div class="group">
             <button class="btn-test" id="btn-parc">Parcelles</button>
             <!-- <a href="" class="bouton"><div class="btn-test">Parcelles</div></a> -->
@@ -60,24 +60,30 @@
             </canvas>
           </div>
           <div class="group">
-            <a href="" class="bouton"><div class="btn-test">Bâti</div></a>
+            <button class="btn-test" id="btn-bati">Bâti</button>
+            <!-- <a href="" class="bouton"><div class="btn-test">Bâti</div></a> -->
             <canvas id="bati-canvas" class="data-info">
             </canvas>
           </div>
           <div class="group">
-            <a href="" class="bouton"><div class="btn-test">Structuration territoriale</div></a>
+            <button class="btn-test" id="btn-env">Structuration territoriale</button>
+            <!-- <a href="" class="bouton"><div class="btn-test">Structuration territoriale</div></a> -->
             <canvas id="struct-canvas" class="data-info">
             </canvas>
           </div>
-
         </div>
+
 
         <div class="filtres">
           <h4>Filtres excluants</h4>
-          <a href="" class="bouton"><div class="btn-test">Ajouter un filtre</div></a>
+          <button class="btn-test" id="btn-addFilter">Ajouter un filtre</button>
+          <button class="btn-test" id="btn-remFilter">Supprimer filtre(s)</button>
+          <button class="fas fa-file-export" id="btn-export">Export des données</button>
+          <!-- <a href="" class="bouton"><div class="btn-test">Ajouter un filtre</div></a>
           <a href="" class="bouton"><div class="btn-test">Annuler les filtres</div></a>
-          <a href="" class="bouton"><div class="btn-test"><i class="fas fa-file-export"></i> Export des données</div></a>
+          <a href="" class="bouton"><div class="btn-test"><i class="fas fa-file-export"></i> Export des données</div></a> -->
         </div>
+      </div>
     </div>
 
     <div id="Paramètres" class="tabcontent">

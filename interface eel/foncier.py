@@ -62,4 +62,4 @@ def liste_data(chemin):
 
 if __name__ == "__main__":
     eel.init('interface')
-    eel.start('index2.html', size=(1000, 600))
+    eel.start('index2.html', size=(1000, 800))
