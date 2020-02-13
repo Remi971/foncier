@@ -95,7 +95,7 @@ body {
 .data-import {
   display : grid;
   grid-template-areas :
-  "choix selection liste"
+  "choix selection"
 }
 
 .choix {
@@ -106,11 +106,28 @@ body {
   grid-area: selection;
   align-self : center;
   justify-self: center;
+  margin: auto;
 }
 
 .liste {
-  grid-area : liste;
-  overflow: scroll;
+  overflow: hidden;
+  height: 200px;
+  overflow-y: scroll;
+}
+
+.liste h4 {
+  padding-top: 0px;
+}
+
+.liste li {
+  font-family: monospace;
+  font-size: 12px;
+  cursor: pointer;
+  padding-bottom: 5px;
+}
+
+.liste li:hover{
+  color: var(--grey);
 }
 
 .data-info {
@@ -134,24 +151,6 @@ h4 {
 
 }
 
-#selection #folder {
-  background-image: url(images/folder.png);
-  background-size : cover;
-  width : 40px;
-  height : 40px;
-  position : relative;
-  object-position: center;
-}
-
-#selection #database {
-  background-image: url(images/database.png);
-  background-size : cover;
-  width : 40px;
-  height : 40px;
-  position : relative;
-  object-position: center;
-}
-
 .donnees-base {
   display : grid;
   grid-template-areas :
@@ -161,5 +160,3 @@ h4 {
 .donnees-base .btn-base {
   grid-area : btn-base;
 }
-
-.donnees-base .

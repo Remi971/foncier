@@ -44,11 +44,11 @@ $(document).ready(function(){
   $("#btn-valid").on('click', function(){
     if ($("select.dossier").val() === "dossier"){
       pickFolder();
-      $("#selection").html("<h3>DOSSIER</h3>");
+      $('#selection').html("<img src='/images/folder.png'>");
     }
   else if ($("select.dossier").val() === "BDgpkg"){
       pickGpkg();
-      $("#selection").html("<h3>GEOPACKAGE</h3>");
+      $('#selection').html("<img src='/images/database.png'>");
     }
   })
 })
@@ -70,20 +70,13 @@ $(document).ready(function(){
     listingData();
   })
 })
+//Attribution de la donnée à une variable
+function dataAttribution(element){
+  element.on('click', function(){
+    this.css('background-color: "blue";');
+  })
+}
 
-// $(document).ready(function(){
-//   $("#btn-liste").on('click', function(){
-//     listingData();
-//     for (let i = 0; i < liste.length; i++){
-//       let ul = $("ul.data")
-//       let li = ul.append("<li></li>")
-//     }
-//     $("ul.data").html("<li></li>")
-//     }
-//
-//   })
-// })
-// var names = [ "Jon", "Nick", "Bill", "Tom" ];
-// $('#names-list li').each(function (index) {
-//     $(this).text(names[index]);
-// });
+$(document).ready(function(){
+  dataAttribution($('li'));
+})

@@ -25,12 +25,12 @@
     <div id="Import" class="tabcontent"><!--TAB Données-->
       <div class="data-import">
         <div class="choix">
-          <h4>Import des données</h4>
-          <select name="" id="choix" class="dossier">
-            <option value="" selected disabled hidden>Source de la donnée</option>
-            <option value="dossier">Dossier</option>
-            <option value="BDgpkg">Base de donnée Geopackage</option>
-          </select>
+          <label>Import des données</label>
+            <select name="" id="choix" class="dossier">
+              <option value="" selected disabled hidden>Source de la donnée</option>
+              <option value="dossier">Dossier</option>
+              <option value="BDgpkg">Base de donnée Geopackage</option>
+            </select>
           <button class="btn-test" id="btn-valid">Sélection</button>
           <button class="btn-test" id="btn-liste">Lister les données</button>
           <!-- <button class="btn-test" id=btn-folder>Dossier</button> -->
@@ -45,7 +45,6 @@
         <div class="liste">
           <h4>Liste des couches</h4>
           <ul class="data">
-
           </ul>
         </div>
       </div>
@@ -54,7 +53,8 @@
         <h4>Données de base</h4>
         <div class="btn-base">
           <div class="group">
-            <a href="" class="bouton"><div class="btn-test">Parcelles</div></a>
+            <button class="btn-test" id="btn-parc">Parcelles</button>
+            <!-- <a href="" class="bouton"><div class="btn-test">Parcelles</div></a> -->
             <canvas id="parcelle-canvas" class="data-info"
             >
             </canvas>
