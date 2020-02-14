@@ -65,10 +65,17 @@ async function listingData(){
     })
 }
 
+//Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
+
+let canvas = ''
 $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
   })
+  $(".group button").on('click', function(){
+    let select = $(".classLi").html();
+    let divParent = $(this).parent();
+    $(divParent).children("span").html(select);
+    //console.log(canvas);
+  })
 })
-
-//Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
