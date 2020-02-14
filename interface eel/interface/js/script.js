@@ -15,14 +15,6 @@ function openTab(evt, tabName) {
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
 
-//Objet qui va contenir les noms des variables
-const nomVariables = {
-  0 : 'Unité foncière',
-  1 : 'Parcelles',
-  2 : 'Bati',
-  3 : 'Structuration territoriale'
-}
-
 //Objet qui va contenir un shape pour chacune des variables comprise dans l'objet nomVariables
 const mesVar = {}
 
@@ -76,6 +68,8 @@ $(document).ready(function(){
     let select = $(".classLi").html();
     let divParent = $(this).parent();
     $(divParent).children("span").html(select);
-    //console.log(canvas);
+    let key = $(this).html();
+    let val = data + '/' + select;
+    mesVar[key] = val;
   })
 })
