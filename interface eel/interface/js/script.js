@@ -47,14 +47,16 @@ $(document).ready(function(){
 //ET Permettre la sélection de la donnée à attribuer à une variable
 let ul = $("ul.data")
 async function listingData(){
-    liste = await eel.liste_data(data)();
-    liste.forEach(shp => {
-      $('<li></li>').html(shp).appendTo(ul)
+  liste = [];
+  $('li').remove();
+  liste = await eel.liste_data(data)();
+  liste.forEach(shp => {
+    $('<li></li>').html(shp).appendTo(ul);
     })
-    $('li').on('click', function(){
-      $(this).siblings().removeClass("classLi");
-      $(this).toggleClass("classLi");
-    })
+  $('li').on('click', function(){
+    $(this).siblings().removeClass("classLi");
+    $(this).toggleClass("classLi");
+  })
 }
 
 //Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
@@ -69,7 +71,11 @@ $(document).ready(function(){
     let divParent = $(this).parent();
     $(divParent).children("span").html(select);
     let key = $(this).html();
-    let val = data + '/' + select;
+    if (data.endsWith(".gpkg")){
+      val = select
+    }else{
+      let val = data + '/' + select;
+    }
     mesVar[key] = val;
     eel.lecture_sig(mesVar);
   })

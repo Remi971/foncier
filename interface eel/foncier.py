@@ -56,9 +56,46 @@ def liste_data(chemin):
                 ajoutShape(filename)
     return donnee
 
+##Fonction explode
+def explodePoly(gdf):
+    gs = gdf.explode()
+    gdf2 = gs.reset_index().rename(columns={0: 'geometry'})
+    gdf_out = gdf2.merge(gdf.drop('geometry', axis=1), left_on='level_0', right_index=True)
+    gdf_out = gdf_out.set_index(['level_0', 'level_1']).set_geometry('geometry')
+    gdf_out = gdf_out[["geometry"]]
+    gdf_out.crs = gdf.crs
+    return gdf_out
+
+#Cleaning des couches SIG
+def clean_data (gdf, *argv):    #Possibilité de garder certaines colonnes
+    gdf = gdf[gdf["geometry"].is_valid]
+    gdf = gdf[gdf["geometry"].notnull()]
+    gdf = gdf.to_crs({'init': 'epsg:2154'})
+    gdf.explode()
+    gdf.reset_index(drop=True)
+    gdf = gdf.set_geometry("geometry")
+    for i in list(gdf.columns):
+        if i == "geometry":
+            pass
+        elif i not in argv:
+            gdf = gdf.drop(i, axis=1)
+    if not argv:
+        gdf = gdf[["geometry"]]
+    return gdf
+
 @eel.expose
-def lecture_sig(dictionnaire):
-    dict_sig = {key : gpd.read_file(val) for key, val in dictionnaire.items()}
+def lecture_sig(dictionnaire, *argv):
+    if choix_du_dossier.endswith('.gpkg'):
+        if argv:
+            dict_sig = {key : clean_data(gpd.read_file(choix_du_dossier, layer=val), argv) for key, val in dictionnaire.items()}
+        else:
+            dict_sig = {key : clean_data(gpd.read_file(choix_du_dossier, layer=val)) for key, val in dictionnaire.items()}
+    else:
+        if argv:
+            dict_sig = {key : clean_data(gpd.read_file(val),argv) for key, val in dictionnaire.items()}
+        else:
+            dict_sig = {key : clean_data(gpd.read_file(val)) for key, val in dictionnaire.items()}
+
     print("Nombre de couche en mémoire : ", len(dict_sig))
 
 @eel.expose
