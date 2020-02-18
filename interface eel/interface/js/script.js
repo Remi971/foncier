@@ -71,5 +71,6 @@ $(document).ready(function(){
     let key = $(this).html();
     let val = data + '/' + select;
     mesVar[key] = val;
+    eel.lecture_sig(mesVar);
   })
 })

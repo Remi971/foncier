@@ -57,10 +57,9 @@ def liste_data(chemin):
     return donnee
 
 @eel.expose
-def lecture_sig(dict):
-    dict_sig = {}
-    for key in dict.keys:
-        dict_sig[key] = gpd.read_file(dict[key])
+def lecture_sig(dictionnaire):
+    dict_sig = {key : gpd.read_file(val) for key, val in dictionnaire.items()}
+    print("Nombre de couche en mémoire : ", len(dict_sig))
 
 @eel.expose
 def spatial_overlays(df1, df2, how='intersection', reproject=True):
