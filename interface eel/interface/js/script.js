@@ -72,11 +72,10 @@ $(document).ready(function(){
     $(divParent).children("span").html(select);
     let key = $(this).html();
     if (data.endsWith(".gpkg")){
-      val = select
+      mesVar[key] = [data, select]
     }else{
-      let val = data + '/' + select;
+      mesVar[key] = data + '/' + select;
     }
-    mesVar[key] = val;
     eel.lecture_sig(mesVar);
   })
 })

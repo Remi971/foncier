@@ -6,6 +6,8 @@ from tkinter.filedialog import askdirectory, askopenfilename
 import os
 from fiona import listlayers
 import geopandas as gpd
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 eel.init('interface')
 
@@ -20,7 +22,7 @@ def selectionDossier():
     root = tk.Tk()
     global choix_du_dossier
     choix_du_dossier = askdirectory()
-    #root.withdraw()
+    root.withdraw()
     root.destroy()
     return choix_du_dossier
 
@@ -85,16 +87,17 @@ def clean_data (gdf, *argv):    #Possibilité de garder certaines colonnes
 
 @eel.expose
 def lecture_sig(dictionnaire, *argv):
-    if choix_du_dossier.endswith('.gpkg'):
+    for key, val in dictionnaire.items():
         if argv:
-            dict_sig = {key : clean_data(gpd.read_file(choix_du_dossier, layer=val), argv) for key, val in dictionnaire.items()}
+            if type(val) == list():
+                dict_sig = {key : clean_data(gpd.read_file(val[1:]),argv) for key, val in dictionnaire.items()}
+            else:
+                dict_sig = {key : clean_data(gpd.read_file(val[0][1:], layer=val[1]), argv) for key, val in dictionnaire.items()}
         else:
-            dict_sig = {key : clean_data(gpd.read_file(choix_du_dossier, layer=val)) for key, val in dictionnaire.items()}
-    else:
-        if argv:
-            dict_sig = {key : clean_data(gpd.read_file(val),argv) for key, val in dictionnaire.items()}
-        else:
-            dict_sig = {key : clean_data(gpd.read_file(val)) for key, val in dictionnaire.items()}
+            if type(val) == list():
+                dict_sig = {key : clean_data(gpd.read_file(val[1:])) for key, val in dictionnaire.items()}
+            else:
+                dict_sig = {key : clean_data(gpd.read_file(val[0][1:], layer=val[1])) for key, val in dictionnaire.items()}
 
     print("Nombre de couche en mémoire : ", len(dict_sig))
 
