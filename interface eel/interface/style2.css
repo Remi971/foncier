@@ -94,7 +94,7 @@ body {
 
 .data-import {
   display : grid;
-  grid-template-columns : 80% 20%
+  grid-template-columns : 70% 30%
 }
 
 .choix {
@@ -105,9 +105,6 @@ body {
 .selection{
   grid-column: 2;
   grid-row: 1;
-  align-self : center;
-  justify-self: center;
-  margin: auto;
 }
 
 .liste {
