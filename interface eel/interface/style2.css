@@ -92,6 +92,14 @@ body {
   text-decoration-line: none;
 }
 
+.red {
+  background-color : #b71c1c;
+}
+
+.red:hover {
+  background-color: #f05545;
+}
+
 .data-import {
   display : grid;
   grid-template-columns : 70% 30%
@@ -137,7 +145,7 @@ body {
   font-size: 14px;
 }
 
-.data-info {
+span {
   width : 100%;
   height : 18px;
   border : var(--dark) solid 1px;

@@ -15,14 +15,6 @@ function openTab(evt, tabName) {
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
 
-//Objet qui va contenir les noms des variables
-const nomVariables = {
-  0 : 'Unité foncière',
-  1 : 'Parcelles',
-  2 : 'Bati',
-  3 : 'Structuration territoriale'
-}
-
 //Objet qui va contenir un shape pour chacune des variables comprise dans l'objet nomVariables
 const mesVar = {}
 
@@ -55,20 +47,35 @@ $(document).ready(function(){
 //ET Permettre la sélection de la donnée à attribuer à une variable
 let ul = $("ul.data")
 async function listingData(){
-    liste = await eel.liste_data(data)();
-    liste.forEach(shp => {
-      $('<li></li>').html(shp).appendTo(ul)
+  liste = [];
+  $('li').remove();
+  liste = await eel.liste_data(data)();
+  liste.forEach(shp => {
+    $('<li></li>').html(shp).appendTo(ul);
     })
-    $('li').on('click', function(){
-      $(this).siblings().removeClass("classLi");
-      $(this).toggleClass("classLi");
-    })
+  $('li').on('click', function(){
+    $(this).siblings().removeClass("classLi");
+    $(this).toggleClass("classLi");
+  })
 }
 
+//Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
+
+let canvas = ''
 $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
   })
+  $(".group button").on('click', function(){
+    let select = $(".classLi").html();
+    let divParent = $(this).parent();
+    $(divParent).children("span").html(select);
+    let key = $(this).html();
+    if (data.endsWith(".gpkg")){
+      mesVar[key] = [data, select]
+    }else{
+      mesVar[key] = data + '/' + select;
+    }
+    eel.lecture_sig(mesVar);
+  })
 })
-
-//Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
