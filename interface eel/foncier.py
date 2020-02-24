@@ -22,7 +22,7 @@ def selectionDossier():
     root = tk.Tk()
     global choix_du_dossier
     choix_du_dossier = askdirectory()
-    root.withdraw()
+    #root.withdraw()
     root.destroy()
     return choix_du_dossier
 
@@ -31,7 +31,7 @@ def selectionBDgpkg():
     root = tk.Tk()
     global choix_du_dossier
     choix_du_dossier = askopenfilename(title="Sélectionner la Base de donnée", filetypes=[("geopackage files", "*.gpkg")])
-    root.withdraw()
+    #root.withdraw()
     root.destroy()
     return choix_du_dossier
 
@@ -46,7 +46,6 @@ def liste_data(chemin):
     if chemin.endswith('.gpkg'):
         for layerName in listlayers(chemin):
             donnee.append(layerName)
-        print(donnee)
     else:
         for folderName, subfolders, filenames in os.walk(chemin):
             ajoutShape(folderName)
@@ -86,22 +85,25 @@ def clean_data (gdf, *argv):    #Possibilité de garder certaines colonnes
     return gdf
 
 @eel.expose
+# def lecture_sig(dictionnaire, *argv):
+#      print(type(dictionnaire))
+#      print(dictionnaire)
+#      print(dictionnaire.items())
 def lecture_sig(dictionnaire, *argv):
+    dict_sig = {}
     for key, val in dictionnaire.items():
         if argv:
             if type(val) == list():
-                dict_sig = {key : clean_data(gpd.read_file(val[1:]),argv) for key, val in dictionnaire.items()}
+                dict_sig = {key : clean_data(gpd.read_file(val[0], layer=val[1]), argv) for key, val in dictionnaire.items()}
             else:
-                dict_sig = {key : clean_data(gpd.read_file(val[0][1:], layer=val[1]), argv) for key, val in dictionnaire.items()}
+                dict_sig = {key : clean_data(gpd.read_file(val),argv) for key, val in dictionnaire.items()}
         else:
             if type(val) == list():
-                dict_sig = {key : clean_data(gpd.read_file(val[1:])) for key, val in dictionnaire.items()}
+                dict_sig = {key : clean_data(gpd.read_file(val[0], layer=val[1])) for key, val in dictionnaire.items()}
             else:
-                dict_sig = {key : clean_data(gpd.read_file(val[0][1:], layer=val[1])) for key, val in dictionnaire.items()}
-
+                dict_sig = {key : clean_data(gpd.read_file(val)) for key, val in dictionnaire.items()}
     print("Nombre de couche en mémoire : ", len(dict_sig))
 
-@eel.expose
 def spatial_overlays(df1, df2, how='intersection', reproject=True):
     df1 = df1.copy()
     df2 = df2.copy()
@@ -151,4 +153,4 @@ def spatial_overlays(df1, df2, how='intersection', reproject=True):
 
 if __name__ == "__main__":
     eel.init('interface')
-    eel.start('index2.html', size=(1000, 800))
+    eel.start('index2.html', size=(1000, 700))
