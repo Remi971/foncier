@@ -46,6 +46,7 @@ async function pickGpkg(){
     data = await eel.selectionBDgpkg()();
     mesVar.gpkg.nomGPKG = data;
   }
+
 //Valider le choix de la source de donnée
 $(document).ready(function(){
   $("#btn-valid").on('click', function(){
@@ -60,10 +61,10 @@ $(document).ready(function(){
   })
   $("#btn-addFilter").on('click', function(){
     let name = prompt("Indiquez le nom du filtre : ")
-    $('<div class="group"><button class="btn-test" id='+name+'>'+name+'</button><span id="vf-canvas" class="data-info"></span></div>').appendTo('.filtres');
-  })
-  $("#btn-remFilter").on('click', function(){
-    $(".group .filtres").empty().remove();
+    $('<div class="group"><button class="btn-test" id='+name+'>'+name+'</button><span id="vf-canvas" class="data-info"></span><button class="remove">X</button></div>').appendTo('.filtres');
+    $(".group .remove").on('click', function(){
+      $(this).parent().remove();
+    })
   })
 })
 

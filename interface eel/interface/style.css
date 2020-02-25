@@ -92,6 +92,14 @@ body {
   text-decoration-line: none;
 }
 
+.remove {
+  radius: 90deg;
+  width: 50px;
+  height: 30px;
+  background-color: #f05545;
+  color: 'white';
+}
+
 .red {
   background-color : #b71c1c;
 }
