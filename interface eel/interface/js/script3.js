@@ -16,7 +16,22 @@ function openTab(evt, tabName) {
 document.getElementById("defaultOpen").click();
 
 //Objet qui va contenir un shape pour chacune des variables comprise dans l'objet nomVariables
-const mesVar = {}
+const mesVar = {
+  gpkg:
+  {
+    nomGPKG:
+    {},
+    layers:
+    {},
+  },
+  dossier:
+  {
+    chemin:
+    {},
+    couches:
+    {},
+  },
+}
 
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
 let data = ''
@@ -24,10 +39,12 @@ let liste = []
 //Fonction qui récupère le nom du dossier de data
 async function pickFolder() {
     data = await eel.selectionDossier()();
+    mesVar.dossier.chemin = data;
   }
 //Fonction qui récupère le nom du fichier de data gpkg
 async function pickGpkg(){
     data = await eel.selectionBDgpkg()();
+    mesVar.gpkg.nomGPKG = data;
   }
 //Valider le choix de la source de donnée
 $(document).ready(function(){
@@ -61,7 +78,6 @@ async function listingData(){
 
 //Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
 
-let canvas = ''
 $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
@@ -72,10 +88,35 @@ $(document).ready(function(){
     $(divParent).children("span").html(select);
     let key = $(this).html();
     if (data.endsWith(".gpkg")){
-      mesVar[key] = [data, select]
+      delete mesVar.dossier.couches[key];
+      mesVar.gpkg.layers[key] = select;
     }else{
-      mesVar[key] = data + '/' + select;
+      delete mesVar.gpkg.layers[key];
+      mesVar.dossier.couches[key] = select;
     }
-    eel.lecture_sig(mesVar);
+    //mesVar[key] = chemin;
+    //eel.add_data(key, chemin)
+    //eel.lecture_sig(mesVar);
   })
 })
+
+// $(document).ready(function(){
+//   $("#btn-liste").on('click', function(){
+//     listingData();
+//   })
+//   $(".group button").on('click', function(){
+//     let select = $(".classLi").html();
+//     let divParent = $(this).parent();
+//     $(divParent).children("span").html(select);
+//     let key = $(this).html();
+//     let chemin = ''
+//     if (data.endsWith(".gpkg")){
+//       chemin = [data, select];
+//     }else{
+//       chemin = data + '/' + select;
+//     }
+//     mesVar[key] = chemin;
+//     eel.add_data(key, chemin)
+//     //eel.lecture_sig(mesVar);
+//   })
+// })
