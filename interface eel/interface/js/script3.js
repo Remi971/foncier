@@ -49,6 +49,13 @@ async function pickGpkg(){
 
 //Valider le choix de la source de donnée
 $(document).ready(function(){
+  $("#btn-addFilter").on('click', function(){
+    let name = prompt("Indiquez le nom du filtre : ")
+    $('<div class="group"><button class="btn-test" id='+name+'>'+name+'</button><span id="vf-canvas" class="data-info"></span><button class="remove">X</button></div>').appendTo('.filtres');
+    $(".group .remove").on('click', function(){
+      $(this).parent().remove();
+    })
+  })
   $("#btn-valid").on('click', function(){
     if ($("select.dossier").val() === "dossier"){
       pickFolder();
@@ -58,13 +65,6 @@ $(document).ready(function(){
       pickGpkg();
       $('#selection').html("<img src='/images/database.png'>");
     }
-  })
-  $("#btn-addFilter").on('click', function(){
-    let name = prompt("Indiquez le nom du filtre : ")
-    $('<div class="group"><button class="btn-test" id='+name+'>'+name+'</button><span id="vf-canvas" class="data-info"></span><button class="remove">X</button></div>').appendTo('.filtres');
-    $(".group .remove").on('click', function(){
-      $(this).parent().remove();
-    })
   })
 })
 
