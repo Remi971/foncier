@@ -15,7 +15,7 @@ function openTab(evt, tabName) {
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
 
-//Objet qui va contenir un shape pour chacune des variables comprise dans l'objet nomVariables
+//Objet JSON qui va contenir le nom des sources de données, des couches et leur chemin pour chacune des variables
 const mesVar = {
   gpkg:
   {
@@ -58,6 +58,13 @@ $(document).ready(function(){
       $('#selection').html("<img src='/images/database.png'>");
     }
   })
+  $("#btn-addFilter").on('click', function(){
+    let name = prompt("Indiquez le nom du filtre : ")
+    $('<div class="group"><button class="btn-test" id='+name+'>'+name+'</button><span id="vf-canvas" class="data-info"></span></div>').appendTo('.filtres');
+  })
+  $("#btn-remFilter").on('click', function(){
+    $(".group .filtres").empty().remove();
+  })
 })
 
 //Fonction qui va lister les données du dossier ou de la BD gpkg
@@ -77,7 +84,6 @@ async function listingData(){
 }
 
 //Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
-
 $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
@@ -99,24 +105,3 @@ $(document).ready(function(){
     //eel.lecture_sig(mesVar);
   })
 })
-
-// $(document).ready(function(){
-//   $("#btn-liste").on('click', function(){
-//     listingData();
-//   })
-//   $(".group button").on('click', function(){
-//     let select = $(".classLi").html();
-//     let divParent = $(this).parent();
-//     $(divParent).children("span").html(select);
-//     let key = $(this).html();
-//     let chemin = ''
-//     if (data.endsWith(".gpkg")){
-//       chemin = [data, select];
-//     }else{
-//       chemin = data + '/' + select;
-//     }
-//     mesVar[key] = chemin;
-//     eel.add_data(key, chemin)
-//     //eel.lecture_sig(mesVar);
-//   })
-// })
