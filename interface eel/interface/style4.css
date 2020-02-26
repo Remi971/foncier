@@ -51,25 +51,20 @@ body {
   }
 .title {
   background-color : var(--citadia);
+  width: 100%;
   padding : 0.8rem;
-  display : grid;
-  grid-template-columns: 3fr 1fr;
+  display : flex;
+  align-items: center;
 }
 
 .title h1 {
   font-family : "Caladea";
+  text-align: center;
+  margin: 0px;
   font-size : 1.3rem;
   color : white;
-  margin : 0px 0px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.title .logo {
-  position: relative;
-  left : 1rem;
-  top: -8px;
+  width: 80%;
+  display: block;
 }
 
 .btn-test {
@@ -114,8 +109,10 @@ body {
 }
 
 .choix {
-  grid-column: 1;
-  grid-row: 1;
+  display: flex;
+  grid-column: 1 / 4;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .selection{
