@@ -165,4 +165,4 @@ def spatial_overlays(df1, df2, how='intersection', reproject=True):
 
 if __name__ == "__main__":
     eel.init('interface')
-    eel.start('index4.html', size=(1000, 700))
+    eel.start('index.html', size=(1000, 700))

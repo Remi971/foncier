@@ -51,7 +51,7 @@ async function pickGpkg(){
 $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
     let name = prompt("Indiquez le nom du filtre : ")
-    $('<div class="group"><button style= "background-color: #ff8f00"  class="btn-test" id='+name+'>'+name+'</button><button class="remove">X</button><span id="vf-canvas" class="data-info"></span></div>').appendTo('.btn-base');
+    $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test" id='+name+'>'+name+'</button><button class="remove">X</button><span id="vf-canvas" class="data-info"></span></div>').appendTo('.btn-base');
     $(".group").on('click',".btn-test", function(){
       let select = $(".classLi").html();
       let divParent = $(this).parent();
