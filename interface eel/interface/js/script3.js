@@ -52,10 +52,28 @@ $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
     let name = prompt("Indiquez le nom du filtre : ")
     $('<div class="group"><button class="btn-test" id='+name+'>'+name+'</button><span id="vf-canvas" class="data-info"></span><button class="remove">X</button></div>').appendTo('.filtres');
+    $(".group").on('click',".btn-test", function(){
+      let select = $(".classLi").html();
+      let divParent = $(this).parent();
+      $(divParent).children("span").html(select);
+      let key = $(this).html();
+      if (data.endsWith(".gpkg")){
+        delete mesVar.dossier.couches[key];
+        mesVar.gpkg.layers[key] = select;
+      }else{
+        delete mesVar.gpkg.layers[key];
+        mesVar.dossier.couches[key] = select;
+      }
+    })
     $(".group .remove").on('click', function(){
+      let parent = $(this).parent();
+      nom = $(parent).children(".btn-test").html();
+      delete mesVar.gpkg.layers[nom];
+      delete mesVar.dossier.couches[nom];
       $(this).parent().remove();
     })
   })
+
   $("#btn-valid").on('click', function(){
     if ($("select.dossier").val() === "dossier"){
       pickFolder();
@@ -89,7 +107,7 @@ $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
   })
-  $(".group button").on('click', function(){
+  $(".group").on('click','.btn-test', function(){
     let select = $(".classLi").html();
     let divParent = $(this).parent();
     $(divParent).children("span").html(select);
