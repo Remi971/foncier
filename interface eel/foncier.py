@@ -100,21 +100,6 @@ def add_data(cle, chemin, *argv):
             dict_sig[cle] = clean_data(gpd.read_file(chemin))
     print("Nombre de couche en mémoire : ", len(dict_sig))
 
-# def lecture_sig(dictionnaire, *argv):
-#     print(dictionnaire['Bâti'][0])
-#     print(type(dictionnaire['Bâti'][0]))
-#     for key, val in dictionnaire.items():
-#         if argv:
-#             if type(val) == list():
-#                 dict_sig = {key : clean_data(gpd.read_file(val[0], layer = val[1]), argv) for key, val in dictionnaire.items()}
-#             else:
-#                 dict_sig = {key : clean_data(gpd.read_file(val),argv) for key, val in dictionnaire.items()}
-#         else:
-#             if type(val) == list():
-#                 dict_sig = {key : clean_data(gpd.read_file(val[0], layer = val[1])) for key, val in dictionnaire.items()}
-#             else:
-#                 dict_sig = {key : clean_data(gpd.read_file(val)) for key, val in dictionnaire.items()}
-#     print("Nombre de couche en mémoire : ", len(dict_sig))
 
 def spatial_overlays(df1, df2, how='intersection', reproject=True):
     df1 = df1.copy()
@@ -165,4 +150,4 @@ def spatial_overlays(df1, df2, how='intersection', reproject=True):
 
 if __name__ == "__main__":
     eel.init('interface')
-    eel.start('index.html', size=(1000, 700))
+    eel.start('index.html', size=(1000, 800))

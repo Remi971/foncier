@@ -105,17 +105,20 @@ body {
   padding-left: 20px;
   padding-right: 20px;
   grid-column: 1 / 3;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
 }
 
 div#selection{
+  display: flex;
+  justify-content: center;
+  align-items: center;
   grid-column: 2 / 3;
   grid-row: 2;
 }
 
 div#selection img {
-  left: 50%;
+  width: 50%;
 }
 
 .liste {
