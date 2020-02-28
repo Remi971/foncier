@@ -216,3 +216,41 @@ span {
   display: block;
   text-align: center;
 }
+
+/* Tab Paramètres */
+.wrapper {
+  display: grid;
+  grid-gap: 1rem;
+  grid-template-columns: 35% 60%;
+}
+
+.container {
+  display: grid;
+  width: 100%;
+  margin: 0;
+}
+
+.container div{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.container div label {
+  width: 80%;
+}
+
+.container div input{
+  width: 15%;
+}
+
+#container1{
+  grid-column: 1 / 2;
+}
+
+#container2 {
+  grid-column: 2 / 3;
+  padding: 0 1rem;
+  border-left: solid 4px #ebeced;
+}

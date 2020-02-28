@@ -148,6 +148,51 @@ def spatial_overlays(df1, df2, how='intersection', reproject=True):
         df1.drop(['bbox', 'sidx', 'new_g'], axis=1, inplace=True)
         return df1
 
+## Fonction pour attribuer des paramètres par type de zone de la couche STRUCTURATION TERRTORIALE ##
+
+# if x == 2:
+#     mes_var[nom_variables[x]].columns = map(str.lower, mes_var[nom_variables[x]].columns)
+#     # 1 - Choix du champ détenant l'information de la structuration du territoire par l'utilisateur
+#     global struct_terr
+#     struct_terr = Tk()
+#     struct_terr.title('Choix du champs pour identifier la structuration territoriale')
+#     global liste_champs
+#     liste_champs = Listbox(struct_terr)
+#     n = 1
+#     for i in mes_var[nom_variables[x]].columns:
+#         liste_champs.insert(n, i)
+#         n += 1
+#     def champs():
+#         index3 = liste_champs.curselection()
+#         global choix_du_champs
+#         choix_du_champs = liste_champs.get(index3)
+#         global enveloppe
+#         col = choix_du_champs
+#         mes_var[nom_variables[2]].columns = map(str.lower, mes_var[nom_variables[2]].columns)
+#         if "typezone" in mes_var[nom_variables[2]].columns :
+#             mes_var[nom_variables[2]] = mes_var[nom_variables[2]][mes_var[nom_variables[2]]["typezone"] == 'U']
+#         else:
+#             pass
+#         enveloppe = Traitement.clean_data(mes_var[nom_variables[2]], col)
+#         enveloppe["geometry"] = enveloppe.buffer(0)
+#         enveloppe = enveloppe.dissolve(by=col).reset_index()
+#         # Création de 4 champs correspondant aux paramètres à appliquer pour chaque zone. Ici les paramètre par défaut sont appliqué, mais sont modifiable dans le menu 'Paramètre'.
+#         enveloppe.insert(1, "d_min_route", 50)# Distance minimale de la parcelle à la route (en m)
+#         enveloppe.insert(2, "s_non_bati", 500)# Surface minimale de la parcelle non batie (en m²)
+#         enveloppe.insert(3, "s_bati", 2000)# Surface minimale de la parcelle bati (en m²)
+#         enveloppe.insert(4, "ces_max", 10)# CES maximum de la parcelle bati (en m²)
+#         global D
+#         D = {
+#                0 : "d_min_route",
+#                1 : "s_non_bati",
+#                2 : "s_bati",
+#                3 : "ces_max"}
+#         struct_terr.destroy()
+#
+#     Button(struct_terr, text = 'Valider', width=15, command=champs, bg="orange").grid(row=2, column=1)
+#     liste_champs.grid(row=1, column=1)
+#     struct_terr.mainloop()
+
 if __name__ == "__main__":
     eel.init('interface')
     eel.start('index.html', size=(1000, 800))

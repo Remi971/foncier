@@ -119,6 +119,9 @@ $(document).ready(function(){
       delete mesVar.gpkg.layers[key];
       mesVar.dossier.couches[key] = select;
     }
+    if (key === "Structuration territoriale"){
+      
+    }
     //mesVar[key] = chemin;
     //eel.add_data(key, chemin)
     //eel.lecture_sig(mesVar);
