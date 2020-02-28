@@ -38,14 +38,19 @@ let data = ''
 let liste = []
 //Fonction qui récupère le nom du dossier de data
 async function pickFolder() {
-    data = await eel.selectionDossier()();
-    mesVar.dossier.chemin = data;
-  }
+  data = await eel.selectionDossier()();
+  mesVar.dossier.chemin = data;
+}
 //Fonction qui récupère le nom du fichier de data gpkg
 async function pickGpkg(){
-    data = await eel.selectionBDgpkg()();
-    mesVar.gpkg.nomGPKG = data;
-  }
+  data = await eel.selectionBDgpkg()();
+  mesVar.gpkg.nomGPKG = data;
+}
+
+async function listeColumns(chemin, nom){
+  liste = await eel.structuration_territoriale(chemin, nom)();
+  console.log(liste)
+}
 
 //Valider le choix de la source de donnée
 $(document).ready(function(){
@@ -103,6 +108,7 @@ async function listingData(){
 }
 
 //Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
+let listeStructuration = []
 $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
@@ -120,7 +126,7 @@ $(document).ready(function(){
       mesVar.dossier.couches[key] = select;
     }
     if (key === "Structuration territoriale"){
-      
+      listeStructuration = listeColumns(data, select);
     }
     //mesVar[key] = chemin;
     //eel.add_data(key, chemin)

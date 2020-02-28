@@ -149,6 +149,18 @@ def spatial_overlays(df1, df2, how='intersection', reproject=True):
         return df1
 
 ## Fonction pour attribuer des paramètres par type de zone de la couche STRUCTURATION TERRTORIALE ##
+@eel.expose
+def structuration_territoriale(chemin, nom):
+    print(chemin)
+    print(nom)
+    if chemin.endswith('gpkg'):
+        structure = gpd.read_file(chemin, layer=nom)
+    else:
+        structure = gpd.read_file(chemin + '/' + nom)
+    liste = [i for i in structure.columns]
+    print(liste)
+    return liste
+
 
 # if x == 2:
 #     mes_var[nom_variables[x]].columns = map(str.lower, mes_var[nom_variables[x]].columns)
