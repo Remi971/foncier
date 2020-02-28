@@ -31,11 +31,17 @@ const mesVar = {
     couches:
     {},
   },
+  paramètres:
+  {
+    défauts:{},
+    perso: {},
+  },
 }
 
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
 let data = ''
 let liste = []
+let listeStructuration = []
 //Fonction qui récupère le nom du dossier de data
 async function pickFolder() {
   data = await eel.selectionDossier()();
@@ -48,8 +54,7 @@ async function pickGpkg(){
 }
 
 async function listeColumns(chemin, nom){
-  liste = await eel.structuration_territoriale(chemin, nom)();
-  console.log(liste)
+  listeStructuration = await eel.structuration_territoriale(chemin, nom)();
 }
 
 //Valider le choix de la source de donnée
@@ -108,7 +113,6 @@ async function listingData(){
 }
 
 //Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
-let listeStructuration = []
 $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
@@ -126,10 +130,24 @@ $(document).ready(function(){
       mesVar.dossier.couches[key] = select;
     }
     if (key === "Structuration territoriale"){
-      listeStructuration = listeColumns(data, select);
+      listeColumns(data, select);
     }
     //mesVar[key] = chemin;
     //eel.add_data(key, chemin)
     //eel.lecture_sig(mesVar);
+  })
+})
+
+//PARAMETRES
+$(document).ready(function(){
+  $("#valid-param").on("click", function(){
+    let paramRoute = $("#route").val();
+    mesVar.paramètres.défauts["d_min_route"] = paramRoute;
+    let paramNonBatie = $("#non-batie").val();
+    mesVar.paramètres.défauts["surf_non_batie"] = paramNonBatie;
+    let paramBatie = $("#batie").val();
+    mesVar.paramètres.défauts["surf_min_batie"] = paramBatie;
+    let paramCES = $("#ces").val();
+    mesVar.paramètres.défauts["ces_max"] = paramCES;
   })
 })

@@ -40,7 +40,7 @@ def liste_data(chemin):
     '''Liste les données comprises dans le dossier ou le fichier correspondant au chemin indiqué'''
     donnee = []
     def ajoutShape(file):
-        if file.endswith('.shp'):
+        if file.endswith('.shp') or file.endswith('.geojson'):
             donnee.append(file)
 
     if chemin.endswith('.gpkg'):
