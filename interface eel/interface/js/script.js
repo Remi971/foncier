@@ -101,12 +101,12 @@ $(document).ready(function(){
 let ul = $("ul.data")
 async function listingData(){
   liste = [];
-  $('li').remove();
+  $('li.donnees').remove();
   liste = await eel.liste_data(data)();
   liste.forEach(shp => {
-    $('<li></li>').html(shp).appendTo(ul);
+    $('<li class="donnees"></li>').html(shp).appendTo(ul);
     })
-  $('li').on('click', function(){
+  $('li.donnees').on('click', function(){
     $(this).siblings().removeClass("classLi");
     $(this).toggleClass("classLi");
   })
@@ -149,5 +149,8 @@ $(document).ready(function(){
     mesVar.paramètres.défauts["surf_min_batie"] = paramBatie;
     let paramCES = $("#ces").val();
     mesVar.paramètres.défauts["ces_max"] = paramCES;
+  })
+  $("#param-perso").on('click', function(){
+
   })
 })

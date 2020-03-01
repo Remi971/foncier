@@ -257,3 +257,10 @@ span {
   justify-content: center;
   margin: auto;
 }
+
+.perso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
