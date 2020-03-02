@@ -37,7 +37,6 @@ const mesVar = {
     perso: {},
   },
 }
-
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
 let data = ''
 let liste = []
@@ -83,7 +82,6 @@ $(document).ready(function(){
       $(this).parent().remove();
     })
   })
-
   $("#btn-valid").on('click', function(){
     if ($("select.dossier").val() === "dossier"){
       pickFolder();
@@ -139,6 +137,7 @@ $(document).ready(function(){
 })
 
 //PARAMETRES
+let ulColumns = $("ul#columns")
 $(document).ready(function(){
   $("#valid-param").on("click", function(){
     let paramRoute = $("#route").val();
@@ -151,6 +150,17 @@ $(document).ready(function(){
     mesVar.paramètres.défauts["ces_max"] = paramCES;
   })
   $("#param-perso").on('click', function(){
-
+    $('li.columns').remove();
+    listeStructuration.forEach(column => {
+      $('<li class="columns"></li>').html(column).appendTo(ulColumns);
+      })
+    $('#param-confirm').css('visibility', 'visible')
+    $('li.columns').on('click', function(){
+      $(this).siblings().removeClass("classLi");
+      $(this).toggleClass("classLi");
+    })
+  })
+  $('#param-confirm').on('click', function(){
+    //fonction python pour lister les valeurs uniques du champs correspondant
   })
 })

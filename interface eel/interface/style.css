@@ -139,7 +139,7 @@ div#selection img {
   margin-top: 5px;
 }
 
-.liste li {
+li {
   font-family: monospace;
   font-size: 12px;
   cursor: pointer;
@@ -147,7 +147,7 @@ div#selection img {
   padding-top: 3px;
 }
 
-.liste li:hover{
+li:hover{
   color: var(--grey);
 }
 
@@ -259,8 +259,34 @@ span {
 }
 
 .perso {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 70% 30%;
+  grid-template-rows: 3;
   align-items: center;
   justify-content: center;
+}
+
+.columnChoice {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  overflow: hidden;
+  overflow-y: scroll;
+}
+
+.table {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+.btn-perso {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-confirm {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  visibility: hidden;
 }
