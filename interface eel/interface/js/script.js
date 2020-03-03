@@ -169,6 +169,7 @@ $(document).ready(function(){
       $(this).siblings().removeClass("classLi");
       $(this).toggleClass("classLi");
       let selectColumns = $(".columns.classLi").html();
+      $('#table-env').empty();
       $('<tr><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th></tr>').appendTo('#table-env');
       listeValues(selectColumns);
     })

@@ -6,6 +6,8 @@ from tkinter.filedialog import askdirectory, askopenfilename
 import os
 from fiona import listlayers
 import geopandas as gpd
+import pandas as pd
+import numpy as np
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -155,6 +157,12 @@ def structuration_territoriale(chemin, nom):
         structure = gpd.read_file(chemin, layer=nom)
     else:
         structure = gpd.read_file(chemin + '/' + nom)
+    for i in structure.columns:
+        if structure[i].dtypes == 'object':
+            structure[i].fillna('Valeur nulle', inplace = True)
+            print(structure[i])
+        else:
+            structure[i].fillna(0, inplace = True)
     liste = [i for i in structure.columns]
     print(liste)
     return liste
@@ -162,7 +170,9 @@ def structuration_territoriale(chemin, nom):
 @eel.expose
 def unique_values(champs):
     print(champs)
+    print('colonnes de structure : ', structure.columns)
     enveloppe = clean_data(structure, champs)
+    print("colonnes d'enveloppe : ", enveloppe.columns)
     enveloppe["geometry"] = enveloppe.buffer(0)
     enveloppe = enveloppe.dissolve(by=champs).reset_index()
     liste_valeur = list(enveloppe[champs])
