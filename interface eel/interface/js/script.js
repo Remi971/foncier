@@ -39,7 +39,7 @@ const mesVar = {
 }
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
 let data = ''
-let liste = []
+let listeValeurs = []
 let listeStructuration = []
 //Fonction qui récupère le nom du dossier de data
 async function pickFolder() {
@@ -56,13 +56,22 @@ async function listeColumns(chemin, nom){
   listeStructuration = await eel.structuration_territoriale(chemin, nom)();
 }
 
+async function listeValues(champs){
+  listeValeurs = await eel.unique_values(champs)();
+}
+
+async function valeursTable(liste){
+  await liste.forEach((valeur) => {
+    $('<tr id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value="100">m</td><td><input type="number" class="non-batie" value="400">m</td><td><input type="number" class="batie" value="1000">m</td><td><input type="number" class="ces" value="40">m</td></tr>').appendTo('#table-env');
+  })
+}
 //Valider le choix de la source de donnée
 $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
     let name = prompt("Indiquez le nom du filtre : ")
     $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test" id='+name+'>'+name+'</button><button class="remove">X</button><span id="vf-canvas" class="data-info"></span></div>').appendTo('.btn-base');
     $(".group").on('click',".btn-test", function(){
-      let select = $(".classLi").html();
+      let select = $(".donnees.classLi").html();
       let divParent = $(this).parent();
       $(divParent).children("span").html(select);
       let key = $(this).html();
@@ -116,7 +125,7 @@ $(document).ready(function(){
     listingData();
   })
   $(".group").on('click','.btn-test', function(){
-    let select = $(".classLi").html();
+    let select = $(".donnees.classLi").html();
     let divParent = $(this).parent();
     $(divParent).children("span").html(select);
     let key = $(this).html();
@@ -154,13 +163,17 @@ $(document).ready(function(){
     listeStructuration.forEach(column => {
       $('<li class="columns"></li>').html(column).appendTo(ulColumns);
       })
-    $('#param-confirm').css('visibility', 'visible')
+    $('#param-confirm').css('visibility', 'visible');
+    $('.columnChoice').css('visibility', 'visible');
     $('li.columns').on('click', function(){
       $(this).siblings().removeClass("classLi");
       $(this).toggleClass("classLi");
+      let selectColumns = $(".columns.classLi").html();
+      $('<tr><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th></tr>').appendTo('#table-env');
+      listeValues(selectColumns);
     })
   })
   $('#param-confirm').on('click', function(){
-    //fonction python pour lister les valeurs uniques du champs correspondant
+    valeursTable(listeValeurs);
   })
 })

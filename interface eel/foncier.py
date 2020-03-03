@@ -85,7 +85,6 @@ def clean_data (gdf, *argv):    #Possibilité de garder certaines colonnes
     return gdf
 
 dict_sig = {}
-
 @eel.expose
 def add_data(cle, chemin, *argv):
     if argv:
@@ -151,8 +150,7 @@ def spatial_overlays(df1, df2, how='intersection', reproject=True):
 ## Fonction pour attribuer des paramètres par type de zone de la couche STRUCTURATION TERRTORIALE ##
 @eel.expose
 def structuration_territoriale(chemin, nom):
-    print(chemin)
-    print(nom)
+    global structure
     if chemin.endswith('gpkg'):
         structure = gpd.read_file(chemin, layer=nom)
     else:
@@ -161,6 +159,14 @@ def structuration_territoriale(chemin, nom):
     print(liste)
     return liste
 
+@eel.expose
+def unique_values(champs):
+    print(champs)
+    enveloppe = clean_data(structure, champs)
+    enveloppe["geometry"] = enveloppe.buffer(0)
+    enveloppe = enveloppe.dissolve(by=champs).reset_index()
+    liste_valeur = list(enveloppe[champs])
+    return liste_valeur
 
 # if x == 2:
 #     mes_var[nom_variables[x]].columns = map(str.lower, mes_var[nom_variables[x]].columns)
