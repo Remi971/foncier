@@ -64,6 +64,7 @@ async function valeursTable(liste){
   await liste.forEach((valeur) => {
     $('<tr id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value="100">m</td><td><input type="number" class="non-batie" value="400">m</td><td><input type="number" class="batie" value="1000">m</td><td><input type="number" class="ces" value="40">m</td></tr>').appendTo('#table-env');
   })
+
 }
 //Valider le choix de la source de donnée
 $(document).ready(function(){
@@ -146,6 +147,23 @@ $(document).ready(function(){
   })
 })
 
+$(document).ready(function() {
+  $('#btn-script').on('click', function() {
+    if (mesVar.paramètres['défauts'] === 'vide' && mesVar.paramètres['perso'] === 'vide') {
+      let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement?")
+      if (answer) {
+        eel.lancement(mesVar['paramètres'])()
+      }
+      else {
+        return;
+      }
+    }
+    else {
+      eel.lancement(mesVar['paramètres'])()
+    }
+  })
+})
+
 //PARAMETRES
 let ulColumns = $("ul#columns")
 $(document).ready(function(){
@@ -158,6 +176,7 @@ $(document).ready(function(){
     mesVar.paramètres.défauts["surf_min_batie"] = paramBatie;
     let paramCES = $("#ces").val();
     mesVar.paramètres.défauts["ces_max"] = paramCES;
+    mesVar.paramètres.perso = 'vide'
   })
   $("#param-perso").on('click', function(){
     $('li.columns').remove();
@@ -173,10 +192,12 @@ $(document).ready(function(){
       $('#table-env').empty();
       $('<tr><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th></tr>').appendTo('#table-env');
       listeValues(selectColumns);
+
     })
   })
   $('#param-confirm').on('click', function(){
     valeursTable(listeValeurs);
+
   })
 })
 

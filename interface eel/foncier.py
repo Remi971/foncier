@@ -160,23 +160,42 @@ def structuration_territoriale(chemin, nom):
     for i in structure.columns:
         if structure[i].dtypes == 'object':
             structure[i].fillna('Valeur nulle', inplace = True)
-            print(structure[i])
         else:
             structure[i].fillna(0, inplace = True)
     liste = [i for i in structure.columns]
-    print(liste)
+    structure.insert(len(structure.columns), "d_min_route", 100)
+    structure.insert(len(structure.columns), "surf_non_batie", 400)
+    structure.insert(len(structure.columns), "surf_min_batie", 1000)
+    structure.insert(len(structure.columns), "ces_max", 40)
     return liste
 
 @eel.expose
 def unique_values(champs):
-    print(champs)
-    print('colonnes de structure : ', structure.columns)
-    enveloppe = clean_data(structure, champs)
-    print("colonnes d'enveloppe : ", enveloppe.columns)
+    global enveloppe
+    enveloppe = clean_data(structure, champs, ["d_min_route", "surf_non_batie", "surf_min_batie", "ces_max"])
     enveloppe["geometry"] = enveloppe.buffer(0)
     enveloppe = enveloppe.dissolve(by=champs).reset_index()
     liste_valeur = list(enveloppe[champs])
+    enveloppe = enveloppe.set_index(champs, drop=False)
+    print(enveloppe.columns)
+    print(enveloppe.index)
+    print(enveloppe)
     return liste_valeur
+
+@eel.expose
+def lancement(parametres):
+    print('### Lancement du traitement ### \n\n ## Prise en compte de la structuration territoriale ##')
+
+    if parametres['perso'] == 'vide' and parametres['défauts'] != 'vide':
+        global enveloppe
+        enveloppe = clean_data(structure, ["d_min_route", "surf_non_batie", "surf_min_batie", "ces_max"])
+        enveloppe['d_min_route'] = parametres['défauts']['d_min_route']
+        enveloppe['surf_non_batie'] = parametres['défauts']['surf_non_batie']
+        enveloppe['surf_min_batie'] = parametres['défauts']['surf_min_batie']
+        enveloppe['ces_max'] = parametres['défauts']['ces_max']
+        print(enveloppe)
+    elif parametres['perso'] != 'vide'and parametres['défauts'] == 'vide':
+        pass
 
 # if x == 2:
 #     mes_var[nom_variables[x]].columns = map(str.lower, mes_var[nom_variables[x]].columns)
@@ -220,6 +239,7 @@ def unique_values(champs):
 #     Button(struct_terr, text = 'Valider', width=15, command=champs, bg="orange").grid(row=2, column=1)
 #     liste_champs.grid(row=1, column=1)
 #     struct_terr.mainloop()
+
 
 if __name__ == "__main__":
     eel.init('interface')
