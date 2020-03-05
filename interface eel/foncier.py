@@ -101,7 +101,6 @@ def add_data(cle, chemin, *argv):
             dict_sig[cle] = clean_data(gpd.read_file(chemin))
     print("Nombre de couche en mémoire : ", len(dict_sig))
 
-
 def spatial_overlays(df1, df2, how='intersection', reproject=True):
     df1 = df1.copy()
     df2 = df2.copy()

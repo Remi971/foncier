@@ -33,8 +33,8 @@ const mesVar = {
   },
   paramètres:
   {
-    défauts:{},
-    perso: {},
+    défauts:"vide",
+    perso: "vide",
   },
 }
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
@@ -62,10 +62,19 @@ async function listeValues(champs){
 
 async function valeursTable(liste){
   await liste.forEach((valeur) => {
-    $('<tr id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value="100">m</td><td><input type="number" class="non-batie" value="400">m</td><td><input type="number" class="batie" value="1000">m</td><td><input type="number" class="ces" value="40">m</td></tr>').appendTo('#table-env');
+    $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value="100">m</td><td><input type="number" class="non-batie" value="400">m</td><td><input type="number" class="batie" value="1000">m</td><td><input type="number" class="ces" value="40">m</td></tr>').appendTo('#table-env');
   })
-
 }
+
+async function recupDonnees() {
+  let data, i;
+  let nomColumn = $("tr.titre th:first-child").html()
+  data['champs'] = nomColumn;
+  for(i=0; i < $("tr.donnees").length; i++) {
+
+  }
+}
+
 //Valider le choix de la source de donnée
 $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
@@ -149,7 +158,7 @@ $(document).ready(function(){
 
 $(document).ready(function() {
   $('#btn-script').on('click', function() {
-    if (mesVar.paramètres['défauts'] === 'vide' && mesVar.paramètres['perso'] === 'vide') {
+    if (mesVar.paramètres['défauts'] === "vide" && mesVar.paramètres['perso'] === "vide") {
       let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement?")
       if (answer) {
         eel.lancement(mesVar['paramètres'])()
@@ -168,6 +177,7 @@ $(document).ready(function() {
 let ulColumns = $("ul#columns")
 $(document).ready(function(){
   $("#valid-param").on("click", function(){
+    mesVar.paramètres["défauts"] = {};
     let paramRoute = $("#route").val();
     mesVar.paramètres.défauts["d_min_route"] = paramRoute;
     let paramNonBatie = $("#non-batie").val();
@@ -179,7 +189,7 @@ $(document).ready(function(){
     mesVar.paramètres.perso = 'vide'
   })
   $("#param-perso").on('click', function(){
-    $('li.columns').remove();
+    $("ul#columns").empty();
     listeStructuration.forEach(column => {
       $('<li class="columns"></li>').html(column).appendTo(ulColumns);
       })
@@ -190,7 +200,7 @@ $(document).ready(function(){
       $(this).toggleClass("classLi");
       let selectColumns = $(".columns.classLi").html();
       $('#table-env').empty();
-      $('<tr><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th></tr>').appendTo('#table-env');
+      $('<tr class="titre"><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th></tr>').appendTo('#table-env');
       listeValues(selectColumns);
 
     })
