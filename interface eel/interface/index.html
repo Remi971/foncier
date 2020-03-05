@@ -11,7 +11,8 @@
    crossorigin=""/>
     <title>Citadia Foncier</title>
     <script type="text/javascript" src="/eel.js"></script>
-    <script type="text/javascript" src="/jquery-3.4.1.min.js"></script>
+    <!-- <script type="text/javascript" src="/jquery-3.4.1.min.js"></script> -->
+    <!-- <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script> -->
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
    crossorigin=""></script>
@@ -25,7 +26,7 @@
       <button class="tablinks" onclick="openTab(event, 'Import')" id="defaultOpen"><i class="fas fa-file-import"></i> Données</button>
       <button class="tablinks" onclick="openTab(event, 'Paramètres')"><i class="fas fa-cog"></i> Paramètres</button>
       <button class="tablinks" onclick="openTab(event, 'Enveloppe')"><i class="fas fa-pencil-alt"></i> Enveloppe</button>
-      <button class="tablinks" onclick="openTab(event, 'visualisation')"><i class="fas fa-map-marker-alt"></i> Visualisation</button>
+      <button id="btn-map" class="tablinks" onclick="openTab(event, 'visualisation')"><i class="fas fa-map-marker-alt"></i> Visualisation</button>
     </div>
 
     <div id="Import" class="tabcontent"><!--TAB Données-->
@@ -49,7 +50,7 @@
         </div>
 
         <div class="liste">
-          <h4>Liste des couches</h4>
+          <h4 id='listeCouches'>Liste des couches</h4>
           <ul class="data">
           </ul>
         </div>
@@ -145,7 +146,7 @@
     <div id="visualisation" class="tabcontent">
       <div id="mapid"></div>
     </div>
-    <script type="text/javascript" src="js/script.js"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="js/script.js"></script>
 </body>
 </html>
