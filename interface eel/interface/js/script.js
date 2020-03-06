@@ -67,12 +67,22 @@ async function valeursTable(liste){
 }
 
 async function recupDonnees() {
-  let data, i;
+  let donnees = {
+    champs : '',
+    param : {
+      id : '',
+      valeurs : [],
+    },
+}
   let nomColumn = $("tr.titre th:first-child").html()
-  data['champs'] = nomColumn;
-  for(i=0; i < $("tr.donnees").length; i++) {
-
+  donnees['champs'] = nomColumn;
+  $("tr.donnees").forEach(tr){
+    donnees.param['id'] = tr.html();
+    tr.children('td').forEach(element){
+      donnees.param['valeurs'].push(element.html())
+    }
   }
+  console.log(donnees)
 }
 
 //Valider le choix de la source de donnée
