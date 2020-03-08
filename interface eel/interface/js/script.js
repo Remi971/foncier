@@ -76,12 +76,13 @@ async function recupDonnees() {
 }
   let nomColumn = $("tr.titre th:first-child").html()
   donnees['champs'] = nomColumn;
-  $("tr.donnees").forEach(tr){
+  let row = $("tr.donnees")
+  row.forEach(function(tr){
     donnees.param['id'] = tr.html();
-    tr.children('td').forEach(element){
+    tr.children('td').forEach(function(element){
       donnees.param['valeurs'].push(element.html())
-    }
-  }
+    })
+  })
   console.log(donnees)
 }
 
@@ -217,7 +218,7 @@ $(document).ready(function(){
   })
   $('#param-confirm').on('click', function(){
     valeursTable(listeValeurs);
-
+    recupDonnees();
   })
 })
 
