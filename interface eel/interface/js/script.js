@@ -76,11 +76,11 @@ async function recupDonnees() {
 }
   let nomColumn = $("tr.titre th:first-child").html()
   donnees['champs'] = nomColumn;
-  let row = $("tr.donnees")
+  let row = $("tr.donnees");
   row.forEach(function(tr){
     donnees.param['id'] = tr.html();
     tr.children('td').forEach(function(element){
-      donnees.param['valeurs'].push(element.html())
+      donnees.param['valeurs'].push(element.html());
     })
   })
   console.log(donnees)
