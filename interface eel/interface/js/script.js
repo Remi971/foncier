@@ -60,32 +60,39 @@ async function listeValues(champs){
   listeValeurs = await eel.unique_values(champs)();
 }
 
-async function valeursTable(liste){
-  await liste.forEach((valeur) => {
-    $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value="100">m</td><td><input type="number" class="non-batie" value="400">m</td><td><input type="number" class="batie" value="1000">m</td><td><input type="number" class="ces" value="40">m</td></tr>').appendTo('#table-env');
-  })
+// async function valeursTable(liste){
+//   await liste.forEach((valeur) => {
+//     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value="100">m</td><td><input type="number" class="non-batie" value="400">m</td><td><input type="number" class="batie" value="1000">m</td><td><input type="number" class="ces" value="40">m</td></tr>').appendTo('#table-env');
+//   })
+// }
+function valeursTable(liste){
+  const container = document.querySelector("#container1");
+  const route = container.querySelector("#route").value;
+  const nonBatie = container.querySelector("#non-batie").value;
+  const batie = container.querySelector("#batie").value;
+  const ces = container.querySelector("#ces").value;
+  for (const valeur of liste) {
+     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value='+route+'>m</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="ces" value='+ces+'>m</td></tr>').appendTo('#table-env');
+  }
 }
 
-async function recupDonnees() {
-  let donnees = {
-    champs : '',
-    param : {
-      id : '',
-      valeurs : [],
-    },
-}
-  let nomColumn = $("tr.titre th:first-child").html()
-  donnees['champs'] = nomColumn;
-  let row = $("tr.donnees")
-  row.each(function(i){
-    console.log(row[i]);
-    donnees.param['id'] = $("tr.donnees td:first-child")[i].innerHTML();
-    tr.children('td').each(function(element){
-      donnees.param['valeurs'].push(element.html())
-    })
-  })
-  console.log(donnees)
-}
+// async function recupDonnees() {
+//   let nomColumn = $("tr.titre th:first-child").html();
+//   console.log(nomColumn);
+//   mesVar.paramètres.perso.champs = nomColumn;
+//   const tr = document.querySelectorAll("tr.donnees");
+//   for (const item of tr) {
+//     let nodes = item.querySelectorAll('td');
+//     let first = nodes[0].innerHTML
+//     let inputs = item.querySelectorAll('input')
+//     mesVar.paramètres.perso.valeurs[first] = {
+//         "d_min_route" : inputs[0].value,
+//         "non-batie" : inputs[1].value,
+//         "batie" : inputs[2].value,
+//         "ces" : inputs[3].value,
+//         }
+//   }
+// }
 
 //Valider le choix de la source de donnée
 $(document).ready(function(){
@@ -200,13 +207,18 @@ $(document).ready(function(){
     mesVar.paramètres.défauts["ces_max"] = paramCES;
     mesVar.paramètres.perso = 'vide'
   })
-  $("#param-perso").on('click', function(){
+  $(".off").on('click', function(){
     $("ul#columns").empty();
     listeStructuration.forEach(column => {
       $('<li class="columns"></li>').html(column).appendTo(ulColumns);
       })
     $('#param-confirm').css('visibility', 'visible');
     $('.columnChoice').css('visibility', 'visible');
+    this.className = 'btn-test on';
+    mesVar.paramètres["perso"] = {
+      champs : '',
+      valeurs : {},
+    };
     $('li.columns').on('click', function(){
       $(this).siblings().removeClass("classLi");
       $(this).toggleClass("classLi");
@@ -214,13 +226,30 @@ $(document).ready(function(){
       $('#table-env').empty();
       $('<tr class="titre"><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th></tr>').appendTo('#table-env');
       listeValues(selectColumns);
-
     })
   })
   $('#param-confirm').on('click', function(){
     valeursTable(listeValeurs);
-    recupDonnees();
   })
+// document.querySelector('.on').addEventListener('onclick', function(){
+// $(".on").on('click', function() {
+//   let nomColumn = $("tr.titre th:first-child").html();
+//   console.log(nomColumn);
+//   mesVar.paramètres.perso.champs = nomColumn;
+//   const tr = document.querySelectorAll("tr.donnees");
+//   for (const item of tr) {
+//     let nodes = item.querySelectorAll('td');
+//     let first = nodes[0].innerHTML
+//     let inputs = item.querySelectorAll('input')
+//     mesVar.paramètres.perso.valeurs[first] = {
+//         "d_min_route" : inputs[0].value,
+//         "non-batie" : inputs[1].value,
+//         "batie" : inputs[2].value,
+//         "ces" : inputs[3].value,
+//         }
+//   }
+//   console.log(mesVar.paramètres.perso)
+// })
 })
 
 //VISUALISATION map
@@ -238,9 +267,7 @@ $(document).ready(function() {
     setTimeout(function() { mymap.invalidateSize()}, 1);
   })
 })
-
 function onMapClick(e) {
     alert("You clicked the map at " + e.latlng);
 }
-
 mymap.on('click', onMapClick);

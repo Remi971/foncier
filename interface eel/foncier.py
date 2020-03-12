@@ -242,4 +242,4 @@ def lancement(parametres):
 
 if __name__ == "__main__":
     eel.init('interface')
-    eel.start('index.html', size=(1000, 800))
+    eel.start('index.html', size=(1000, 800), disable_cache=True)
