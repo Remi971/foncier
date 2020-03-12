@@ -205,11 +205,11 @@ $(document).ready(function(){
     let paramRoute = $("#route").val();
     mesVar.paramètres.défauts["d_min_route"] = paramRoute;
     let paramNonBatie = $("#non-batie").val();
-    mesVar.paramètres.défauts["surf_non_batie"] = paramNonBatie;
+    mesVar.paramètres.défauts["non-batie"] = paramNonBatie;
     let paramBatie = $("#batie").val();
-    mesVar.paramètres.défauts["surf_min_batie"] = paramBatie;
+    mesVar.paramètres.défauts["batie"] = paramBatie;
     let paramCES = $("#ces").val();
-    mesVar.paramètres.défauts["ces_max"] = paramCES;
+    mesVar.paramètres.défauts["ces"] = paramCES;
     mesVar.paramètres.perso = 'vide'
   })
   $(".off").on('click', function(){

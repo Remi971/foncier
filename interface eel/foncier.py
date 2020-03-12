@@ -190,6 +190,7 @@ def lancement(parametres):
         param = parametres['défauts']
         global enveloppe
         enveloppe = clean_data(structure, ["d_min_route", "non-batie", "batie", "ces"])
+        enveloppe["geometry"] = enveloppe.buffer(0)
         enveloppe['d_min_route'] = param['d_min_route']
         enveloppe['non-batie'] = param['non-batie']
         enveloppe['batie'] = param['batie']
@@ -217,10 +218,10 @@ def lancement(parametres):
         "ces" : l_ces
         }
         df = pd.DataFrame(d)
+        df = df.set_index(champs)
         print('Dataframe : ' ,df)
         print('Enveloppe : ' , enveloppe)
-        # df.merge(enveloppe, on=champs)
-        # enveloppe.update(df,overwrite=True)
+        enveloppe.update(df,overwrite=True)
         print('Nouvelle couche Enveloppe : ', enveloppe)
     else:
         pass
