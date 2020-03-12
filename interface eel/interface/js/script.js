@@ -71,14 +71,19 @@ function recupDonnees(){
       let nodes = item.querySelectorAll('td');
       let first = nodes[0].innerHTML
       let inputs = item.querySelectorAll('input')
+      let value0 = parseInt(inputs[0].value);
+      let value1 = parseInt(inputs[1].value);
+      let value2 = parseInt(inputs[2].value);
+      let value3 = parseInt(inputs[3].value);
       mesVar.paramètres.perso.valeurs[first] = {
-          "d_min_route" : inputs[0].value,
-          "non-batie" : inputs[1].value,
-          "batie" : inputs[2].value,
-          "ces" : inputs[3].value,
+          "d_min_route" : value0,
+          "non-batie" : value1,
+          "batie" : value2,
+          "ces" : value3,
         }
       };
-    console.log(mesVar.paramètres.perso.valeurs);
+    mesVar.paramètres.défauts = 'vide';
+    console.log(mesVar.paramètres.perso);
     })
   }
 }

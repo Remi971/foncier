@@ -163,37 +163,66 @@ def structuration_territoriale(chemin, nom):
             structure[i].fillna(0, inplace = True)
     liste = [i for i in structure.columns]
     structure.insert(len(structure.columns), "d_min_route", 100)
-    structure.insert(len(structure.columns), "surf_non_batie", 400)
-    structure.insert(len(structure.columns), "surf_min_batie", 1000)
-    structure.insert(len(structure.columns), "ces_max", 40)
+    structure.insert(len(structure.columns), "non-batie", 400)
+    structure.insert(len(structure.columns), "batie", 1000)
+    structure.insert(len(structure.columns), "ces", 40)
     return liste
 
 @eel.expose
 def unique_values(champs):
     global enveloppe
-    enveloppe = clean_data(structure, champs, ["d_min_route", "surf_non_batie", "surf_min_batie", "ces_max"])
+    enveloppe = clean_data(structure, champs, ["d_min_route", "non-batie", "batie", "ces"])
     enveloppe["geometry"] = enveloppe.buffer(0)
     enveloppe = enveloppe.dissolve(by=champs).reset_index()
     liste_valeur = list(enveloppe[champs])
     enveloppe = enveloppe.set_index(champs, drop=False)
-    print(enveloppe.columns)
-    print(enveloppe.index)
+    enveloppe.insert(len(enveloppe.columns), "d_min_route", 100)
+    enveloppe.insert(len(enveloppe.columns), "non-batie", 400)
+    enveloppe.insert(len(enveloppe.columns), "batie", 1000)
+    enveloppe.insert(len(enveloppe.columns), "ces", 40)
     print(enveloppe)
     return liste_valeur
 
 @eel.expose
 def lancement(parametres):
-    print('### Lancement du traitement ### \n\n ## Prise en compte de la structuration territoriale ##')
-
+    print('\n### Lancement du traitement ### \n\n ## Prise en compte de la structuration territoriale ##')
     if parametres['perso'] == 'vide' and parametres['défauts'] != 'vide':
+        param = parametres['défauts']
         global enveloppe
-        enveloppe = clean_data(structure, ["d_min_route", "surf_non_batie", "surf_min_batie", "ces_max"])
-        enveloppe['d_min_route'] = parametres['défauts']['d_min_route']
-        enveloppe['surf_non_batie'] = parametres['défauts']['surf_non_batie']
-        enveloppe['surf_min_batie'] = parametres['défauts']['surf_min_batie']
-        enveloppe['ces_max'] = parametres['défauts']['ces_max']
+        enveloppe = clean_data(structure, ["d_min_route", "non-batie", "batie", "ces"])
+        enveloppe['d_min_route'] = param['d_min_route']
+        enveloppe['non-batie'] = param['non-batie']
+        enveloppe['batie'] = param['batie']
+        enveloppe['ces'] = param['ces']
         print(enveloppe)
     elif parametres['perso'] != 'vide'and parametres['défauts'] == 'vide':
+        param = parametres["perso"]["valeurs"]
+        liste = list(param.keys()) # nom des lignes
+        champs = parametres["perso"]["champs"]
+        col = list(list(param.values())[0].keys())
+        l_route = []
+        l_non_batie = []
+        l_batie = []
+        l_ces = []
+        for item in param.values():
+            l_route.append(item["d_min_route"])
+            l_non_batie.append(item["non-batie"])
+            l_batie.append(item["batie"])
+            l_ces.append(item["ces"])
+        d = {
+        champs : liste,
+        "d_min_route" : l_route,
+        "non-batie" : l_non_batie,
+        "batie" : l_batie,
+        "ces" : l_ces
+        }
+        df = pd.DataFrame(d)
+        print('Dataframe : ' ,df)
+        print('Enveloppe : ' , enveloppe)
+        # df.merge(enveloppe, on=champs)
+        # enveloppe.update(df,overwrite=True)
+        print('Nouvelle couche Enveloppe : ', enveloppe)
+    else:
         pass
 
 # if x == 2:
@@ -226,13 +255,13 @@ def lancement(parametres):
 #         enveloppe.insert(1, "d_min_route", 50)# Distance minimale de la parcelle à la route (en m)
 #         enveloppe.insert(2, "s_non_bati", 500)# Surface minimale de la parcelle non batie (en m²)
 #         enveloppe.insert(3, "s_bati", 2000)# Surface minimale de la parcelle bati (en m²)
-#         enveloppe.insert(4, "ces_max", 10)# CES maximum de la parcelle bati (en m²)
+#         enveloppe.insert(4, "ces", 10)# CES maximum de la parcelle bati (en m²)
 #         global D
 #         D = {
 #                0 : "d_min_route",
 #                1 : "s_non_bati",
 #                2 : "s_bati",
-#                3 : "ces_max"}
+#                3 : "ces"}
 #         struct_terr.destroy()
 #
 #     Button(struct_terr, text = 'Valider', width=15, command=champs, bg="orange").grid(row=2, column=1)
