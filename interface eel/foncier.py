@@ -8,16 +8,12 @@ from fiona import listlayers
 import geopandas as gpd
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import time
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 eel.init('interface')
-
-# @eel.expose
-# def test(parametre):
-#     print("Voila le text :", parametre)
-#     return'It seems to work'
 
 ## TODO: Fusionner les deux fonctions en une seule!!
 @eel.expose
@@ -45,17 +41,14 @@ def liste_data(chemin):
     def ajoutShape(file):
         if file.endswith('.shp') or file.endswith('.geojson'):
             donnee.append(file)
-
     if chemin.endswith('.gpkg'):
         for layerName in listlayers(chemin):
             donnee.append(layerName)
     else:
         for folderName, subfolders, filenames in os.walk(chemin):
             ajoutShape(folderName)
-
             for subfolder in subfolders:
                 ajoutShape(subfolder)
-
             for filename in filenames:
                 ajoutShape(filename)
     return donnee
@@ -69,9 +62,8 @@ def explodePoly(gdf):
     gdf_out = gdf_out[["geometry"]]
     gdf_out.crs = gdf.crs
     return gdf_out
-
 #Cleaning des couches SIG
-def clean_data (gdf, *argv):    #Possibilité de garder certaines colonnes
+def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
     gdf = gdf[gdf["geometry"].is_valid]
     gdf = gdf[gdf["geometry"].notnull()]
     gdf = gdf.to_crs({'init': 'epsg:2154'})
@@ -218,7 +210,6 @@ def lancement(donnees):
         df = pd.DataFrame(d)
         df = df.set_index(champs)
         enveloppe.update(df,overwrite=True)
-        print('Nouvelle couche Enveloppe : ', enveloppe)
     else:
         enveloppe = structure
     #Récupération des couches sélectionnées dans l'interface
@@ -226,17 +217,22 @@ def lancement(donnees):
     chemins = {}
     for couche in couches:
         if couche in donnees["dossier"]["couches"]:
-            chemins[couche] = gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche])
+            chemins[couche] = clean_data(gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche]))
         elif couche in donnees["gpkg"]["layers"]:
-            chemins[couche] = gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche])
-    print(chemins)
+            chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
     #Selection des parcelles qui touchent l'enveloppe
     parcelle = chemins["Parcelles"]
-    enveloppe_buf = enveloppe["geometry"].buffer(-5)
-    parcelle_in_env = parcelle[parcelle["geometry"].intersects(enveloppe_buf)]
-    parcelle_in = gpd.sjoin(enveloppe, parcelle_in_env, how="inner", op="intersects")
-    print(parcelle_in)
+    parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
+    parcelle_intersect.crs = enveloppe.crs
+    temps = time.process_time() - t0
+    print("\n   #####   Prise en compte de la structuration territoriale terminé en {}   #####   \n").format(temps)
 
+    print("\n   ##   Calcul du CES   ##   \n")
+
+
+    plt.show()
+    temps = time.process_time() - t0
+    print("\n##########\n Traitement terminé! en {} \n##########\n").format(temps)
 if __name__ == "__main__":
     eel.init('interface')
     eel.start('index.html', size=(1000, 800), disable_cache=True)
