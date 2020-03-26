@@ -8,6 +8,7 @@ from fiona import listlayers
 import geopandas as gpd
 import pandas as pd
 import numpy as np
+import time
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -184,10 +185,12 @@ def unique_values(champs):
     return liste_valeur
 
 @eel.expose
-def lancement(parametres):
+def lancement(donnees):
+    print(donnees)
+    t0 = time.process_time()
     print('\n### Lancement du traitement ### \n\n ## Prise en compte de la structuration territoriale ##')
-    if parametres['perso'] == 'vide' and parametres['défauts'] != 'vide':
-        param = parametres['défauts']
+    if donnees['paramètres']['perso'] == 'vide' and donnees['paramètres']['défauts'] != 'vide':
+        param = donnees["paramètres"]["défauts"]
         global enveloppe
         enveloppe = clean_data(structure, ["d_min_route", "non-batie", "batie", "ces"])
         enveloppe["geometry"] = enveloppe.buffer(0)
@@ -196,20 +199,15 @@ def lancement(parametres):
         enveloppe['batie'] = param['batie']
         enveloppe['ces'] = param['ces']
         print(enveloppe)
-    elif parametres['perso'] != 'vide'and parametres['défauts'] == 'vide':
-        param = parametres["perso"]["valeurs"]
+    elif donnees['paramètres']['perso'] != 'vide'and donnees['paramètres']['défauts'] == 'vide':
+        param = donnees["paramètres"]["perso"]["valeurs"]
         liste = list(param.keys()) # nom des lignes
-        champs = parametres["perso"]["champs"]
-        col = list(list(param.values())[0].keys())
-        l_route = []
-        l_non_batie = []
-        l_batie = []
-        l_ces = []
-        for item in param.values():
-            l_route.append(item["d_min_route"])
-            l_non_batie.append(item["non-batie"])
-            l_batie.append(item["batie"])
-            l_ces.append(item["ces"])
+        champs = donnees["paramètres"]["perso"]["champs"]
+        #col = list(list(param.values())[0].keys())
+        l_route = [item["d_min_route"] for item in param.values()]
+        l_non_batie = [item["non-batie"] for item in param.values()]
+        l_batie = [item["batie"] for item in param.values()]
+        l_ces = [item["ces"] for item in param.values()]
         d = {
         champs : liste,
         "d_min_route" : l_route,
@@ -219,56 +217,25 @@ def lancement(parametres):
         }
         df = pd.DataFrame(d)
         df = df.set_index(champs)
-        print('Dataframe : ' ,df)
-        print('Enveloppe : ' , enveloppe)
         enveloppe.update(df,overwrite=True)
         print('Nouvelle couche Enveloppe : ', enveloppe)
     else:
-        pass
-
-# if x == 2:
-#     mes_var[nom_variables[x]].columns = map(str.lower, mes_var[nom_variables[x]].columns)
-#     # 1 - Choix du champ détenant l'information de la structuration du territoire par l'utilisateur
-#     global struct_terr
-#     struct_terr = Tk()
-#     struct_terr.title('Choix du champs pour identifier la structuration territoriale')
-#     global liste_champs
-#     liste_champs = Listbox(struct_terr)
-#     n = 1
-#     for i in mes_var[nom_variables[x]].columns:
-#         liste_champs.insert(n, i)
-#         n += 1
-#     def champs():
-#         index3 = liste_champs.curselection()
-#         global choix_du_champs
-#         choix_du_champs = liste_champs.get(index3)
-#         global enveloppe
-#         col = choix_du_champs
-#         mes_var[nom_variables[2]].columns = map(str.lower, mes_var[nom_variables[2]].columns)
-#         if "typezone" in mes_var[nom_variables[2]].columns :
-#             mes_var[nom_variables[2]] = mes_var[nom_variables[2]][mes_var[nom_variables[2]]["typezone"] == 'U']
-#         else:
-#             pass
-#         enveloppe = Traitement.clean_data(mes_var[nom_variables[2]], col)
-#         enveloppe["geometry"] = enveloppe.buffer(0)
-#         enveloppe = enveloppe.dissolve(by=col).reset_index()
-#         # Création de 4 champs correspondant aux paramètres à appliquer pour chaque zone. Ici les paramètre par défaut sont appliqué, mais sont modifiable dans le menu 'Paramètre'.
-#         enveloppe.insert(1, "d_min_route", 50)# Distance minimale de la parcelle à la route (en m)
-#         enveloppe.insert(2, "s_non_bati", 500)# Surface minimale de la parcelle non batie (en m²)
-#         enveloppe.insert(3, "s_bati", 2000)# Surface minimale de la parcelle bati (en m²)
-#         enveloppe.insert(4, "ces", 10)# CES maximum de la parcelle bati (en m²)
-#         global D
-#         D = {
-#                0 : "d_min_route",
-#                1 : "s_non_bati",
-#                2 : "s_bati",
-#                3 : "ces"}
-#         struct_terr.destroy()
-#
-#     Button(struct_terr, text = 'Valider', width=15, command=champs, bg="orange").grid(row=2, column=1)
-#     liste_champs.grid(row=1, column=1)
-#     struct_terr.mainloop()
-
+        enveloppe = structure
+    #Récupération des couches sélectionnées dans l'interface
+    couches = ["Parcelles", "Bâti", "Routes", "Voies ferrées"]
+    chemins = {}
+    for couche in couches:
+        if couche in donnees["dossier"]["couches"]:
+            chemins[couche] = gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche])
+        elif couche in donnees["gpkg"]["layers"]:
+            chemins[couche] = gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche])
+    print(chemins)
+    #Selection des parcelles qui touchent l'enveloppe
+    parcelle = chemins["Parcelles"]
+    enveloppe_buf = enveloppe["geometry"].buffer(-5)
+    parcelle_in_env = parcelle[parcelle["geometry"].intersects(enveloppe_buf)]
+    parcelle_in = gpd.sjoin(enveloppe, parcelle_in_env, how="inner", op="intersects")
+    print(parcelle_in)
 
 if __name__ == "__main__":
     eel.init('interface')

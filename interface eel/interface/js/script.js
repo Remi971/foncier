@@ -183,16 +183,16 @@ $(document).ready(function(){
 $(document).ready(function() {
   $('#btn-script').on('click', function() {
     if (mesVar.paramètres['défauts'] === "vide" && mesVar.paramètres['perso'] === "vide") {
-      let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement?")
+      let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement avec les paramètres par défaut?")
       if (answer) {
-        eel.lancement(mesVar['paramètres'])()
+        eel.lancement(mesVar)()
       }
       else {
         return;
       }
     }
     else {
-      eel.lancement(mesVar['paramètres'])()
+      eel.lancement(mesVar)()
     }
   })
 })
