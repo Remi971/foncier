@@ -79,7 +79,7 @@ function recupDonnees(){
           "d_min_route" : value0,
           "non-batie" : value1,
           "batie" : value2,
-          "ces" : value3,
+          "cesMax" : value3,
         }
       };
     mesVar.paramètres.défauts = 'vide';
@@ -93,9 +93,9 @@ function valeursTable(liste){
   const route = container.querySelector("#route").value;
   const nonBatie = container.querySelector("#non-batie").value;
   const batie = container.querySelector("#batie").value;
-  const ces = container.querySelector("#ces").value;
+  const cesMax = container.querySelector("#cesMax").value;
   for (const valeur of liste) {
-     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value='+route+'>m</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="ces" value='+ces+'>m</td></tr>').appendTo('#table-env');
+     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value='+route+'>m</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="cesMax" value='+cesMax+'>m</td></tr>').appendTo('#table-env');
   }
 }
 
@@ -208,8 +208,8 @@ $(document).ready(function(){
     mesVar.paramètres.défauts["non-batie"] = paramNonBatie;
     let paramBatie = $("#batie").val();
     mesVar.paramètres.défauts["batie"] = paramBatie;
-    let paramCES = $("#ces").val();
-    mesVar.paramètres.défauts["ces"] = paramCES;
+    let paramCES = $("#cesMax").val();
+    mesVar.paramètres.défauts["cesMax"] = paramCES;
     mesVar.paramètres.perso = 'vide'
   })
   $(".off").on('click', function(){

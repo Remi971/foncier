@@ -94,52 +94,52 @@ def add_data(cle, chemin, *argv):
             dict_sig[cle] = clean_data(gpd.read_file(chemin))
     print("Nombre de couche en mémoire : ", len(dict_sig))
 
-def spatial_overlays(df1, df2, how='intersection', reproject=True):
-    df1 = df1.copy()
-    df2 = df2.copy()
-    df1['geometry'] = df1.geometry.buffer(0)
-    df2['geometry'] = df2.geometry.buffer(0)
-    if df1.crs!=df2.crs and reproject:
-        print('Data has different projections.')
-        print('Converted data to projection of first GeoPandas DatFrame')
-        df2.to_crs(crs=df1.crs, inplace=True)
-    if how=='intersection':
-        # Spatial Index to create intersections
-        spatial_index = df2.sindex
-        df1['bbox'] = df1.geometry.apply(lambda x: x.bounds)
-        df1['sidx']=df1.bbox.apply(lambda x:list(spatial_index.intersection(x)))
-        pairs = df1['sidx'].to_dict()
-        nei = []
-        for i,j in pairs.items():
-            for k in j:
-                nei.append([i,k])
-        pairs = gpd.GeoDataFrame(nei, columns=['idx1','idx2'], crs=df1.crs)
-        pairs = pairs.merge(df1, left_on='idx1', right_index=True)
-        pairs = pairs.merge(df2, left_on='idx2', right_index=True, suffixes=['_1','_2'])
-        pairs['Intersection'] = pairs.apply(lambda x: (x['geometry_1'].intersection(x['geometry_2'])).buffer(0), axis=1)
-        pairs = gpd.GeoDataFrame(pairs, columns=pairs.columns, crs=df1.crs)
-        cols = pairs.columns.tolist()
-        cols.remove('geometry_1')
-        cols.remove('geometry_2')
-        cols.remove('sidx')
-        cols.remove('bbox')
-        cols.remove('Intersection')
-        dfinter = pairs[cols+['Intersection']].copy()
-        dfinter.rename(columns={'Intersection':'geometry'}, inplace=True)
-        dfinter = gpd.GeoDataFrame(dfinter, columns=dfinter.columns, crs=pairs.crs)
-        dfinter = dfinter.loc[dfinter.geometry.is_empty==False]
-        dfinter.drop(['idx1','idx2'], inplace=True, axis=1)
-        return dfinter
-    elif how=='difference':
-        spatial_index = df2.sindex
-        df1['bbox'] = df1.geometry.apply(lambda x: x.bounds)
-        df1['sidx']=df1.bbox.apply(lambda x:list(spatial_index.intersection(x)))
-        df1['new_g'] = df1.apply(lambda x: reduce(lambda x, y: x.difference(y).buffer(0),
-                                 [x.geometry]+list(df2.iloc[x.sidx].geometry)) , axis=1)
-        df1.geometry = df1.new_g
-        df1 = df1.loc[df1.geometry.is_empty==False].copy()
-        df1.drop(['bbox', 'sidx', 'new_g'], axis=1, inplace=True)
-        return df1
+# def spatial_overlays(df1, df2, how='intersection', reproject=True):
+#     df1 = df1.copy()
+#     df2 = df2.copy()
+#     df1['geometry'] = df1.geometry.buffer(0)
+#     df2['geometry'] = df2.geometry.buffer(0)
+#     if df1.crs!=df2.crs and reproject:
+#         print('Data has different projections.')
+#         print('Converted data to projection of first GeoPandas DatFrame')
+#         df2.to_crs(crs=df1.crs, inplace=True)
+#     if how=='intersection':
+#         # Spatial Index to create intersections
+#         spatial_index = df2.sindex
+#         df1['bbox'] = df1.geometry.apply(lambda x: x.bounds)
+#         df1['sidx']=df1.bbox.apply(lambda x:list(spatial_index.intersection(x)))
+#         pairs = df1['sidx'].to_dict()
+#         nei = []
+#         for i,j in pairs.items():
+#             for k in j:
+#                 nei.append([i,k])
+#         pairs = gpd.GeoDataFrame(nei, columns=['idx1','idx2'], crs=df1.crs)
+#         pairs = pairs.merge(df1, left_on='idx1', right_index=True)
+#         pairs = pairs.merge(df2, left_on='idx2', right_index=True, suffixes=['_1','_2'])
+#         pairs['Intersection'] = pairs.apply(lambda x: (x['geometry_1'].intersection(x['geometry_2'])).buffer(0), axis=1)
+#         pairs = gpd.GeoDataFrame(pairs, columns=pairs.columns, crs=df1.crs)
+#         cols = pairs.columns.tolist()
+#         cols.remove('geometry_1')
+#         cols.remove('geometry_2')
+#         cols.remove('sidx')
+#         cols.remove('bbox')
+#         cols.remove('Intersection')
+#         dfinter = pairs[cols+['Intersection']].copy()
+#         dfinter.rename(columns={'Intersection':'geometry'}, inplace=True)
+#         dfinter = gpd.GeoDataFrame(dfinter, columns=dfinter.columns, crs=pairs.crs)
+#         dfinter = dfinter.loc[dfinter.geometry.is_empty==False]
+#         dfinter.drop(['idx1','idx2'], inplace=True, axis=1)
+#         return dfinter
+#     elif how=='difference':
+#         spatial_index = df2.sindex
+#         df1['bbox'] = df1.geometry.apply(lambda x: x.bounds)
+#         df1['sidx']=df1.bbox.apply(lambda x:list(spatial_index.intersection(x)))
+#         df1['new_g'] = df1.apply(lambda x: reduce(lambda x, y: x.difference(y).buffer(0),
+#                                  [x.geometry]+list(df2.iloc[x.sidx].geometry)) , axis=1)
+#         df1.geometry = df1.new_g
+#         df1 = df1.loc[df1.geometry.is_empty==False].copy()
+#         df1.drop(['bbox', 'sidx', 'new_g'], axis=1, inplace=True)
+#         return df1
 
 ## Fonction pour attribuer des paramètres par type de zone de la couche STRUCTURATION TERRTORIALE ##
 @eel.expose
@@ -158,13 +158,13 @@ def structuration_territoriale(chemin, nom):
     structure.insert(len(structure.columns), "d_min_route", 100)
     structure.insert(len(structure.columns), "non-batie", 400)
     structure.insert(len(structure.columns), "batie", 1000)
-    structure.insert(len(structure.columns), "ces", 40)
+    structure.insert(len(structure.columns), "cesMax", 40)
     return liste
 
 @eel.expose
 def unique_values(champs):
     global enveloppe
-    enveloppe = clean_data(structure, champs, ["d_min_route", "non-batie", "batie", "ces"])
+    enveloppe = clean_data(structure, champs, ["d_min_route", "non-batie", "batie", "cesMax"])
     enveloppe["geometry"] = enveloppe.buffer(0)
     enveloppe = enveloppe.dissolve(by=champs).reset_index()
     liste_valeur = list(enveloppe[champs])
@@ -172,25 +172,57 @@ def unique_values(champs):
     enveloppe.insert(len(enveloppe.columns), "d_min_route", 100)
     enveloppe.insert(len(enveloppe.columns), "non-batie", 400)
     enveloppe.insert(len(enveloppe.columns), "batie", 1000)
-    enveloppe.insert(len(enveloppe.columns), "ces", 40)
+    enveloppe.insert(len(enveloppe.columns), "cesMax", 40)
     print(enveloppe)
     return liste_valeur
 
+def coeffEmpriseSol(bati, parcelle) :
+    bati = bati.copy()
+    parcelle = parcelle.copy()
+    parcelle.insert(len(parcelle.columns), "id_par", range(1, 1 + len(parcelle)))
+    intersection = gpd.overlay(parcelle, bati, how='intersection')
+    dissolve = intersection.dissolve(by="id_par").reset_index()
+    dissolve.insert(len(dissolve.columns), "surf_bat", dissolve["geometry"].area)
+    dissolve.drop("geometry", axis=1, inplace=True)
+    coeff = parcelle.merge(dissolve, how='left', on="id_par", suffixes=('', '_y'))
+    coeff.insert(len(coeff.columns), "surf_par", coeff["geometry"].area)
+    coeff['ces'] = coeff['surf_bat']/coeff['surf_par']*100
+    coeff = coeff.fillna(0)
+    print(coeff.columns)
+    for i in list(coeff.columns):
+         if i not in ['id_par','surf_par', 'surf_bat', 'ces', 'geometry', 'd_min_route', 'non-batie', 'batie', 'cesMax']:
+            coeff = coeff.drop(i, axis=1)
+    coeff.crs = ('+init=epsg:2154')
+    # if enregistrer_ces == True:
+    #     coeff.to_file(export + '/' + 'ces.shp')
+    #     print('CES exporté')
+    # else:
+    #     pass
+    return(coeff)
+
 @eel.expose
 def lancement(donnees):
-    print(donnees)
     t0 = time.process_time()
+    def timing(t, intitule):
+        temps = time.process_time() - t
+        if temps <=60:
+            unite = 'secondes'
+            temps = round(temps, 1)
+        else:
+            temps = round(temps / 60, 1)
+            unite = 'minutes'
+        print("\n   #####   {} {} {}  #####   \n".format(intitule,temps,unite))
     print('\n### Lancement du traitement ### \n\n ## Prise en compte de la structuration territoriale ##')
+    ti = time.process_time()
     if donnees['paramètres']['perso'] == 'vide' and donnees['paramètres']['défauts'] != 'vide':
         param = donnees["paramètres"]["défauts"]
         global enveloppe
-        enveloppe = clean_data(structure, ["d_min_route", "non-batie", "batie", "ces"])
+        enveloppe = clean_data(structure, ["d_min_route", "non-batie", "batie", "cesMax"])
         enveloppe["geometry"] = enveloppe.buffer(0)
         enveloppe['d_min_route'] = param['d_min_route']
         enveloppe['non-batie'] = param['non-batie']
         enveloppe['batie'] = param['batie']
-        enveloppe['ces'] = param['ces']
-        print(enveloppe)
+        enveloppe['cesMax'] = param['cesMax']
     elif donnees['paramètres']['perso'] != 'vide'and donnees['paramètres']['défauts'] == 'vide':
         param = donnees["paramètres"]["perso"]["valeurs"]
         liste = list(param.keys()) # nom des lignes
@@ -199,13 +231,13 @@ def lancement(donnees):
         l_route = [item["d_min_route"] for item in param.values()]
         l_non_batie = [item["non-batie"] for item in param.values()]
         l_batie = [item["batie"] for item in param.values()]
-        l_ces = [item["ces"] for item in param.values()]
+        l_ces = [item["cesMax"] for item in param.values()]
         d = {
         champs : liste,
         "d_min_route" : l_route,
         "non-batie" : l_non_batie,
         "batie" : l_batie,
-        "ces" : l_ces
+        "cesMax" : l_ces
         }
         df = pd.DataFrame(d)
         df = df.set_index(champs)
@@ -224,15 +256,15 @@ def lancement(donnees):
     parcelle = chemins["Parcelles"]
     parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
     parcelle_intersect.crs = enveloppe.crs
-    temps = time.process_time() - t0
-    print("\n   #####   Prise en compte de la structuration territoriale terminé en {}   #####   \n").format(temps)
-
+    timing(ti, 'Prise en compte de la structuration territoriale terminé en')
     print("\n   ##   Calcul du CES   ##   \n")
-
-
+    ti = time.process_time()
+    ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
+    timing(ti, 'Calcul du CES terminé en')
+    ces.plot(column='ces', cmap='Reds', legend=True)
     plt.show()
-    temps = time.process_time() - t0
-    print("\n##########\n Traitement terminé! en {} \n##########\n").format(temps)
+    timing(t0, 'Traitement terminé! en')
+
 if __name__ == "__main__":
     eel.init('interface')
     eel.start('index.html', size=(1000, 800), disable_cache=True)
