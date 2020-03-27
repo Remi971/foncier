@@ -188,7 +188,6 @@ def coeffEmpriseSol(bati, parcelle) :
     coeff.insert(len(coeff.columns), "surf_par", coeff["geometry"].area)
     coeff['ces'] = coeff['surf_bat']/coeff['surf_par']*100
     coeff = coeff.fillna(0)
-    print(coeff.columns)
     for i in list(coeff.columns):
          if i not in ['id_par','surf_par', 'surf_bat', 'ces', 'geometry', 'd_min_route', 'non-batie', 'batie', 'cesMax']:
             coeff = coeff.drop(i, axis=1)
@@ -260,6 +259,7 @@ def lancement(donnees):
     print("\n   ##   Calcul du CES   ##   \n")
     ti = time.process_time()
     ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
+    print(ces.columns)
     timing(ti, 'Calcul du CES terminé en')
     ces.plot(column='ces', cmap='Reds', legend=True)
     plt.show()
@@ -267,4 +267,4 @@ def lancement(donnees):
 
 if __name__ == "__main__":
     eel.init('interface')
-    eel.start('index.html', size=(1000, 800), disable_cache=True)
+    eel.start('index.html', size=(1000, 800))
