@@ -15,7 +15,7 @@ function openTab(evt, tabName) {
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
 
-//Objet JSON qui va contenir le nom des sources de données, des couches et leur chemin pour chacune des variables
+//Objet JSON qui va contenir le nom des sources de données, des couches, leur chemin et leurs paramètres pour chacune des variables
 const mesVar = {
   gpkg:
   {
@@ -51,40 +51,52 @@ async function pickGpkg(){
   data = await eel.selectionBDgpkg()();
   mesVar.gpkg.nomGPKG = data;
 }
-
+//Fonction qui lire la courche de structuration territoriale
 async function listeColumns(chemin, nom){
   listeStructuration = await eel.structuration_territoriale(chemin, nom)();
 }
-
+//Fonction qui va lister les champs de la couche structuration territoriale
 async function listeValues(champs){
   listeValeurs = await eel.unique_values(champs)();
 }
-
-async function valeursTable(liste){
-  await liste.forEach((valeur) => {
-    $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value="100">m</td><td><input type="number" class="non-batie" value="400">m</td><td><input type="number" class="batie" value="1000">m</td><td><input type="number" class="ces" value="40">m</td></tr>').appendTo('#table-env');
-  })
-}
-
-async function recupDonnees() {
-  let donnees = {
-    champs : '',
-    param : {
-      id : '',
-      valeurs : [],
-    },
-}
-  let nomColumn = $("tr.titre th:first-child").html()
-  donnees['champs'] = nomColumn;
-  let row = $("tr.donnees")
-  row.each(function(i){
-    console.log(row[i]);
-    donnees.param['id'] = $("tr.donnees td:first-child")[i].innerHTML();
-    tr.children('td').each(function(element){
-      donnees.param['valeurs'].push(element.html())
+//fonction qui va récupérer les paramètres définis pour chaque type de la couche structuration territoriale
+function recupDonnees(){
+  if(document.querySelector('.on')){
+  document.querySelector('.on').addEventListener('click', function() {
+    let nomColumn = $("tr.titre th:first-child").html();
+    console.log(nomColumn);
+    mesVar.paramètres.perso.champs = nomColumn;
+    const tr = document.querySelectorAll("tr.donnees");
+    for (const item of tr) {
+      let nodes = item.querySelectorAll('td');
+      let first = nodes[0].innerHTML
+      let inputs = item.querySelectorAll('input')
+      let value0 = parseInt(inputs[0].value);
+      let value1 = parseInt(inputs[1].value);
+      let value2 = parseInt(inputs[2].value);
+      let value3 = parseInt(inputs[3].value);
+      mesVar.paramètres.perso.valeurs[first] = {
+          "d_min_route" : value0,
+          "non-batie" : value1,
+          "batie" : value2,
+          "cesMax" : value3,
+        }
+      };
+    mesVar.paramètres.défauts = 'vide';
+    console.log(mesVar.paramètres.perso);
     })
-  })
-  console.log(donnees)
+  }
+}
+//Fonction qui va remplir le tableau avec les paramètres de la structuration territoriale avec les valeurs par défaut
+function valeursTable(liste){
+  const container = document.querySelector("#container1");
+  const route = container.querySelector("#route").value;
+  const nonBatie = container.querySelector("#non-batie").value;
+  const batie = container.querySelector("#batie").value;
+  const cesMax = container.querySelector("#cesMax").value;
+  for (const valeur of liste) {
+     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value='+route+'>m</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="cesMax" value='+cesMax+'>m</td></tr>').appendTo('#table-env');
+  }
 }
 
 //Valider le choix de la source de donnée
@@ -105,6 +117,7 @@ $(document).ready(function(){
         mesVar.dossier.couches[key] = select;
       }
     })
+    //Bouton de suppression de filtre
     $(".group .remove").on('click', function(){
       let parent = $(this).parent();
       nom = $(parent).children(".btn-test").html();
@@ -113,6 +126,7 @@ $(document).ready(function(){
       $(this).parent().remove();
     })
   })
+  //Bouton de validation de la source de donnée (Dossier ou GPKG)
   $("#btn-valid").on('click', function(){
     if ($("select.dossier").val() === "dossier"){
       pickFolder();
@@ -124,7 +138,6 @@ $(document).ready(function(){
     }
   })
 })
-
 //Fonction qui va lister les données du dossier ou de la BD gpkg
 //ET Permettre la sélection de la donnée à attribuer à une variable
 let ul = $("ul.data")
@@ -141,8 +154,7 @@ async function listingData(){
     $(this).toggleClass("classLi");
   })
 }
-
-//Fonction qui va attribuer la donnée sélectionnée à la variable associé au boutons
+//Fonction qui va attribuer la donnée sélectionnée à la variable associée aux boutons
 $(document).ready(function(){
   $("#btn-liste").on('click', function(){
     listingData();
@@ -171,16 +183,16 @@ $(document).ready(function(){
 $(document).ready(function() {
   $('#btn-script').on('click', function() {
     if (mesVar.paramètres['défauts'] === "vide" && mesVar.paramètres['perso'] === "vide") {
-      let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement?")
+      let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement avec les paramètres par défaut?")
       if (answer) {
-        eel.lancement(mesVar['paramètres'])()
+        eel.lancement(mesVar)()
       }
       else {
         return;
       }
     }
     else {
-      eel.lancement(mesVar['paramètres'])()
+      eel.lancement(mesVar)()
     }
   })
 })
@@ -193,20 +205,26 @@ $(document).ready(function(){
     let paramRoute = $("#route").val();
     mesVar.paramètres.défauts["d_min_route"] = paramRoute;
     let paramNonBatie = $("#non-batie").val();
-    mesVar.paramètres.défauts["surf_non_batie"] = paramNonBatie;
+    mesVar.paramètres.défauts["non-batie"] = paramNonBatie;
     let paramBatie = $("#batie").val();
-    mesVar.paramètres.défauts["surf_min_batie"] = paramBatie;
-    let paramCES = $("#ces").val();
-    mesVar.paramètres.défauts["ces_max"] = paramCES;
+    mesVar.paramètres.défauts["batie"] = paramBatie;
+    let paramCES = $("#cesMax").val();
+    mesVar.paramètres.défauts["cesMax"] = paramCES;
     mesVar.paramètres.perso = 'vide'
   })
-  $("#param-perso").on('click', function(){
+  $(".off").on('click', function(){
     $("ul#columns").empty();
     listeStructuration.forEach(column => {
       $('<li class="columns"></li>').html(column).appendTo(ulColumns);
       })
     $('#param-confirm').css('visibility', 'visible');
     $('.columnChoice').css('visibility', 'visible');
+    this.className = 'btn-test on';
+    mesVar.paramètres["perso"] = {
+      champs : '',
+      valeurs : {},
+    };
+    recupDonnees();
     $('li.columns').on('click', function(){
       $(this).siblings().removeClass("classLi");
       $(this).toggleClass("classLi");
@@ -214,12 +232,10 @@ $(document).ready(function(){
       $('#table-env').empty();
       $('<tr class="titre"><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th></tr>').appendTo('#table-env');
       listeValues(selectColumns);
-
     })
   })
   $('#param-confirm').on('click', function(){
     valeursTable(listeValeurs);
-    recupDonnees();
   })
 })
 
@@ -238,9 +254,7 @@ $(document).ready(function() {
     setTimeout(function() { mymap.invalidateSize()}, 1);
   })
 })
-
 function onMapClick(e) {
     alert("You clicked the map at " + e.latlng);
 }
-
 mymap.on('click', onMapClick);
