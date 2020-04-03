@@ -199,6 +199,10 @@ def coeffEmpriseSol(bati, parcelle) :
     #     pass
     return(coeff)
 
+def selectionParcelles(cesMax, ces):
+    selection = ces.copy()
+    
+
 @eel.expose
 def lancement(donnees):
     t0 = time.process_time()
