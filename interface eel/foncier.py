@@ -203,8 +203,9 @@ def coeffEmpriseSol(bati, parcelle) :
 def selectionParcelles(ces):
     selection = ces.copy()
     selection = selection[(selection["ces"] < 0.5) & (selection["geometry"].area >= selection["non-batie"]) | (selection["ces"] >= 0.5) & (selection["ces"] < selection["cesMax"]) & (selection["geometry"].area >= selection["batie"])]
-    selection.loc[selection['ces']< 0.5, 'type'] = "parcelle vide"
     selection.loc[selection['ces']>= 0.5, 'type'] = "parcelle batie"
+    selection.loc[selection['ces']< 0.5, 'type'] = "parcelle vide"
+
     #selection[["type"]] = selection["ces"].apply(lambda x: "parcelle vide" if x < 0.5 else "parcelle batie")
     return selection
 
@@ -271,6 +272,7 @@ def lancement(donnees):
     ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
     print(ces.columns)
     print(ces.describe())
+    ces.plot(column='ces', cmap='Reds', legend=True)
     timing(ti, 'Calcul du CES terminé en')
 
     print("\n   ## Sélection des parcelles   ##   \n")
