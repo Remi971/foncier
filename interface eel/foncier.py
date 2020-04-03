@@ -179,6 +179,7 @@ def unique_values(champs):
 def coeffEmpriseSol(bati, parcelle) :
     bati = bati.copy()
     parcelle = parcelle.copy()
+    parcelle[['d_min_route', 'non-batie', 'batie', 'cesMax']] = parcelle[['d_min_route', 'non-batie', 'batie', 'cesMax']].apply(pd.to_numeric)
     parcelle.insert(len(parcelle.columns), "id_par", range(1, 1 + len(parcelle)))
     intersection = gpd.overlay(parcelle, bati, how='intersection')
     dissolve = intersection.dissolve(by="id_par").reset_index()
@@ -199,9 +200,13 @@ def coeffEmpriseSol(bati, parcelle) :
     #     pass
     return(coeff)
 
-def selectionParcelles(cesMax, ces):
+def selectionParcelles(ces):
     selection = ces.copy()
-    
+    selection = selection[(selection["ces"] < 0.5) & (selection["geometry"].area >= selection["non-batie"]) | (selection["ces"] >= 0.5) & (selection["ces"] < selection["cesMax"]) & (selection["geometry"].area >= selection["batie"])]
+    selection.loc[selection['ces']< 0.5, 'type'] = "parcelle vide"
+    selection.loc[selection['ces']>= 0.5, 'type'] = "parcelle batie"
+    #selection[["type"]] = selection["ces"].apply(lambda x: "parcelle vide" if x < 0.5 else "parcelle batie")
+    return selection
 
 @eel.expose
 def lancement(donnees):
@@ -260,12 +265,19 @@ def lancement(donnees):
     parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
     parcelle_intersect.crs = enveloppe.crs
     timing(ti, 'Prise en compte de la structuration territoriale terminé en')
+
     print("\n   ##   Calcul du CES   ##   \n")
     ti = time.process_time()
     ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
     print(ces.columns)
+    print(ces.describe())
     timing(ti, 'Calcul du CES terminé en')
-    ces.plot(column='ces', cmap='Reds', legend=True)
+
+    print("\n   ## Sélection des parcelles   ##   \n")
+    ti = time.process_time()
+    selection = selectionParcelles(ces)
+    timing(ti, 'Sélection des parcelles terminée en')
+    selection.plot(column='type', legend=True)
     plt.show()
     timing(t0, 'Traitement terminé! en')
 
