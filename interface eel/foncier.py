@@ -194,7 +194,7 @@ def coeffEmpriseSol(bati, parcelle, enregistrer_ces) :
             coeff = coeff.drop(i, axis=1)
     coeff.crs = ('+init=epsg:2154')
     if enregistrer_ces == True:
-        coeff.to_file('ces.geojson')
+        coeff.to_file('resultats.gpkg', layer='ces', driver='GPKG')
         print('\nCES exporté\n')
     else:
         pass
@@ -205,8 +205,8 @@ def selectionParcelles(ces):
     selection = selection[(selection["ces"] < 0.5) & (selection["geometry"].area >= selection["non-batie"]) | (selection["ces"] >= 0.5) & (selection["ces"] < selection["cesMax"]) & (selection["geometry"].area >= selection["batie"])]
     selection.loc[selection['ces']>= 0.5, 'type'] = "parcelle batie"
     selection.loc[selection['ces']< 0.5, 'type'] = "parcelle vide"
-
     #selection[["type"]] = selection["ces"].apply(lambda x: "parcelle vide" if x < 0.5 else "parcelle batie")
+    selection.to_file("resultats.gpkg", layer="selection", driver="GPKG")
     return selection
 
 @eel.expose
@@ -270,19 +270,16 @@ def lancement(donnees, exportCes):
     print("\n   ##   Calcul du CES   ##   \n")
     ti = time.process_time()
     ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect, exportCes)
-    print(ces.columns)
-    print(ces.describe())
-    ces.plot(column='ces', cmap='Reds', legend=True)
     timing(ti, 'Calcul du CES terminé en')
-
+    
     print("\n   ## Sélection des parcelles   ##   \n")
     ti = time.process_time()
     selection = selectionParcelles(ces)
     timing(ti, 'Sélection des parcelles terminée en')
+    timing(t0, 'Traitement terminé! en')
+    ces.plot(column='ces', cmap='Reds', legend=True)
     selection.plot(column='type', legend=True)
     plt.show()
-    timing(t0, 'Traitement terminé! en')
-
 if __name__ == "__main__":
     eel.init('interface')
     eel.start('index.html', size=(1000, 800))
