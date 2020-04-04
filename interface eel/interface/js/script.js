@@ -182,17 +182,18 @@ $(document).ready(function(){
 
 $(document).ready(function() {
   $('#btn-script').on('click', function() {
+    let exportCes = document.getElementById("ces_check").checked
     if (mesVar.paramètres['défauts'] === "vide" && mesVar.paramètres['perso'] === "vide") {
       let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement avec les paramètres par défaut?")
       if (answer) {
-        eel.lancement(mesVar)()
+        eel.lancement(mesVar, exportCes)()
       }
       else {
         return;
       }
     }
     else {
-      eel.lancement(mesVar)()
+        eel.lancement(mesVar, exportCes)()
     }
   })
 })

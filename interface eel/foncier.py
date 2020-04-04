@@ -176,7 +176,7 @@ def unique_values(champs):
     print(enveloppe)
     return liste_valeur
 
-def coeffEmpriseSol(bati, parcelle) :
+def coeffEmpriseSol(bati, parcelle, enregistrer_ces) :
     bati = bati.copy()
     parcelle = parcelle.copy()
     parcelle[['d_min_route', 'non-batie', 'batie', 'cesMax']] = parcelle[['d_min_route', 'non-batie', 'batie', 'cesMax']].apply(pd.to_numeric)
@@ -193,11 +193,11 @@ def coeffEmpriseSol(bati, parcelle) :
          if i not in ['id_par','surf_par', 'surf_bat', 'ces', 'geometry', 'd_min_route', 'non-batie', 'batie', 'cesMax']:
             coeff = coeff.drop(i, axis=1)
     coeff.crs = ('+init=epsg:2154')
-    # if enregistrer_ces == True:
-    #     coeff.to_file(export + '/' + 'ces.shp')
-    #     print('CES exporté')
-    # else:
-    #     pass
+    if enregistrer_ces == True:
+        coeff.to_file('ces.geojson')
+        print('\nCES exporté\n')
+    else:
+        pass
     return(coeff)
 
 def selectionParcelles(ces):
@@ -210,7 +210,7 @@ def selectionParcelles(ces):
     return selection
 
 @eel.expose
-def lancement(donnees):
+def lancement(donnees, exportCes):
     t0 = time.process_time()
     def timing(t, intitule):
         temps = time.process_time() - t
@@ -269,7 +269,7 @@ def lancement(donnees):
 
     print("\n   ##   Calcul du CES   ##   \n")
     ti = time.process_time()
-    ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
+    ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect, exportCes)
     print(ces.columns)
     print(ces.describe())
     ces.plot(column='ces', cmap='Reds', legend=True)
