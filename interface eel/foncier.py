@@ -239,6 +239,48 @@ def test_emprise_batie(parcelles, bati):
     couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
     return couche
 
+def routeDesserte(route, potentiel):
+    print("\n   ## Prise en compte de la proximité à la route   ##   \n")
+    buffer_route = route.copy()
+    buffer_route['geometry'] = buffer_route.apply(lambda x: x.geometry.buffer(x.d_min_route), axis=1)
+    buffer_route.insert(0, "desserte",'1')
+    buffer_route = buffer_route.dissolve("desserte", as_index=False)
+    buffer_route = clean_data(buffer_route)
+    print('\n - Buffer autour des routes :OK!\n')
+    intersection = gpd.overlay(potentiel, buffer_route, how='intersection')
+    print('\n - Intersection entre le potentiel et le buffer des routes : OK!\n')
+    liste_id = [i for i in intersection['id_par']]
+    couche = potentiel.loc[potentiel['id_par'].isin(liste_id)]
+    return couche
+    #potentiel = potentiel.merge(intersection, how='left', on='id_par', suffixes=('', '_y'))
+    #print("Merge entre l'intersection et le potentiel : OK!\n")
+
+def routeCadastrees(route, potentiel):
+    print('\n   ##  Exclusion des parcelle cadastrées   ##   ')
+    # buffer de 5m sur les routes
+    route["geometry"] = route.buffer(5)
+    route = route.set_geometry("geometry")
+    parcelles = potentiel.copy()
+    parcelles.insert(0, "id_par", range(1, 1 + len(parcelles)))
+    parcelles.insert(1, "surf_par", parcelles["geometry"].area)
+    print('\n - Calcul du CES des routes')
+    intersection = gpd.overlay(route, parcelles, how='intersection')
+    dissolve = intersection.dissolve(by='id_par').reset_index()
+    dissolve.insert(2, "surf_route", dissolve["geometry"].area)
+    dissolve["surf_route"] = dissolve["geometry"].area
+    dissolve.drop("geometry", axis=1, inplace=True)
+    ces_route = parcelles.merge(dissolve, how='left', on='id_par', suffixes=('', '_y'))
+    ces_route['ces_route'] = ces_route['surf_route']/ces_route['surf_par']*100
+    ces_route = ces_route.fillna(0)
+    ces_route = ces_route[['id_par', 'surf_par', 'ces_route', 'geometry']]
+    # Selection de la voirie cadastrée (ces_route >= 40%)
+    ces_route = ces_route[(ces_route["ces_route"] >= 40)]
+    ces_route.crs = {'init': 'epsg:2154'}
+    print("\n - Suppression du cadastre d'étude de  la voirie cadastrée sélectionnée")
+    liste_id = [i for i in ces_route['id_par']]
+    couche = potentiel.loc[~potentiel['id_par'].isin(liste_id)]
+    return couche
+
 @eel.expose
 def lancement(donnees, exportCes):
     t0 = time.process_time()
@@ -319,16 +361,23 @@ def lancement(donnees, exportCes):
     ti = time.process_time()
     parcelle_batie = selection[selection["type"] == "parcelle batie"]
     test_batie = test_emprise_batie(parcelle_batie, chemins["Bâti"])
-    timing(ti, 'Test des parcelles vides terminée en')
     potentiel = pd.concat([test_vide, test_batie])
-    print(potentiel.groupby("type").sum())
-    potentiel_sum = potentiel.groupby("type").sum()
-    print(type(potentiel.groupby("type").sum()))
+    timing(ti, 'Test des parcelles baties terminée en')
+    #Prise en compte de la proximité à la routes
+    if chemins["Routes"]:
+        ti = time.process_time()
+        routes = gpd.overlay(chemins["Routes"], enveloppe, how='intersection')
+        potentiel = routeDesserte(routes, potentiel)
+        timing(ti, 'Prise en compte de la proximité à la route terminée en')
+        ti = time.process_time()
+        potentiel = routeCadastrees(routes, potentiel)
+        timing(ti, 'Exclusion des routes cadastrées terminée en')
+
     timing(t0, 'Traitement terminé! en')
     #ces.plot(column='ces', cmap='Reds', legend=True)
     potentiel.plot(column='type', legend=True)
-
     # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+    potentiel_sum = potentiel.groupby("type").sum()
     batie = round(potentiel_sum["surf_par"][0] / 10000, 0)
     vide = round(potentiel_sum["surf_par"][1] / 10000, 0)
     sizes = [batie, vide]
