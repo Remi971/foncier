@@ -75,11 +75,15 @@ function recupDonnees(){
       let value1 = parseInt(inputs[1].value);
       let value2 = parseInt(inputs[2].value);
       let value3 = parseInt(inputs[3].value);
+      let value4 = parseInt(inputs[4].value);
+      let value5 = parseInt(inputs[5].value);
       mesVar.paramètres.perso.valeurs[first] = {
           "d_min_route" : value0,
           "non-batie" : value1,
           "batie" : value2,
           "cesMax" : value3,
+          "test" : value4,
+          "bufBati" : value5,
         }
       };
     mesVar.paramètres.défauts = 'vide';
@@ -94,8 +98,10 @@ function valeursTable(liste){
   const nonBatie = container.querySelector("#non-batie").value;
   const batie = container.querySelector("#batie").value;
   const cesMax = container.querySelector("#cesMax").value;
+  const test = container.querySelector("#test").value;
+  const bufBati = container.querySelector("#bufBati").value;
   for (const valeur of liste) {
-     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value='+route+'>m</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="cesMax" value='+cesMax+'>m</td></tr>').appendTo('#table-env');
+     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value='+route+'>m</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="cesMax" value='+cesMax+'>m</td><td><input type="number" class="test" value='+test+'>m</td><td><input type="number" class="bufBati" value='+bufBati+'>m</td></tr>').appendTo('#table-env');
   }
 }
 
@@ -211,6 +217,10 @@ $(document).ready(function(){
     mesVar.paramètres.défauts["batie"] = paramBatie;
     let paramCES = $("#cesMax").val();
     mesVar.paramètres.défauts["cesMax"] = paramCES;
+    let paramTest = $("#test").val();
+    mesVar.paramètres.défauts["test"] = paramTest;
+    let paramBufBati = $("#bufBati").val();
+    mesVar.paramètres.défauts["bufBati"] = paramBufBati;
     mesVar.paramètres.perso = 'vide'
   })
   $(".off").on('click', function(){
@@ -231,7 +241,7 @@ $(document).ready(function(){
       $(this).toggleClass("classLi");
       let selectColumns = $(".columns.classLi").html();
       $('#table-env').empty();
-      $('<tr class="titre"><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th></tr>').appendTo('#table-env');
+      $('<tr class="titre"><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th><th>Distance du buffer pour le test</th><th>Distance du buffer autour du bâti</th></tr>').appendTo('#table-env');
       listeValues(selectColumns);
     })
   })

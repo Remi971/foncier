@@ -159,12 +159,14 @@ def structuration_territoriale(chemin, nom):
     structure.insert(len(structure.columns), "non-batie", 400)
     structure.insert(len(structure.columns), "batie", 1000)
     structure.insert(len(structure.columns), "cesMax", 40)
+    structure.insert(len(structure.columns), "test", 10)
+    structure.insert(len(structure.columns), "bufBati", 4)
     return liste
 
 @eel.expose
 def unique_values(champs):
     global enveloppe
-    enveloppe = clean_data(structure, champs, ["d_min_route", "non-batie", "batie", "cesMax"])
+    enveloppe = clean_data(structure, champs, ["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"])
     enveloppe["geometry"] = enveloppe.buffer(0)
     enveloppe = enveloppe.dissolve(by=champs).reset_index()
     liste_valeur = list(enveloppe[champs])
@@ -173,6 +175,8 @@ def unique_values(champs):
     enveloppe.insert(len(enveloppe.columns), "non-batie", 400)
     enveloppe.insert(len(enveloppe.columns), "batie", 1000)
     enveloppe.insert(len(enveloppe.columns), "cesMax", 40)
+    enveloppe.insert(len(enveloppe.columns), "test", 10)
+    enveloppe.insert(len(enveloppe.columns), "bufBati", 4)
     print(enveloppe)
     return liste_valeur
 
@@ -180,7 +184,7 @@ def coeffEmpriseSol(bati, parcelle, enregistrer_ces) :
     print("\n   ##   Calcul du CES   ##   \n")
     bati = bati.copy()
     parcelle = parcelle.copy()
-    parcelle[['d_min_route', 'non-batie', 'batie', 'cesMax']] = parcelle[['d_min_route', 'non-batie', 'batie', 'cesMax']].apply(pd.to_numeric)
+    parcelle[["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"]] = parcelle[["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"]].apply(pd.to_numeric)
     parcelle.insert(len(parcelle.columns), "id_par", range(1, 1 + len(parcelle)))
     intersection = gpd.overlay(parcelle, bati, how='intersection')
     dissolve = intersection.dissolve(by="id_par").reset_index()
@@ -191,7 +195,7 @@ def coeffEmpriseSol(bati, parcelle, enregistrer_ces) :
     coeff['ces'] = coeff['surf_bat']/coeff['surf_par']*100
     coeff = coeff.fillna(0)
     for i in list(coeff.columns):
-         if i not in ['id_par','surf_par', 'surf_bat', 'ces', 'geometry', 'd_min_route', 'non-batie', 'batie', 'cesMax']:
+         if i not in ['id_par','surf_par', 'surf_bat', 'ces', 'geometry', "d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"]:
             coeff = coeff.drop(i, axis=1)
     coeff.crs = ('+init=epsg:2154')
     if enregistrer_ces == True:
@@ -210,22 +214,27 @@ def selectionParcelles(ces):
     #selection[["type"]] = selection["ces"].apply(lambda x: "parcelle vide" if x < 0.5 else "parcelle batie")
     return selection
 
-def test_emprise_vide(parcelles, val_buffer):
+def test_emprise_vide(parcelles):
     print("\n   ## Test des parcelles vides   ##   \n")
     couche_buf = parcelles.copy()
-    couche_buf["geometry"] = couche_buf.buffer(-val_buffer).buffer(val_buffer)
+    #Applique un buffer pour chaque entité suivant la valeur de la colonne "test" correspondante
+    couche_buf['geometry'] = couche_buf.apply(lambda x: x.geometry.buffer(-x.test).buffer(x.test), axis=1)
+    #couche_buf["geometry"] = couche_buf.buffer(-val_buffer).buffer(val_buffer)
     couche_buf = couche_buf[couche_buf["geometry"].area >= couche_buf["non-batie"]]
     liste_id = [i for i in couche_buf['id_par']]
     couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
     return couche
 
-def test_emprise_batie(parcelles, bati, bati_buffer, val_buffer):
+def test_emprise_batie(parcelles, bati):
     print("\n   ## Test des parcelles baties   ##   \n")
     bati_buf = bati.copy()
-    bati_buf["geometry"] = bati.buffer(bati_buffer)
+    bati_buf = gpd.overlay(bati_buf, parcelles, how='intersection')
+    bati_buf['geometry'] = bati_buf.apply(lambda x: x.geometry.buffer(x.bufBati), axis=1)
+    #bati_buf["geometry"] = bati.buffer(4)
     emprise = gpd.overlay(parcelles, bati_buf, how='difference')
-    emprise["geometry"] = emprise.buffer(-val_buffer).buffer(val_buffer)
-    emprise = emprise[emprise["geometry"].area >= emprise["batie"]]
+    emprise['geometry'] = emprise.apply(lambda x: x.geometry.buffer(-x.test).buffer(x.test), axis=1)
+    #emprise["geometry"] = emprise.buffer(-val_buffer).buffer(val_buffer)
+    emprise = emprise[emprise["geometry"].area >= emprise["non-batie"]]
     liste_id = [i for i in emprise['id_par']]
     couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
     return couche
@@ -247,13 +256,15 @@ def lancement(donnees, exportCes):
     if donnees['paramètres']['perso'] == 'vide' and donnees['paramètres']['défauts'] != 'vide':
         param = donnees["paramètres"]["défauts"]
         global enveloppe
-        enveloppe = clean_data(structure, ["d_min_route", "non-batie", "batie", "cesMax"])
+        enveloppe = clean_data(structure, ["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"])
         enveloppe["geometry"] = enveloppe.buffer(0)
         enveloppe['d_min_route'] = param['d_min_route']
         enveloppe['non-batie'] = param['non-batie']
         enveloppe['batie'] = param['batie']
         enveloppe['cesMax'] = param['cesMax']
-    elif donnees['paramètres']['perso'] != 'vide'and donnees['paramètres']['défauts'] == 'vide':
+        enveloppe['test'] = param['test']
+        enveloppe['bufBati'] = param['bufBati']
+    elif donnees['paramètres']['perso'] != 'vide' and donnees['paramètres']['défauts'] == 'vide':
         param = donnees["paramètres"]["perso"]["valeurs"]
         liste = list(param.keys()) # nom des lignes
         champs = donnees["paramètres"]["perso"]["champs"]
@@ -262,12 +273,16 @@ def lancement(donnees, exportCes):
         l_non_batie = [item["non-batie"] for item in param.values()]
         l_batie = [item["batie"] for item in param.values()]
         l_ces = [item["cesMax"] for item in param.values()]
+        l_test = [item["test"] for item in param.values()]
+        l_buf_bati = [item["bufBati"] for item in param.values()]
         d = {
         champs : liste,
         "d_min_route" : l_route,
         "non-batie" : l_non_batie,
         "batie" : l_batie,
-        "cesMax" : l_ces
+        "cesMax" : l_ces,
+        "test" : l_test,
+        "bufBati" : l_buf_bati
         }
         df = pd.DataFrame(d)
         df = df.set_index(champs)
@@ -298,18 +313,34 @@ def lancement(donnees, exportCes):
     #Test des parcelles vides identifiées
     ti = time.process_time()
     parcelle_vide = selection[selection["type"] == "parcelle vide"]
-    test_vide = test_emprise_vide(parcelle_vide, 10)
+    test_vide = test_emprise_vide(parcelle_vide)
     timing(ti, 'Test des parcelles vides terminée en')
     #Test des parcelles baties identifiées
     ti = time.process_time()
     parcelle_batie = selection[selection["type"] == "parcelle batie"]
-    test_batie = test_emprise_batie(parcelle_batie, chemins["Bâti"],4, 10)
+    test_batie = test_emprise_batie(parcelle_batie, chemins["Bâti"])
     timing(ti, 'Test des parcelles vides terminée en')
     potentiel = pd.concat([test_vide, test_batie])
+    print(potentiel.groupby("type").sum())
+    potentiel_sum = potentiel.groupby("type").sum()
+    print(type(potentiel.groupby("type").sum()))
     timing(t0, 'Traitement terminé! en')
-    ces.plot(column='ces', cmap='Reds', legend=True)
-    selection.plot(column='type', legend=True)
+    #ces.plot(column='ces', cmap='Reds', legend=True)
     potentiel.plot(column='type', legend=True)
+
+    # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+    batie = round(potentiel_sum["surf_par"][0] / 10000, 0)
+    vide = round(potentiel_sum["surf_par"][1] / 10000, 0)
+    sizes = [batie, vide]
+    labels = 'Parcelle batie ({} ha)'.format(batie), 'Parcelle vide ({} ha)'.format(vide)
+    somme = round((potentiel_sum["surf_par"][0] + potentiel_sum["surf_par"][1]) / 10000, 0)
+    colors = ['#1f77b4', '#17becf']
+    fig1, ax1 = plt.subplots()
+    ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%',
+            shadow=False, startangle=90)
+    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    ax1.set_title("Répartition du potentiel foncier estimé à : {} ha".format(somme))
+
     plt.show()
 if __name__ == "__main__":
     eel.init('interface')
