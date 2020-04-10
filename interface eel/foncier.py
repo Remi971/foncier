@@ -177,6 +177,7 @@ def unique_values(champs):
     return liste_valeur
 
 def coeffEmpriseSol(bati, parcelle, enregistrer_ces) :
+    print("\n   ##   Calcul du CES   ##   \n")
     bati = bati.copy()
     parcelle = parcelle.copy()
     parcelle[['d_min_route', 'non-batie', 'batie', 'cesMax']] = parcelle[['d_min_route', 'non-batie', 'batie', 'cesMax']].apply(pd.to_numeric)
@@ -194,20 +195,40 @@ def coeffEmpriseSol(bati, parcelle, enregistrer_ces) :
             coeff = coeff.drop(i, axis=1)
     coeff.crs = ('+init=epsg:2154')
     if enregistrer_ces == True:
-        coeff.to_file('resultats.gpkg', layer='ces', driver='GPKG')
+        coeff.to_file('ces.shp')
         print('\nCES exporté\n')
     else:
         pass
     return(coeff)
 
 def selectionParcelles(ces):
+    print("\n   ## Sélection des parcelles   ##   \n")
     selection = ces.copy()
     selection = selection[(selection["ces"] < 0.5) & (selection["geometry"].area >= selection["non-batie"]) | (selection["ces"] >= 0.5) & (selection["ces"] < selection["cesMax"]) & (selection["geometry"].area >= selection["batie"])]
     selection.loc[selection['ces']>= 0.5, 'type'] = "parcelle batie"
     selection.loc[selection['ces']< 0.5, 'type'] = "parcelle vide"
     #selection[["type"]] = selection["ces"].apply(lambda x: "parcelle vide" if x < 0.5 else "parcelle batie")
-    selection.to_file("resultats.gpkg", layer="selection", driver="GPKG")
     return selection
+
+def test_emprise_vide(parcelles, val_buffer):
+    print("\n   ## Test des parcelles vides   ##   \n")
+    couche_buf = parcelles.copy()
+    couche_buf["geometry"] = couche_buf.buffer(-val_buffer).buffer(val_buffer)
+    couche_buf = couche_buf[couche_buf["geometry"].area >= couche_buf["non-batie"]]
+    liste_id = [i for i in couche_buf['id_par']]
+    couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
+    return couche
+
+def test_emprise_batie(parcelles, bati, bati_buffer, val_buffer):
+    print("\n   ## Test des parcelles baties   ##   \n")
+    bati_buf = bati.copy()
+    bati_buf["geometry"] = bati.buffer(bati_buffer)
+    emprise = gpd.overlay(parcelles, bati_buf, how='difference')
+    emprise["geometry"] = emprise.buffer(-val_buffer).buffer(val_buffer)
+    emprise = emprise[emprise["geometry"].area >= emprise["batie"]]
+    liste_id = [i for i in emprise['id_par']]
+    couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
+    return couche
 
 @eel.expose
 def lancement(donnees, exportCes):
@@ -266,19 +287,29 @@ def lancement(donnees, exportCes):
     parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
     parcelle_intersect.crs = enveloppe.crs
     timing(ti, 'Prise en compte de la structuration territoriale terminé en')
-
-    print("\n   ##   Calcul du CES   ##   \n")
+    #Calcul du CES
     ti = time.process_time()
     ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect, exportCes)
     timing(ti, 'Calcul du CES terminé en')
-    
-    print("\n   ## Sélection des parcelles   ##   \n")
+    #Sélection des parcelles
     ti = time.process_time()
     selection = selectionParcelles(ces)
     timing(ti, 'Sélection des parcelles terminée en')
+    #Test des parcelles vides identifiées
+    ti = time.process_time()
+    parcelle_vide = selection[selection["type"] == "parcelle vide"]
+    test_vide = test_emprise_vide(parcelle_vide, 10)
+    timing(ti, 'Test des parcelles vides terminée en')
+    #Test des parcelles baties identifiées
+    ti = time.process_time()
+    parcelle_batie = selection[selection["type"] == "parcelle batie"]
+    test_batie = test_emprise_batie(parcelle_batie, chemins["Bâti"],4, 10)
+    timing(ti, 'Test des parcelles vides terminée en')
+    potentiel = pd.concat([test_vide, test_batie])
     timing(t0, 'Traitement terminé! en')
     ces.plot(column='ces', cmap='Reds', legend=True)
     selection.plot(column='type', legend=True)
+    potentiel.plot(column='type', legend=True)
     plt.show()
 if __name__ == "__main__":
     eel.init('interface')
