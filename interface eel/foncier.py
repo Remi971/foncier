@@ -94,6 +94,17 @@ def add_data(cle, chemin, *argv):
             dict_sig[cle] = clean_data(gpd.read_file(chemin))
     print("Nombre de couche en mémoire : ", len(dict_sig))
 
+#Fonction qui va inspecter la couche SIG et renvoyer le type de géométrie
+@eel.expose
+def geometryType(chemin, nom):
+    if chemin.endswith('gpkg'):
+        couche = gpd.read_file(chemin, layer=nom)
+    else:
+        couche = gpd.read_file(chemin + '/' + nom)
+    print(str(couche["geometry"][0].geom_type))
+    type = str(couche["geometry"][0].geom_type)
+    return type
+
 ## Fonction pour attribuer des paramètres par type de zone de la couche STRUCTURATION TERRTORIALE ##
 @eel.expose
 def structuration_territoriale(chemin, nom):

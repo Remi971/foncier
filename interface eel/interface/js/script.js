@@ -38,9 +38,11 @@ const mesVar = {
   },
 }
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
-let data = ''
-let listeValeurs = []
-let listeStructuration = []
+let
+  data = '',
+  listeValeurs = [],
+  listeStructuration = [];
+  geomType = '';
 //Fonction qui récupère le nom du dossier de data
 async function pickFolder() {
   data = await eel.selectionDossier()();
@@ -59,6 +61,70 @@ async function listeColumns(chemin, nom){
 async function listeValues(champs){
   listeValeurs = await eel.unique_values(champs)();
 }
+//Fonction qui va identifier le type de géométrie de la donnéelse
+async function typeGeometry(chemin, layer){
+  geomType = await eel.geometryType(chemin, layer)();
+}
+
+//Valider le choix de la source de donnée
+$(document).ready(function(){
+  //Bouton de validation de la source de donnée (Dossier ou GPKG)
+  $("#btn-valid").on('click', function(){
+    if ($("select.dossier").val() === "dossier"){
+      pickFolder();
+      $('#selection').html("<img src='/images/folder.svg'>");
+    }
+  else if ($("select.dossier").val() === "BDgpkg"){
+      pickGpkg();
+      $('#selection').html("<img src='/images/database.svg'>");
+    }
+  })
+})
+//Fonction qui va lister les données du dossier ou de la BD gpkg
+//ET Permettre la sélection de la donnée à attribuer à une variable
+let ul = $("ul.data")
+async function listingData(){
+  liste = [];
+  $('li.donnees').remove();
+  liste = await eel.liste_data(data)();
+  liste.forEach(shp => {
+    $('<li class="donnees"></li>').html(shp).appendTo(ul);
+    })
+  $('h4#listeCouches').html('Liste des '+liste.length+' couches')
+  $('li.donnees').on('click', function(){
+    $(this).siblings().removeClass("classLi");
+    $(this).toggleClass("classLi");
+  })
+}
+//Fonction qui va attribuer la donnée sélectionnée à la variable associée aux boutons
+$(document).ready(function(){
+  $("#btn-liste").on('click', function(){
+    listingData();
+  })
+})
+// Attribution des données aux variables avec vérification des géométries
+$(".group").on('click','.btn-test', function(){
+  let select = $(".donnees.classLi").html();
+  //typeGeometry(data, select);
+  eel.geometryType(data, select)(n => geomType = n);
+  let divParent = $(this).parent();
+  $(divParent).children("span").html(select);
+  let key = $(this).html();
+  if (key === "Structuration territoriale"){
+    listeColumns(data, select);
+  }
+  console.log(geomType);
+  if (data.endsWith(".gpkg")){
+    delete mesVar.dossier.couches[key];
+    mesVar.gpkg.layers[key] = select;
+  }else{
+    delete mesVar.gpkg.layers[key];
+    mesVar.dossier.couches[key] = select;
+  }
+})
+// $(document).ready(function(){
+//
+// })
 //fonction qui va récupérer les paramètres définis pour chaque type de la couche structuration territoriale
 function recupDonnees(){
   if(document.querySelector('.on')){
@@ -105,7 +171,7 @@ function valeursTable(liste){
   }
 }
 
-//Valider le choix de la source de donnée
+// Ajout de filtres
 $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
     let name = prompt("Indiquez le nom du filtre : ")
@@ -132,77 +198,11 @@ $(document).ready(function(){
       $(this).parent().remove();
     })
   })
-  //Bouton de validation de la source de donnée (Dossier ou GPKG)
-  $("#btn-valid").on('click', function(){
-    if ($("select.dossier").val() === "dossier"){
-      pickFolder();
-      $('#selection').html("<img src='/images/folder.png'>");
-    }
-  else if ($("select.dossier").val() === "BDgpkg"){
-      pickGpkg();
-      $('#selection').html("<img src='/images/database.png'>");
-    }
-  })
-})
-//Fonction qui va lister les données du dossier ou de la BD gpkg
-//ET Permettre la sélection de la donnée à attribuer à une variable
-let ul = $("ul.data")
-async function listingData(){
-  liste = [];
-  $('li.donnees').remove();
-  liste = await eel.liste_data(data)();
-  liste.forEach(shp => {
-    $('<li class="donnees"></li>').html(shp).appendTo(ul);
-    })
-  $('h4#listeCouches').html('Liste des '+liste.length+' couches')
-  $('li.donnees').on('click', function(){
-    $(this).siblings().removeClass("classLi");
-    $(this).toggleClass("classLi");
-  })
-}
-//Fonction qui va attribuer la donnée sélectionnée à la variable associée aux boutons
-$(document).ready(function(){
-  $("#btn-liste").on('click', function(){
-    listingData();
-  })
-  $(".group").on('click','.btn-test', function(){
-    let select = $(".donnees.classLi").html();
-    let divParent = $(this).parent();
-    $(divParent).children("span").html(select);
-    let key = $(this).html();
-    if (data.endsWith(".gpkg")){
-      delete mesVar.dossier.couches[key];
-      mesVar.gpkg.layers[key] = select;
-    }else{
-      delete mesVar.gpkg.layers[key];
-      mesVar.dossier.couches[key] = select;
-    }
-    if (key === "Structuration territoriale"){
-      listeColumns(data, select);
-    }
-    //mesVar[key] = chemin;
-    //eel.add_data(key, chemin)
-    //eel.lecture_sig(mesVar);
-  })
 })
 
-$(document).ready(function() {
-  $('#btn-script').on('click', function() {
-    let exportCes = document.getElementById("ces_check").checked
-    if (mesVar.paramètres['défauts'] === "vide" && mesVar.paramètres['perso'] === "vide") {
-      let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement avec les paramètres par défaut?")
-      if (answer) {
-        eel.lancement(mesVar, exportCes)()
-      }
-      else {
-        return;
-      }
-    }
-    else {
-        eel.lancement(mesVar, exportCes)()
-    }
-  })
-})
+
+
+
 
 //PARAMETRES
 let ulColumns = $("ul#columns")
@@ -250,6 +250,23 @@ $(document).ready(function(){
   })
 })
 
+$(document).ready(function() {
+  $('#btn-script').on('click', function() {
+    let exportCes = document.getElementById("ces_check").checked
+    if (mesVar.paramètres['défauts'] === "vide" && mesVar.paramètres['perso'] === "vide") {
+      let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement avec les paramètres par défaut?")
+      if (answer) {
+        eel.lancement(mesVar, exportCes)()
+      }
+      else {
+        return;
+      }
+    }
+    else {
+        eel.lancement(mesVar, exportCes)()
+    }
+  })
+})
 //VISUALISATION map
 let mymap = L.map('mapid').setView([43.947991, 4.80875], 13);
 let Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
