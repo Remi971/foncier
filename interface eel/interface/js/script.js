@@ -62,8 +62,9 @@ async function listeValues(champs){
   listeValeurs = await eel.unique_values(champs)();
 }
 //Fonction qui va identifier le type de géométrie de la donnéelse
-async function typeGeometry(chemin, layer){
+async function typeGeometry(chemin, layer, callback){
   geomType = await eel.geometryType(chemin, layer)();
+  callback(geomType);
 }
 
 //Valider le choix de la source de donnée
@@ -102,18 +103,20 @@ $(document).ready(function(){
     listingData();
   })
 })
+function print(something){
+  console.log(something)
+}
 // Attribution des données aux variables avec vérification des géométries
 $(".group").on('click','.btn-test', function(){
   let select = $(".donnees.classLi").html();
-  //typeGeometry(data, select);
-  eel.geometryType(data, select)(n => geomType = n);
+  typeGeometry(data, select, print);
+  //eel.geometryType(data, select)(n => geomType = n);
   let divParent = $(this).parent();
   $(divParent).children("span").html(select);
   let key = $(this).html();
   if (key === "Structuration territoriale"){
     listeColumns(data, select);
   }
-  console.log(geomType);
   if (data.endsWith(".gpkg")){
     delete mesVar.dossier.couches[key];
     mesVar.gpkg.layers[key] = select;
