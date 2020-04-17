@@ -94,53 +94,6 @@ def add_data(cle, chemin, *argv):
             dict_sig[cle] = clean_data(gpd.read_file(chemin))
     print("Nombre de couche en mémoire : ", len(dict_sig))
 
-# def spatial_overlays(df1, df2, how='intersection', reproject=True):
-#     df1 = df1.copy()
-#     df2 = df2.copy()
-#     df1['geometry'] = df1.geometry.buffer(0)
-#     df2['geometry'] = df2.geometry.buffer(0)
-#     if df1.crs!=df2.crs and reproject:
-#         print('Data has different projections.')
-#         print('Converted data to projection of first GeoPandas DatFrame')
-#         df2.to_crs(crs=df1.crs, inplace=True)
-#     if how=='intersection':
-#         # Spatial Index to create intersections
-#         spatial_index = df2.sindex
-#         df1['bbox'] = df1.geometry.apply(lambda x: x.bounds)
-#         df1['sidx']=df1.bbox.apply(lambda x:list(spatial_index.intersection(x)))
-#         pairs = df1['sidx'].to_dict()
-#         nei = []
-#         for i,j in pairs.items():
-#             for k in j:
-#                 nei.append([i,k])
-#         pairs = gpd.GeoDataFrame(nei, columns=['idx1','idx2'], crs=df1.crs)
-#         pairs = pairs.merge(df1, left_on='idx1', right_index=True)
-#         pairs = pairs.merge(df2, left_on='idx2', right_index=True, suffixes=['_1','_2'])
-#         pairs['Intersection'] = pairs.apply(lambda x: (x['geometry_1'].intersection(x['geometry_2'])).buffer(0), axis=1)
-#         pairs = gpd.GeoDataFrame(pairs, columns=pairs.columns, crs=df1.crs)
-#         cols = pairs.columns.tolist()
-#         cols.remove('geometry_1')
-#         cols.remove('geometry_2')
-#         cols.remove('sidx')
-#         cols.remove('bbox')
-#         cols.remove('Intersection')
-#         dfinter = pairs[cols+['Intersection']].copy()
-#         dfinter.rename(columns={'Intersection':'geometry'}, inplace=True)
-#         dfinter = gpd.GeoDataFrame(dfinter, columns=dfinter.columns, crs=pairs.crs)
-#         dfinter = dfinter.loc[dfinter.geometry.is_empty==False]
-#         dfinter.drop(['idx1','idx2'], inplace=True, axis=1)
-#         return dfinter
-#     elif how=='difference':
-#         spatial_index = df2.sindex
-#         df1['bbox'] = df1.geometry.apply(lambda x: x.bounds)
-#         df1['sidx']=df1.bbox.apply(lambda x:list(spatial_index.intersection(x)))
-#         df1['new_g'] = df1.apply(lambda x: reduce(lambda x, y: x.difference(y).buffer(0),
-#                                  [x.geometry]+list(df2.iloc[x.sidx].geometry)) , axis=1)
-#         df1.geometry = df1.new_g
-#         df1 = df1.loc[df1.geometry.is_empty==False].copy()
-#         df1.drop(['bbox', 'sidx', 'new_g'], axis=1, inplace=True)
-#         return df1
-
 ## Fonction pour attribuer des paramètres par type de zone de la couche STRUCTURATION TERRTORIALE ##
 @eel.expose
 def structuration_territoriale(chemin, nom):
@@ -221,9 +174,10 @@ def test_emprise_vide(parcelles):
     couche_buf['geometry'] = couche_buf.apply(lambda x: x.geometry.buffer(-x.test).buffer(x.test), axis=1)
     #couche_buf["geometry"] = couche_buf.buffer(-val_buffer).buffer(val_buffer)
     couche_buf = couche_buf[couche_buf["geometry"].area >= couche_buf["non-batie"]]
+    couche_buf["surf_par"] = couche_buf["geometry"].area
     liste_id = [i for i in couche_buf['id_par']]
     couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
-    return couche
+    return couche, couche_buf
 
 def test_emprise_batie(parcelles, bati):
     print("\n   ## Test des parcelles baties   ##   \n")
@@ -235,9 +189,10 @@ def test_emprise_batie(parcelles, bati):
     emprise['geometry'] = emprise.apply(lambda x: x.geometry.buffer(-x.test).buffer(x.test), axis=1)
     #emprise["geometry"] = emprise.buffer(-val_buffer).buffer(val_buffer)
     emprise = emprise[emprise["geometry"].area >= emprise["non-batie"]]
+    emprise["surf_par"] = emprise["geometry"].area
     liste_id = [i for i in emprise['id_par']]
     couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
-    return couche
+    return couche, emprise
 
 def routeDesserte(route, potentiel):
     print("\n   ## Prise en compte de la proximité à la route   ##   \n")
@@ -343,7 +298,7 @@ def lancement(donnees, exportCes):
     parcelle = chemins["Parcelles"]
     parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
     parcelle_intersect.crs = enveloppe.crs
-    timing(ti, 'Prise en compte de la structuration territoriale terminé en')
+    timing(ti, 'Prise en compte de la structuration territoriale terminée en')
     #Calcul du CES
     ti = time.process_time()
     ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect, exportCes)
@@ -351,20 +306,20 @@ def lancement(donnees, exportCes):
     #Sélection des parcelles
     ti = time.process_time()
     selection = selectionParcelles(ces)
-    timing(ti, 'Sélection des parcelles terminée en')
+    timing(ti, 'Sélection des parcelles terminé en')
     #Test des parcelles vides identifiées
     ti = time.process_time()
     parcelle_vide = selection[selection["type"] == "parcelle vide"]
-    test_vide = test_emprise_vide(parcelle_vide)
-    timing(ti, 'Test des parcelles vides terminée en')
+    test_vide, emprise_vide = test_emprise_vide(parcelle_vide)
+
     #Test des parcelles baties identifiées
-    ti = time.process_time()
     parcelle_batie = selection[selection["type"] == "parcelle batie"]
-    test_batie = test_emprise_batie(parcelle_batie, chemins["Bâti"])
+    test_batie, emprise_batie = test_emprise_batie(parcelle_batie, chemins["Bâti"])
     potentiel = pd.concat([test_vide, test_batie])
-    timing(ti, 'Test des parcelles baties terminée en')
+    potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
+    timing(ti, 'Test des parcelles terminé en')
     #Prise en compte de la proximité à la routes
-    if chemins["Routes"]:
+    if "Routes" in chemins:
         ti = time.process_time()
         routes = gpd.overlay(chemins["Routes"], enveloppe, how='intersection')
         potentiel = routeDesserte(routes, potentiel)
@@ -374,9 +329,11 @@ def lancement(donnees, exportCes):
         timing(ti, 'Exclusion des routes cadastrées terminée en')
 
     timing(t0, 'Traitement terminé! en')
+    #CHARTS and MAPS
     #ces.plot(column='ces', cmap='Reds', legend=True)
     potentiel.plot(column='type', legend=True)
-    # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+    potentiel_emprise.plot(column='type', legend=True)
+    # Pie chart of potentiel parcelle complète
     potentiel_sum = potentiel.groupby("type").sum()
     batie = round(potentiel_sum["surf_par"][0] / 10000, 0)
     vide = round(potentiel_sum["surf_par"][1] / 10000, 0)
@@ -389,6 +346,20 @@ def lancement(donnees, exportCes):
             shadow=False, startangle=90)
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     ax1.set_title("Répartition du potentiel foncier estimé à : {} ha".format(somme))
+
+    # Pie chart of potentiel emprise mobilisable
+    potentiel_emprise_sum = potentiel_emprise.groupby("type").sum()
+    batie2 = round(potentiel_emprise_sum["surf_par"][0] / 10000, 0)
+    vide2 = round(potentiel_emprise_sum["surf_par"][1] / 10000, 0)
+    sizes2 = [batie2, vide2]
+    labels2 = 'Emprise des parcelles baties ({} ha)'.format(batie2), 'Emprise des parcelles vides ({} ha)'.format(vide2)
+    somme2 = round((potentiel_emprise_sum["surf_par"][0] + potentiel_emprise_sum["surf_par"][1]) / 10000, 0)
+    colors2 = ['#1f77b4', '#17becf']
+    fig2, ax2 = plt.subplots()
+    ax2.pie(sizes2, labels=labels2, colors=colors2, autopct='%1.1f%%',
+            shadow=False, startangle=90)
+    ax2.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    ax2.set_title("Répartition du foncier mobilisable estimé à : {} ha".format(somme2))
 
     plt.show()
 if __name__ == "__main__":
