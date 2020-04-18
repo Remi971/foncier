@@ -103,31 +103,54 @@ $(document).ready(function(){
     listingData();
   })
 })
-function print(something){
-  console.log(something)
-}
 // Attribution des données aux variables avec vérification des géométries
+
 $(".group").on('click','.btn-test', function(){
   let select = $(".donnees.classLi").html();
-  typeGeometry(data, select, print);
   //eel.geometryType(data, select)(n => geomType = n);
   let divParent = $(this).parent();
-  $(divParent).children("span").html(select);
+  let span = $(divParent).children("span");
+  span.html(select);
   let key = $(this).html();
-  if (key === "Structuration territoriale"){
-    listeColumns(data, select);
+  function check(something){
+    let
+      data1 = ["Parcelles", "Bâti", "Structuration territoriale"].includes(key),
+      geomPoly = ['Polygon', 'MultiPolygon'].includes(something),
+      condition1 = (data1 && geomPoly === false) ? true : false,
+      data2 = ["Routes", "Voies ferrées"].includes(key),
+      geomLine = ['LineString', 'MultiString'].includes(something),
+      condition2 = (data2 && geomLine === false) ? true : false;
+    if (condition1 || condition2){
+      alert("La donnée sélectionnée n'as pas la bonne géométrie! Pour les 'Parcelles', le 'Bâti' et la 'Structuration territoriale', veuillez sélectionner une donnée de type Polygon ou MultiPolygon et pour les 'Routes' et les 'Voies ferrées' une donnée de type LineString (ligne)");
+      span.css("color", "red");
+    }
+    else {
+      span.css("color", "black");
+      if (key === "Structuration territoriale"){
+        listeColumns(data, select);
+      }
+      if (data.endsWith(".gpkg")){
+        delete mesVar.dossier.couches[key];
+        mesVar.gpkg.layers[key] = select;
+      }else{
+        delete mesVar.gpkg.layers[key];
+        mesVar.dossier.couches[key] = select;
+      }
+    }
   }
-  if (data.endsWith(".gpkg")){
-    delete mesVar.dossier.couches[key];
-    mesVar.gpkg.layers[key] = select;
-  }else{
-    delete mesVar.gpkg.layers[key];
-    mesVar.dossier.couches[key] = select;
-  }
+  typeGeometry(data, select, check);
+  // if (key === "Structuration territoriale"){
+  //   listeColumns(data, select);
+  // }
+  // if (data.endsWith(".gpkg")){
+  //   delete mesVar.dossier.couches[key];
+  //   mesVar.gpkg.layers[key] = select;
+  // }else{
+  //   delete mesVar.gpkg.layers[key];
+  //   mesVar.dossier.couches[key] = select;
+  // }
 })
-// $(document).ready(function(){
-//
-// })
+
 //fonction qui va récupérer les paramètres définis pour chaque type de la couche structuration territoriale
 function recupDonnees(){
   if(document.querySelector('.on')){
