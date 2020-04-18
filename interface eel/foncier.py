@@ -284,13 +284,13 @@ def lancement(donnees, exportCes):
         l_test = [item["test"] for item in param.values()]
         l_buf_bati = [item["bufBati"] for item in param.values()]
         d = {
-        champs : liste,
-        "d_min_route" : l_route,
-        "non-batie" : l_non_batie,
-        "batie" : l_batie,
-        "cesMax" : l_ces,
-        "test" : l_test,
-        "bufBati" : l_buf_bati
+            champs : liste,
+            "d_min_route" : l_route,
+            "non-batie" : l_non_batie,
+            "batie" : l_batie,
+            "cesMax" : l_ces,
+            "test" : l_test,
+            "bufBati" : l_buf_bati
         }
         df = pd.DataFrame(d)
         df = df.set_index(champs)
@@ -338,7 +338,10 @@ def lancement(donnees, exportCes):
         ti = time.process_time()
         potentiel = routeCadastrees(routes, potentiel)
         timing(ti, 'Exclusion des routes cadastrées terminée en')
-
+    #Prise en compte des voies ferrées si renseignées
+    # ...
+    #Prise en compte des Filtres
+    # ...
     timing(t0, 'Traitement terminé! en')
     #CHARTS and MAPS
     #ces.plot(column='ces', cmap='Reds', legend=True)
