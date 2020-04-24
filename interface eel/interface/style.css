@@ -1,8 +1,12 @@
 :root {
   --grey : #ADADAF;
-  --light : #E7E7E9;
+  --light : #dadada;
   --dark : #4B4B4B;
   --citadia : #1F3869;
+}
+
+html {
+  height: auto;
 }
 
 body {
@@ -48,6 +52,7 @@ body {
     padding: 6px 12px;
     border: 1px solid var(--dark);
     border-top: none;
+    height: 100%;
   }
 .title {
   background-color : var(--citadia);
@@ -172,10 +177,14 @@ span {
   padding-left: 10px;
 }
 
+#geom {
+
+}
+
 .group {
   display : grid;
   grid-gap : 1rem;
-  grid-template-columns : 20% 5% 75%;
+  grid-template-columns : 20% 5% 5% 70%;
 }
 
 .group .btn-test {
@@ -189,12 +198,16 @@ span {
   color: var(--light);
 }
 
+.group i {
+  grid-column: 3 / 4
+}
+
 .group .remove:hover {
   background-color: #8e1f31;
 }
 
 .group span {
-  grid-column: 3 / 4;
+  grid-column: 4 / 5;
 }
 
 .btn-base h4 {

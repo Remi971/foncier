@@ -93,7 +93,6 @@ def add_data(cle, chemin, *argv):
             dict_sig[cle] = clean_data(gpd.read_file(chemin[0], layer = chemin[1]))
         else:
             dict_sig[cle] = clean_data(gpd.read_file(chemin))
-    print("Nombre de couche en mémoire : ", len(dict_sig))
 
 #Fonction qui va inspecter la couche SIG et renvoyer le type de géométrie
 @eel.expose
@@ -142,7 +141,6 @@ def unique_values(champs):
     enveloppe.insert(len(enveloppe.columns), "cesMax", 40)
     enveloppe.insert(len(enveloppe.columns), "test", 10)
     enveloppe.insert(len(enveloppe.columns), "bufBati", 4)
-    print(enveloppe)
     return liste_valeur
 
 def coeffEmpriseSol(bati, parcelle, enregistrer_ces) :
@@ -254,6 +252,15 @@ def voiesFerrees(voies, potentiel):
     couche = potentiel[potentiel.disjoint(voie_ferree.unary_union)]
     return couche
 
+def filtre(potentiel, couche, buffer=None):
+    print('\n   ##  Prise en compte des filtres  ##   ')
+    filtre = couche.copy()
+    if buffer != None:
+        filtre["geometry"] = filtre["geometry"].buffer(buffer)
+    difference = gpd.overlay(potentiel, filtre, how='difference')
+    verification = selectionParcelles(difference)
+    return verification
+
 @eel.expose
 def lancement(donnees, exportCes):
     t0 = time.process_time()
@@ -349,7 +356,15 @@ def lancement(donnees, exportCes):
     potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
     timing(ti, 'Test des parcelles terminé en')
     #Prise en compte des Filtres
-    # ...
+    for couche in donnees["dossier"]["couches"]:
+        if couche not in couches:
+            chemins[couche] = clean_data(gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche]))
+            potentiel = filtre(potentiel, chemins[couche], donnees["paramètres"]["filtres"][couche])
+    for couche in donnees["gpkg"]["layers"]:
+        if couche not in couches:
+            chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
+            potentiel = filtre(potentiel, chemins[couche], donnees["paramètres"]["filtres"][couche])
+
     timing(t0, 'Traitement terminé! en')
     #CHARTS and MAPS
     #ces.plot(column='ces', cmap='Reds', legend=True)

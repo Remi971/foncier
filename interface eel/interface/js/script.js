@@ -120,6 +120,13 @@ $(".group").on('click','.btn-test', function(){
       data2 = ["Routes", "Voies ferrées"].includes(key),
       geomLine = ['LineString', 'MultiString'].includes(something),
       condition2 = (data2 && geomLine === false) ? true : false;
+      if (something === 'MultiPolygon' || something === 'Polygon') {
+        $(divParent).children("i").html("<img src='/images/polygon.svg'>")
+      }else if (something === 'Points'){
+        $(divParent).children("i").html("<img src='/images/point.svg'>")
+      }else if (something === 'LineString'){
+          $(divParent).children("i").html("<img src='/images/line.svg'>")
+      }
     if (condition1 || condition2){
       alert("La donnée sélectionnée n'as pas la bonne géométrie! Pour les 'Parcelles', le 'Bâti' et la 'Structuration territoriale', veuillez sélectionner une donnée de type Polygon ou MultiPolygon et pour les 'Routes' et les 'Voies ferrées' une donnée de type LineString (ligne)");
       span.css("color", "red");
@@ -201,19 +208,29 @@ function valeursTable(liste){
 $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
     let name = prompt("Indiquez le nom du filtre : ")
-    $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test" id='+name+'>'+name+'</button><button class="remove">X</button><span id="vf-canvas" class="data-info"></span></div>').appendTo('.btn-base');
+    $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test" id='+name+'>'+name+'</button><button class="remove">X</button><i></i><span id="vf-canvas" class="data-info"></span></div>').appendTo('.btn-base');
     $(".group").on('click',".btn-test", function(){
       let select = $(".donnees.classLi").html();
       let divParent = $(this).parent();
       $(divParent).children("span").html(select);
       let key = $(this).html();
-      if (data.endsWith(".gpkg")){
-        delete mesVar.dossier.couches[key];
-        mesVar.gpkg.layers[key] = select;
-      }else{
-        delete mesVar.gpkg.layers[key];
-        mesVar.dossier.couches[key] = select;
-      }
+      function check(something){
+          if (something === 'MultiPolygon' || something === 'Polygon') {
+            $(divParent).children("i").html("<img src='/images/polygon.svg'>")
+          }else if (something === 'Points'){
+            $(divParent).children("i").html("<img src='/images/point.svg'>")
+          }else if (something === 'LineString'){
+              $(divParent).children("i").html("<img src='/images/line.svg'>")
+          }
+          if (data.endsWith(".gpkg")){
+            delete mesVar.dossier.couches[key];
+            mesVar.gpkg.layers[key] = select;
+          }else{
+            delete mesVar.gpkg.layers[key];
+            mesVar.dossier.couches[key] = select;
+          }
+        }
+      typeGeometry(data, select, check);
     })
     //Bouton de suppression de filtre
     $(".group .remove").on('click', function(){
