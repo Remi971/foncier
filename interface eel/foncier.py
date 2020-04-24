@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import time
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
 eel.init('interface')
 
@@ -227,8 +228,6 @@ def routeCadastrees(route, potentiel):
     route["geometry"] = route.buffer(5)
     route = route.set_geometry("geometry")
     parcelles = potentiel.copy()
-    parcelles.insert(0, "id_par", range(1, 1 + len(parcelles)))
-    parcelles.insert(1, "surf_par", parcelles["geometry"].area)
     print('\n - Calcul du CES des routes')
     intersection = gpd.overlay(route, parcelles, how='intersection')
     dissolve = intersection.dissolve(by='id_par').reset_index()
@@ -245,6 +244,14 @@ def routeCadastrees(route, potentiel):
     print("\n - Suppression du cadastre d'étude de  la voirie cadastrée sélectionnée")
     liste_id = [i for i in ces_route['id_par']]
     couche = potentiel.loc[~potentiel['id_par'].isin(liste_id)]
+    return couche
+
+def voiesFerrees(voies, potentiel):
+    print('\n   ##  Prise en compte des voies ferrées   ##   ')
+    voie_ferree = voies.copy()
+    voie_ferree["geometry"] = voie_ferree.buffer(1)
+    #voie_ferree = Traitement.clean_data(voie_ferree)
+    couche = potentiel[potentiel.disjoint(voie_ferree.unary_union)]
     return couche
 
 @eel.expose
@@ -318,35 +325,39 @@ def lancement(donnees, exportCes):
     ti = time.process_time()
     selection = selectionParcelles(ces)
     timing(ti, 'Sélection des parcelles terminé en')
+    #Prise en compte de la proximité à la routes
+    if "Routes" in chemins:
+        ti = time.process_time()
+        route = chemins["Routes"]
+        routes_in_enveloppe = gpd.clip(route, enveloppe)
+        routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe["geometry"].notnull()]
+        #potentiel = routeDesserte(routes_in_enveloppe, potentiel)
+        timing(ti, 'Prise en compte de la proximité à la route terminée en')
+        ti = time.process_time()
+        selecion = routeCadastrees(routes_in_enveloppe, selection)
+        timing(ti, 'Exclusion des routes cadastrées terminée en')
+    #Prise en compte des voies ferrées si renseignées
+    selection = voiesFerrees(chemins["Voies ferrées"], selection)
     #Test des parcelles vides identifiées
     ti = time.process_time()
     parcelle_vide = selection[selection["type"] == "parcelle vide"]
     test_vide, emprise_vide = test_emprise_vide(parcelle_vide)
-
     #Test des parcelles baties identifiées
     parcelle_batie = selection[selection["type"] == "parcelle batie"]
     test_batie, emprise_batie = test_emprise_batie(parcelle_batie, chemins["Bâti"])
     potentiel = pd.concat([test_vide, test_batie])
     potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
     timing(ti, 'Test des parcelles terminé en')
-    #Prise en compte de la proximité à la routes
-    if "Routes" in chemins:
-        ti = time.process_time()
-        routes = gpd.overlay(chemins["Routes"], enveloppe, how='intersection')
-        potentiel = routeDesserte(routes, potentiel)
-        timing(ti, 'Prise en compte de la proximité à la route terminée en')
-        ti = time.process_time()
-        potentiel = routeCadastrees(routes, potentiel)
-        timing(ti, 'Exclusion des routes cadastrées terminée en')
-    #Prise en compte des voies ferrées si renseignées
-    # ...
     #Prise en compte des Filtres
     # ...
     timing(t0, 'Traitement terminé! en')
     #CHARTS and MAPS
     #ces.plot(column='ces', cmap='Reds', legend=True)
-    potentiel.plot(column='type', legend=True)
     potentiel_emprise.plot(column='type', legend=True)
+    fig, ax = plt.subplots(figsize=(12, 8))
+    chemins["Voies ferrées"].plot(ax=ax, color='black', linestyle='dashed', legend=True)
+    routes_in_enveloppe.plot(ax=ax, color='red', linewidth=0.1, legend=True)
+    potentiel.plot(ax=ax, column='type', legend=True)
     # Pie chart of potentiel parcelle complète
     potentiel_sum = potentiel.groupby("type").sum()
     batie = round(potentiel_sum["surf_par"][0] / 10000, 0)
