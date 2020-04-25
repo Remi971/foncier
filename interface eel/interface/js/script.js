@@ -35,6 +35,7 @@ const mesVar = {
   {
     défauts:"vide",
     perso: "vide",
+    filtres: {},
   },
 }
 // Choix de l'utilisateur pour importer les données à partir d'un dossier ou d'une base de données Geopackage
@@ -104,22 +105,21 @@ $(document).ready(function(){
   })
 })
 // Attribution des données aux variables avec vérification des géométries
-
 $(".group").on('click','.btn-test', function(){
   let select = $(".donnees.classLi").html();
-  //eel.geometryType(data, select)(n => geomType = n);
   let divParent = $(this).parent();
+  $(divParent).children("span").html(select);
   let span = $(divParent).children("span");
-  span.html(select);
   let key = $(this).html();
   function check(something){
-    let
-      data1 = ["Parcelles", "Bâti", "Structuration territoriale"].includes(key),
-      geomPoly = ['Polygon', 'MultiPolygon'].includes(something),
-      condition1 = (data1 && geomPoly === false) ? true : false,
-      data2 = ["Routes", "Voies ferrées"].includes(key),
-      geomLine = ['LineString', 'MultiString'].includes(something),
-      condition2 = (data2 && geomLine === false) ? true : false;
+      let
+        data1 = ["Parcelles", "Bâti", "Structuration territoriale"].includes(key),
+        geomPoly = ['Polygon', 'MultiPolygon'].includes(something),
+        condition1 = (data1 && geomPoly === false) ? true : false,
+        data2 = ["Routes", "Voies ferrées"].includes(key),
+        geomLine = ['LineString', 'MultiString'].includes(something),
+        condition2 = (data2 && geomLine === false) ? true : false,
+        condition3 = something === 'Couche vide';
       if (something === 'MultiPolygon' || something === 'Polygon') {
         $(divParent).children("i").html("<img src='/images/polygon.svg'>")
       }else if (something === 'Points'){
@@ -127,35 +127,27 @@ $(".group").on('click','.btn-test', function(){
       }else if (something === 'LineString'){
           $(divParent).children("i").html("<img src='/images/line.svg'>")
       }
-    if (condition1 || condition2){
-      alert("La donnée sélectionnée n'as pas la bonne géométrie! Pour les 'Parcelles', le 'Bâti' et la 'Structuration territoriale', veuillez sélectionner une donnée de type Polygon ou MultiPolygon et pour les 'Routes' et les 'Voies ferrées' une donnée de type LineString (ligne)");
-      span.css("color", "red");
-    }
-    else {
-      span.css("color", "black");
-      if (key === "Structuration territoriale"){
-        listeColumns(data, select);
-      }
-      if (data.endsWith(".gpkg")){
-        delete mesVar.dossier.couches[key];
-        mesVar.gpkg.layers[key] = select;
-      }else{
-        delete mesVar.gpkg.layers[key];
-        mesVar.dossier.couches[key] = select;
-      }
+      if (condition1 || condition2){
+        alert("La donnée sélectionnée n'as pas la bonne géométrie! Pour les 'Parcelles', le 'Bâti' et la 'Structuration territoriale', veuillez sélectionner une donnée de type Polygon ou MultiPolygon et pour les 'Routes' et les 'Voies ferrées' une donnée de type LineString (ligne)");
+        span.css("color", "red");
+      } else if (condition3) {
+        alert('Cette couche est vide !');
+        span.css("color", "red");
+      } else {
+        span.css("color", "black");
+        if (key === "Structuration territoriale"){
+          listeColumns(data, select);
+        }
+        if (data.endsWith(".gpkg")){
+          delete mesVar.dossier.couches[key];
+          mesVar.gpkg.layers[key] = select;
+        }else{
+          delete mesVar.gpkg.layers[key];
+          mesVar.dossier.couches[key] = select;
+        }
     }
   }
   typeGeometry(data, select, check);
-  // if (key === "Structuration territoriale"){
-  //   listeColumns(data, select);
-  // }
-  // if (data.endsWith(".gpkg")){
-  //   delete mesVar.dossier.couches[key];
-  //   mesVar.gpkg.layers[key] = select;
-  // }else{
-  //   delete mesVar.gpkg.layers[key];
-  //   mesVar.dossier.couches[key] = select;
-  // }
 })
 
 //fonction qui va récupérer les paramètres définis pour chaque type de la couche structuration territoriale
@@ -208,26 +200,34 @@ function valeursTable(liste){
 $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
     let name = prompt("Indiquez le nom du filtre : ")
-    $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test" id='+name+'>'+name+'</button><button class="remove">X</button><i></i><span id="vf-canvas" class="data-info"></span></div>').appendTo('.btn-base');
+    $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test" id='+name+'>'+name+'</button><button class="remove">X</button><i></i><span id="vf-canvas" class="data-info"></span><div class="buffer"><input type="number" value=0><button class="okBuffer">OK</button></div></div>').appendTo('.btn-base');
     $(".group").on('click',".btn-test", function(){
       let select = $(".donnees.classLi").html();
       let divParent = $(this).parent();
       $(divParent).children("span").html(select);
       let key = $(this).html();
+      let span = $(divParent).children("span");
       function check(something){
           if (something === 'MultiPolygon' || something === 'Polygon') {
             $(divParent).children("i").html("<img src='/images/polygon.svg'>")
           }else if (something === 'Points'){
             $(divParent).children("i").html("<img src='/images/point.svg'>")
           }else if (something === 'LineString'){
-              $(divParent).children("i").html("<img src='/images/line.svg'>")
+            $(divParent).children("i").html("<img src='/images/line.svg'>")
           }
-          if (data.endsWith(".gpkg")){
-            delete mesVar.dossier.couches[key];
-            mesVar.gpkg.layers[key] = select;
-          }else{
-            delete mesVar.gpkg.layers[key];
-            mesVar.dossier.couches[key] = select;
+          if (something === 'Couche vide'){
+            alert('Cette couche est vide');
+            span.css("color", "red");
+          }else {
+            span.css("color", "black");
+            mesVar.paramètres.filtres[key] = 0;
+            if (data.endsWith(".gpkg")){
+              delete mesVar.dossier.couches[key];
+              mesVar.gpkg.layers[key] = select;
+            }else{
+              delete mesVar.gpkg.layers[key];
+              mesVar.dossier.couches[key] = select;
+            }
           }
         }
       typeGeometry(data, select, check);
@@ -238,14 +238,19 @@ $(document).ready(function(){
       nom = $(parent).children(".btn-test").html();
       delete mesVar.gpkg.layers[nom];
       delete mesVar.dossier.couches[nom];
+      delete mesVar.paramètres.filtres[nom];
       $(this).parent().remove();
+    })
+    $("button.okBuffer").on('click', function(){
+      let parent = $(this).parent();
+      let input = parent.children('input').val();
+      let grandParent = parent.parent();
+      nom = $(grandParent).children("button.btn-test").html();
+      mesVar.paramètres.filtres[nom] = input;
+      console.log(`le filtre ${nom} a un buffer de ${input}m`);
     })
   })
 })
-
-
-
-
 
 //PARAMETRES
 let ulColumns = $("ul#columns")

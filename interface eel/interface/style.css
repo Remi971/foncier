@@ -52,13 +52,12 @@ body {
     padding: 6px 12px;
     border: 1px solid var(--dark);
     border-top: none;
-    height: 100%;
   }
 .title {
   background-color : var(--citadia);
   width: auto;
   padding : 6px 12px;
-  border: 1px solid;
+  border: 1px solid;l
   display : flex;
   align-items: center;
 }
@@ -177,14 +176,10 @@ span {
   padding-left: 10px;
 }
 
-#geom {
-
-}
-
 .group {
   display : grid;
-  grid-gap : 1rem;
-  grid-template-columns : 20% 5% 5% 70%;
+  grid-gap : 1%;
+  grid-template-columns : 15% 5% 5% 60% 10%;
 }
 
 .group .btn-test {
@@ -199,7 +194,14 @@ span {
 }
 
 .group i {
-  grid-column: 3 / 4
+  grid-column: 3 / 4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.group i img {
+  width: 50%;
 }
 
 .group .remove:hover {
@@ -208,6 +210,19 @@ span {
 
 .group span {
   grid-column: 4 / 5;
+}
+
+.group .buffer {
+  grid-column: 5 / 6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.group .buffer input {
+  width: 100%;
+  text-align: right;
+  background-color: var(--light);
 }
 
 .btn-base h4 {

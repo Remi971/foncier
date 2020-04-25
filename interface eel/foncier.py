@@ -101,9 +101,12 @@ def geometryType(chemin, nom):
         couche = gpd.read_file(chemin, layer=nom)
     else:
         couche = gpd.read_file(chemin + '/' + nom)
-    print(str(couche["geometry"][0].geom_type))
-    type = str(couche["geometry"][0].geom_type)
-    return type
+    if len(couche) == 0:
+        return "Couche vide"
+    else:
+        print(str(couche["geometry"][0].geom_type))
+        type = str(couche["geometry"][0].geom_type)
+        return type
 
 ## Fonction pour attribuer des paramètres par type de zone de la couche STRUCTURATION TERRTORIALE ##
 @eel.expose
@@ -252,10 +255,10 @@ def voiesFerrees(voies, potentiel):
     couche = potentiel[potentiel.disjoint(voie_ferree.unary_union)]
     return couche
 
-def filtre(potentiel, couche, buffer=None):
+def filtre(potentiel, couche, buffer):
     print('\n   ##  Prise en compte des filtres  ##   ')
     filtre = couche.copy()
-    if buffer != None:
+    if buffer != 0:
         filtre["geometry"] = filtre["geometry"].buffer(buffer)
     difference = gpd.overlay(potentiel, filtre, how='difference')
     verification = selectionParcelles(difference)
@@ -359,11 +362,11 @@ def lancement(donnees, exportCes):
     for couche in donnees["dossier"]["couches"]:
         if couche not in couches:
             chemins[couche] = clean_data(gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche]))
-            potentiel = filtre(potentiel, chemins[couche], donnees["paramètres"]["filtres"][couche])
+            potentiel = filtre(potentiel, chemins[couche], int(donnees["paramètres"]["filtres"][couche]))
     for couche in donnees["gpkg"]["layers"]:
         if couche not in couches:
             chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
-            potentiel = filtre(potentiel, chemins[couche], donnees["paramètres"]["filtres"][couche])
+            potentiel = filtre(potentiel, chemins[couche], int(donnees["paramètres"]["filtres"][couche]))
 
     timing(t0, 'Traitement terminé! en')
     #CHARTS and MAPS
