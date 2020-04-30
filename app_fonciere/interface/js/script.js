@@ -248,6 +248,7 @@ $(document).ready(function(){
       nom = $(grandParent).children("button.btn-test").html();
       mesVar.paramètres.filtres[nom] = input;
       console.log(`le filtre ${nom} a un buffer de ${input}m`);
+      parent.children('input').css('background-color', '#aaf2b6')
     })
   })
 })
