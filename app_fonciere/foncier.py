@@ -229,10 +229,10 @@ def lancement(donnees, exportCes):
     timing(t0, 'Traitement terminé! en')
     #CHARTS and MAPS
     #ces.plot(column='ces', cmap='Reds', legend=True)
+    #chemins["Voies ferrées"].plot(ax=ax, color='black', linestyle='dashed', legend=True)
+    #routes_in_enveloppe.plot(ax=ax, color='red', linewidth=0.1, legend=True)
     potentiel_emprise.plot(column='type', legend=True)
     fig, ax = plt.subplots(figsize=(12, 8))
-    chemins["Voies ferrées"].plot(ax=ax, color='black', linestyle='dashed', legend=True)
-    routes_in_enveloppe.plot(ax=ax, color='red', linewidth=0.1, legend=True)
     potentiel.plot(ax=ax, column='type', legend=True)
     # Pie chart of potentiel parcelle complète
     potentiel_sum = potentiel.groupby("type").sum()

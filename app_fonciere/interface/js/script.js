@@ -109,8 +109,10 @@ $(".group").on('click','.btn-test', function(){
   let select = $(".donnees.classLi").html();
   let divParent = $(this).parent();
   $(divParent).children("span").html(select);
+  let iload = $(divParent).children("i")
   let span = $(divParent).children("span");
   let key = $(this).html();
+  $('<div class="lds-dual-ring"></div>').appendTo(iload)
   function check(something){
       let
         data1 = ["Parcelles", "Bâti", "Structuration territoriale"].includes(key),
