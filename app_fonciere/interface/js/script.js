@@ -200,8 +200,8 @@ function valeursTable(liste){
 $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
     let name = prompt("Indiquez le nom du filtre : ")
-    $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test" id='+name+'>'+name+'</button><button class="remove">X</button><i></i><span id="vf-canvas" class="data-info"></span><div class="buffer"><input type="number" value=0><button class="okBuffer">OK</button></div></div>').appendTo('.btn-base');
-    $(".group").on('click',".btn-test", function(){
+    $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test filtre" id='+name+'>'+name+'</button><button class="remove">X</button><i></i><span id="vf-canvas" class="data-info"></span><div class="buffer"><input type="number" value=0><button class="okBuffer">OK</button></div></div>').appendTo('.btn-base');
+    $(".group").on('click',".btn-test.filtre", function(){
       let select = $(".donnees.classLi").html();
       let divParent = $(this).parent();
       $(divParent).children("span").html(select);
