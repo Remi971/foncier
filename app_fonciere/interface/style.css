@@ -171,11 +171,13 @@ li:hover{
 .btn-base {
   display: grid;
   grid-template-columns: auto;
+  align-items: center;
 }
 
 span {
   width : 95%;
-  height : 1.5em;
+  font-size: 10px;
+  height : 1em;
   border : var(--dark) solid 1px;
   border-radius: 1rem;
   background-color: var(--light);
@@ -186,7 +188,6 @@ span {
 .group {
   display : grid;
   grid-gap : 1%;
-  height : 45px;
   grid-template-columns : 15% 5% 5% 60% 10%;
 }
 
@@ -286,7 +287,7 @@ span {
 .progress-bar {
     position: relative;
     width: 500px;
-    height: 2em;
+    height: 1.5em;
     background-color: var(--dark);
     border-radius: 1.5em;
     color: white;
@@ -307,7 +308,6 @@ span {
     max-width: calc(100% - 1em);
     background-color: green;
     border-radius: 1em;
-    padding: .5em;
 }
 /* Tab Paramètres */
 .wrapper {
