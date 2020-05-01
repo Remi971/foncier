@@ -134,6 +134,7 @@ def lancement(donnees, exportCes):
             unite = 'minutes'
         print("\n   #####   {} {} {}  #####   \n".format(intitule,temps,unite))
     print('\n### Lancement du traitement ### \n\n ## Prise en compte de la structuration territoriale ##')
+    eel.progress(90/7)
     ti = time.process_time()
     if donnees['paramètres']['perso'] == 'vide' and donnees['paramètres']['défauts'] != 'vide':
         param = donnees["paramètres"]["défauts"]
@@ -185,14 +186,17 @@ def lancement(donnees, exportCes):
     parcelle_intersect.crs = enveloppe.crs
     timing(ti, 'Prise en compte de la structuration territoriale terminée en')
     #Calcul du CES
+    eel.progress(90/7)
     ti = time.process_time()
     ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect, exportCes)
     timing(ti, 'Calcul du CES terminé en')
     #Sélection des parcelles
+    eel.progress(90/7)
     ti = time.process_time()
     selection = selectionParcelles(ces)
     timing(ti, 'Sélection des parcelles terminé en')
     #Prise en compte de la proximité à la routes
+    eel.progress(90/7)
     if "Routes" in chemins:
         ti = time.process_time()
         route = chemins["Routes"]
@@ -204,9 +208,11 @@ def lancement(donnees, exportCes):
         selecion = routeCadastrees(routes_in_enveloppe, selection)
         timing(ti, 'Exclusion des routes cadastrées terminée en')
     #Prise en compte des voies ferrées si renseignées
+    eel.progress(90/7)
     if "Voies ferrées" in chemins:
         selection = voiesFerrees(chemins["Voies ferrées"], selection)
     #Prise en compte des Filtres
+    eel.progress(90/7)
     for couche in donnees["dossier"]["couches"]:
         if couche not in couches and couche != 'Structuration territoriale':
             chemins[couche] = clean_data(gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche]))
@@ -216,6 +222,7 @@ def lancement(donnees, exportCes):
             chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
             selection = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]))
     #Test des parcelles vides identifiées
+    eel.progress(90/7)
     ti = time.process_time()
     parcelle_vide = selection[selection["type"] == "parcelle vide"]
     test_vide, emprise_vide = test_emprise_vide(parcelle_vide)

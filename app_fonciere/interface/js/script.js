@@ -318,6 +318,18 @@ $(document).ready(function() {
     }
   })
 })
+
+//ProgressBar
+const progressBar = document.getElementsByClassName('progress-bar')[0]
+eel.expose(progress);
+function progress(num) {
+    const computedStyle = getComputedStyle(progressBar)
+    const width = parseFloat(computedStyle.getPropertyValue('--width')) || 0
+    const content = computedStyle.getPropertyValue('content')
+    progressBar.style.setProperty('--width', width + num)
+    //progressBar.style.setProperty('content', nom)
+}
+
 //VISUALISATION map
 let mymap = L.map('mapid').setView([43.947991, 4.80875], 13);
 let Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
