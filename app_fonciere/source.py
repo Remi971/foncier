@@ -22,7 +22,7 @@ def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
     return gdf
 
 #Calcul du coefficient de l'emprise au sol avec maintient des colonnes paramètres et sauvegarde ou pas de la couche
-def coeffEmpriseSol(bati, parcelle, enregistrer_ces) :
+def coeffEmpriseSol(bati, parcelle) :
     print("\n   ##   Calcul du CES   ##   \n")
     bati = bati.copy()
     parcelle = parcelle.copy()
@@ -41,12 +41,6 @@ def coeffEmpriseSol(bati, parcelle, enregistrer_ces) :
          if i not in ['id_par','surf_par', 'surf_bat', 'ces', 'geometry', "d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"]:
             coeff = coeff.drop(i, axis=1)
     coeff.crs = ('+init=epsg:2154')
-    #Sauvegarde de la couche en fonction du choix utilisateur
-    if enregistrer_ces == True:
-        coeff.to_file('ces.shp')
-        print('\nCES exporté\n')
-    else:
-        pass
     return(coeff)
 
 #Sélection des parcelles en fonction des paramètres renseignées par l'utilisateur

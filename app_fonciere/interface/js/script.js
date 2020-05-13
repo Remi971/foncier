@@ -44,6 +44,7 @@ let
   listeValeurs = [],
   listeStructuration = [];
   geomType = '';
+  result = '';
 //Fonction qui récupère le nom du dossier de data
 async function pickFolder() {
   data = await eel.selectionDossier()();
@@ -67,7 +68,10 @@ async function typeGeometry(chemin, layer, callback){
   geomType = await eel.geometryType(chemin, layer)();
   callback(geomType);
 }
-
+async function exportResultat(exportCes, callback) {
+  result = await eel.export(exportCes)();
+  callback(result);
+}
 //Valider le choix de la source de donnée
 $(document).ready(function(){
   //Bouton de validation de la source de donnée (Dossier ou GPKG)
@@ -250,7 +254,6 @@ $(document).ready(function(){
       let grandParent = parent.parent();
       nom = $(grandParent).children("button.btn-test").html();
       mesVar.paramètres.filtres[nom] = input;
-      console.log(`le filtre ${nom} a un buffer de ${input}m`);
       parent.children('input').css('background-color', '#aaf2b6')
     })
   })
@@ -304,19 +307,35 @@ $(document).ready(function(){
 
 $(document).ready(function() {
   $('#btn-script').on('click', function() {
-    let exportCes = document.getElementById("ces_check").checked
     if (mesVar.paramètres['défauts'] === "vide" && mesVar.paramètres['perso'] === "vide") {
       let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement avec les paramètres par défaut?")
       if (answer) {
-        eel.lancement(mesVar, exportCes)()
+        eel.lancement(mesVar,)()
       }
       else {
         return;
       }
     }
     else {
-        eel.lancement(mesVar, exportCes)()
+        eel.lancement(mesVar)()
     }
+  })
+})
+
+$(document).ready(function() {
+  $("#btn-export").on('click', function() {
+    let exportCes = document.getElementById("ces_check").checked
+    function avertissement(valeur) {
+      console.log(valeur);
+      if (valeur === false){
+        alert("Données exportées dans le geopackage app_fonciere/data/resultats.gpkg");
+        $("#btn-export").css('background-color', '#aaf2b6');
+      }else{
+        alert("Aucune donnée, veuillez lancer un traitement")
+        $("#btn-export").css('background-color', 'red')
+      }
+    }
+    exportResultat(exportCes, avertissement);
   })
 })
 

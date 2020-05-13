@@ -124,7 +124,7 @@ def unique_values(champs):
     return liste_valeur
 
 @eel.expose
-def lancement(donnees, exportCes):
+def lancement(donnees):
     t0 = time.process_time()
     def timing(t, intitule):
         temps = time.process_time() - t
@@ -190,7 +190,8 @@ def lancement(donnees, exportCes):
     #Calcul du CES
     eel.progress(90/7)
     ti = time.process_time()
-    ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect, exportCes)
+    global ces
+    ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
     timing(ti, 'Calcul du CES terminé en')
     #Sélection des parcelles
     eel.progress(90/7)
@@ -237,7 +238,9 @@ def lancement(donnees, exportCes):
     #Test des parcelles baties identifiées
     parcelle_batie = selection[selection["type"] == "parcelle batie"]
     test_batie, emprise_batie = test_emprise_batie(parcelle_batie, chemins["Bâti"])
+    global potentiel
     potentiel = pd.concat([test_vide, test_batie])
+    global potentiel_emprise
     potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
     timing(ti, 'Test des parcelles terminé en')
 
@@ -278,6 +281,26 @@ def lancement(donnees, exportCes):
     ax2.set_title("Répartition du foncier mobilisable estimé à : {} ha".format(somme2))
 
     plt.show()
+
+@eel.expose
+def export(exportCes):
+    err = False
+    try:
+        print(f'\nLe potentiel foncier concerne {len(potentiel)} parcelles\n')
+    except NameError:
+        err = True
+        return err
+    else:
+        root = tk.Tk()
+        dossier = askdirectory()
+        #root.withdraw()
+        root.destroy()
+        potentiel.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel-parcelle', driver="GPKG")
+        potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel-emprise', driver="GPKG")
+        if exportCes:
+            ces.to_file(dossier + '/' + 'resultats.gpkg',layer='ces', driver='GPKG')
+        return err
+
 if __name__ == "__main__":
     eel.init('interface')
     eel.start('index.html', size=(1000, 800))
