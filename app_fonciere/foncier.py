@@ -5,6 +5,8 @@ import tkinter as tk
 from tkinter.filedialog import askdirectory, askopenfilename
 import os
 from fiona import listlayers
+from fiona import _shim, schema
+from pyproj import _datadir, datadir
 import geopandas as gpd
 import pandas as pd
 import numpy as np
@@ -196,8 +198,9 @@ def lancement(donnees, exportCes):
     selection = selectionParcelles(ces)
     timing(ti, 'Sélection des parcelles terminé en')
     #Prise en compte de la proximité à la routes
-    eel.progress(90/7)
+
     if "Routes" in chemins:
+        eel.progress(90/7)
         ti = time.process_time()
         route = chemins["Routes"]
         routes_in_enveloppe = gpd.clip(route, enveloppe)
@@ -207,10 +210,15 @@ def lancement(donnees, exportCes):
         ti = time.process_time()
         selecion = routeCadastrees(routes_in_enveloppe, selection)
         timing(ti, 'Exclusion des routes cadastrées terminée en')
+    else:
+        eel.progress(90/7)
     #Prise en compte des voies ferrées si renseignées
-    eel.progress(90/7)
+
     if "Voies ferrées" in chemins:
+        eel.progress(90/7)
         selection = voiesFerrees(chemins["Voies ferrées"], selection)
+    else:
+        eel.progress(90/7)
     #Prise en compte des Filtres
     eel.progress(90/7)
     for couche in donnees["dossier"]["couches"]:
