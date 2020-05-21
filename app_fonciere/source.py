@@ -46,15 +46,17 @@ def coeffEmpriseSol(bati, parcelle) :
 #Sélection des parcelles en fonction des paramètres renseignées par l'utilisateur
 def selectionParcelles(ces):
     print("\n   ## Sélection des parcelles   ##   \n")
+    global selection
     selection = ces.copy()
     selection = selection[(selection["ces"] < 0.5) & (selection["geometry"].area >= selection["non-batie"]) | (selection["ces"] >= 0.5) & (selection["ces"] < selection["cesMax"]) & (selection["geometry"].area >= selection["batie"])]
     selection.loc[selection['ces']>= 0.5, 'type'] = "parcelle batie"
     selection.loc[selection['ces']< 0.5, 'type'] = "parcelle vide"
+    selection["filtres"] = "0"
     #selection[["type"]] = selection["ces"].apply(lambda x: "parcelle vide" if x < 0.5 else "parcelle batie")
     return selection
 
 #Test des emprises mobilisables des parcelles non bâtie
-def test_emprise_vide(parcelles):
+def test_emprise_vide(parcelles, exclues):
     print("\n   ## Test des parcelles vides   ##   \n")
     couche_buf = parcelles.copy()
     #Applique un buffer pour chaque entité suivant la valeur de la colonne "test" correspondante
@@ -62,11 +64,13 @@ def test_emprise_vide(parcelles):
     couche_buf = couche_buf[couche_buf["geometry"].area >= couche_buf["non-batie"]]
     couche_buf["surf_par"] = couche_buf["geometry"].area
     liste_id = [i for i in couche_buf['id_par']]
+    #selection = selection.loc[~selection['id_par'].isin(liste_id)]
+    exclues.loc[~exclues["id_par"].isin(liste_id), "filtres"] = 'echec du test'
     couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
-    return couche, couche_buf
+    return couche, couche_buf, exclues
 
 #Test des emprises mobilisables des parcelles bâtie
-def test_emprise_batie(parcelles, bati):
+def test_emprise_batie(parcelles, bati, exclues):
     print("\n   ## Test des parcelles baties   ##   \n")
     bati_buf = bati.copy()
     bati_buf = gpd.overlay(bati_buf, parcelles, how='intersection')
@@ -77,8 +81,10 @@ def test_emprise_batie(parcelles, bati):
     emprise = emprise[emprise["geometry"].area >= emprise["non-batie"]]
     emprise["surf_par"] = emprise["geometry"].area
     liste_id = [i for i in emprise['id_par']]
+    exclues.loc[~exclues["id_par"].isin(liste_id) and exclues["filtres"] != "0", "filtres"] = 'echec du test'
     couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
-    return couche, emprise
+    emprise.geometry = emprise.geometry.apply(lambda x: x.minimum_rotaded_rectangle)
+    return couche, emprise, exclues
 
 #INUTILE
 def routeDesserte(route, potentiel):
@@ -118,22 +124,25 @@ def routeCadastrees(route, potentiel):
     ces_route.crs = {'init': 'epsg:2154'}
     print("\n - Suppression du cadastre d'étude de  la voirie cadastrée sélectionnée")
     liste_id = [i for i in ces_route['id_par']]
+    parcelles.loc[parcelles['id_par'].isin(liste_id), "filtres"] = 'routes'
     couche = potentiel.loc[~potentiel['id_par'].isin(liste_id)]
-    return couche
+    return couche, parcelles
 
-def voiesFerrees(voies, potentiel):
+def voiesFerrees(voies, potentiel, exclues):
     print('\n   ##  Prise en compte des voies ferrées   ##   ')
     voie_ferree = voies.copy()
     voie_ferree["geometry"] = voie_ferree.buffer(1)
     #voie_ferree = Traitement.clean_data(voie_ferree)
+    exclues.loc[exclues["geometry"].intersects(voie_ferree["geometry"]), "filtres"] = 'voies ferrees'
     couche = potentiel[potentiel.disjoint(voie_ferree.unary_union)]
-    return couche
+    return couche, exclues
 
-def filtre(potentiel, couche, buffer):
+def filtre(potentiel, couche, buffer, nom, exclues):
     print('\n   ##  Prise en compte des filtres  ##   ')
     filtre = couche.copy()
     if buffer != 0:
         filtre["geometry"] = filtre["geometry"].buffer(buffer)
     difference = gpd.overlay(potentiel, filtre, how='difference')
+    exclues.loc[exclues["geometry"].intersects(filtre["geometry"]), "filtres"] = nom
     verification = selectionParcelles(difference)
-    return verification
+    return verification, exclues

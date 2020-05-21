@@ -209,9 +209,9 @@ def lancement(donnees):
         routes_in_enveloppe = gpd.clip(route, enveloppe)
         routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe["geometry"].notnull()]
         #potentiel = routeDesserte(routes_in_enveloppe, potentiel)
-        timing(ti, 'Prise en compte de la proximité à la route terminée en')
-        ti = process_time()
-        selecion = routeCadastrees(routes_in_enveloppe, selection)
+        #timing(ti, 'Prise en compte de la proximité à la route terminée en')
+        #ti = process_time()
+        selection1, exclues = routeCadastrees(routes_in_enveloppe, selection)
         timing(ti, 'Exclusion des routes cadastrées terminée en')
     else:
         eel.progress(90/7)
@@ -219,7 +219,8 @@ def lancement(donnees):
 
     if "Voies ferrées" in chemins:
         eel.progress(90/7)
-        selection = voiesFerrees(chemins["Voies ferrées"], selection)
+        selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection1, exclues)
+        print(exclues[exclues["filtres"] != 0])
     else:
         eel.progress(90/7)
     #Prise en compte des Filtres
@@ -227,19 +228,19 @@ def lancement(donnees):
     for couche in donnees["dossier"]["couches"]:
         if couche not in couches and couche != 'Structuration territoriale':
             chemins[couche] = clean_data(gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche]))
-            selection = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]))
+            selection, exclues = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]), couche, exclues)
     for couche in donnees["gpkg"]["layers"]:
         if couche not in couches and couche != 'Structuration territoriale':
             chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
-            selection = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]))
+            selection, exclues = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]), couche, exclues)
     #Test des parcelles vides identifiées
     eel.progress(90/7)
     ti = process_time()
     parcelle_vide = selection[selection["type"] == "parcelle vide"]
-    test_vide, emprise_vide = test_emprise_vide(parcelle_vide)
+    test_vide, emprise_vide, exclues = test_emprise_vide(parcelle_vide, exclues)
     #Test des parcelles baties identifiées
     parcelle_batie = selection[selection["type"] == "parcelle batie"]
-    test_batie, emprise_batie = test_emprise_batie(parcelle_batie, chemins["Bâti"])
+    test_batie, emprise_batie, exclues = test_emprise_batie(parcelle_batie, chemins["Bâti"], exclues)
     global potentiel
     potentiel = pd.concat([test_vide, test_batie])
     global potentiel_emprise
