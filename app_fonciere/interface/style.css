@@ -309,11 +309,16 @@ span {
     background-color: green;
     border-radius: 1em;
 }
-/* Tab Paramètres */
-.wrapper {
 
+/* Export */
+.export {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
+/* Tab Paramètres */
 .container {
   display: flex;
   flex-wrap: wrap;

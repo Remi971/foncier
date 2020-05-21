@@ -11,7 +11,8 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import time
+from time import process_time, strftime, localtime
+import json
 import warnings
 from source import clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeDesserte, routeCadastrees, voiesFerrees, filtre
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -125,9 +126,11 @@ def unique_values(champs):
 
 @eel.expose
 def lancement(donnees):
-    t0 = time.process_time()
+    global reglages
+    reglages = donnees
+    t0 = process_time()
     def timing(t, intitule):
-        temps = time.process_time() - t
+        temps = process_time() - t
         if temps <=60:
             unite = 'secondes'
             temps = round(temps, 1)
@@ -135,9 +138,9 @@ def lancement(donnees):
             temps = round(temps / 60, 1)
             unite = 'minutes'
         print("\n   #####   {} {} {}  #####   \n".format(intitule,temps,unite))
-    print('\n### Lancement du traitement ### \n\n ## Prise en compte de la structuration territoriale ##')
+    print('\n### Lancement du traitement ### \n'+ strftime("%a, %d %b %Y %H:%M:%S", localtime()) + '\n ## Prise en compte de la structuration territoriale ##')
     eel.progress(90/7)
-    ti = time.process_time()
+    ti = process_time()
     if donnees['paramètres']['perso'] == 'vide' and donnees['paramètres']['défauts'] != 'vide':
         param = donnees["paramètres"]["défauts"]
         global enveloppe
@@ -153,7 +156,6 @@ def lancement(donnees):
         param = donnees["paramètres"]["perso"]["valeurs"]
         liste = list(param.keys()) # nom des lignes
         champs = donnees["paramètres"]["perso"]["champs"]
-        #col = list(list(param.values())[0].keys())
         l_route = [item["d_min_route"] for item in param.values()]
         l_non_batie = [item["non-batie"] for item in param.values()]
         l_batie = [item["batie"] for item in param.values()]
@@ -189,26 +191,26 @@ def lancement(donnees):
     timing(ti, 'Prise en compte de la structuration territoriale terminée en')
     #Calcul du CES
     eel.progress(90/7)
-    ti = time.process_time()
+    ti = process_time()
     global ces
     ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
     timing(ti, 'Calcul du CES terminé en')
     #Sélection des parcelles
     eel.progress(90/7)
-    ti = time.process_time()
+    ti = process_time()
     selection = selectionParcelles(ces)
     timing(ti, 'Sélection des parcelles terminé en')
     #Prise en compte de la proximité à la routes
 
     if "Routes" in chemins:
         eel.progress(90/7)
-        ti = time.process_time()
+        ti = process_time()
         route = chemins["Routes"]
         routes_in_enveloppe = gpd.clip(route, enveloppe)
         routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe["geometry"].notnull()]
         #potentiel = routeDesserte(routes_in_enveloppe, potentiel)
         timing(ti, 'Prise en compte de la proximité à la route terminée en')
-        ti = time.process_time()
+        ti = process_time()
         selecion = routeCadastrees(routes_in_enveloppe, selection)
         timing(ti, 'Exclusion des routes cadastrées terminée en')
     else:
@@ -232,7 +234,7 @@ def lancement(donnees):
             selection = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]))
     #Test des parcelles vides identifiées
     eel.progress(90/7)
-    ti = time.process_time()
+    ti = process_time()
     parcelle_vide = selection[selection["type"] == "parcelle vide"]
     test_vide, emprise_vide = test_emprise_vide(parcelle_vide)
     #Test des parcelles baties identifiées
@@ -245,6 +247,7 @@ def lancement(donnees):
     timing(ti, 'Test des parcelles terminé en')
 
     timing(t0, 'Traitement terminé! en')
+    print('\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime()))
     #CHARTS and MAPS
     #ces.plot(column='ces', cmap='Reds', legend=True)
     #chemins["Voies ferrées"].plot(ax=ax, color='black', linestyle='dashed', legend=True)
@@ -297,10 +300,13 @@ def export(exportCes):
         root.destroy()
         potentiel.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel-parcelle', driver="GPKG")
         potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel-emprise', driver="GPKG")
+        print(reglages)
+        with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
+            json.dump(reglages, json_file, ensure_ascii=False)
         if exportCes:
             ces.to_file(dossier + '/' + 'resultats.gpkg',layer='ces', driver='GPKG')
         return err
 
 if __name__ == "__main__":
     eel.init('interface')
-    eel.start('index.html', size=(1000, 800))
+    eel.start('index.html', size=(1000, 900))
