@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from time import process_time, strftime, localtime
 import json
 import warnings
-from source import clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeDesserte, routeCadastrees, voiesFerrees, filtre
+from source import explode, clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeDesserte, routeCadastrees, voiesFerrees, filtre
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
@@ -82,8 +82,8 @@ def geometryType(chemin, nom):
     if len(couche) == 0:
         return "Couche vide"
     else:
-        print(str(couche["geometry"][0].geom_type))
         type = str(couche["geometry"][0].geom_type)
+        print(type)
         return type
 
 ## Fonction pour attribuer des paramètres par type de zone de la couche STRUCTURATION TERRTORIALE ##
@@ -141,7 +141,7 @@ def lancement(donnees):
     print('\n### Lancement du traitement ### \n'+ strftime("%a, %d %b %Y %H:%M:%S", localtime()) + '\n ## Prise en compte de la structuration territoriale ##')
     eel.progress(90/7)
     ti = process_time()
-    if donnees['paramètres']['perso'] == 'vide' and donnees['paramètres']['défauts'] != 'vide':
+    if donnees['paramètres']['perso'] == 'vide':
         param = donnees["paramètres"]["défauts"]
         global enveloppe
         enveloppe = clean_data(structure, ["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"])
@@ -152,7 +152,7 @@ def lancement(donnees):
         enveloppe['cesMax'] = param['cesMax']
         enveloppe['test'] = param['test']
         enveloppe['bufBati'] = param['bufBati']
-    elif donnees['paramètres']['perso'] != 'vide' and donnees['paramètres']['défauts'] == 'vide':
+    else:
         param = donnees["paramètres"]["perso"]["valeurs"]
         liste = list(param.keys()) # nom des lignes
         champs = donnees["paramètres"]["perso"]["champs"]
@@ -174,8 +174,7 @@ def lancement(donnees):
         df = pd.DataFrame(d)
         df = df.set_index(champs)
         enveloppe.update(df,overwrite=True)
-    else:
-        enveloppe = structure
+
     #Récupération des couches sélectionnées dans l'interface
     couches = ["Parcelles", "Bâti", "Routes", "Voies ferrées"]
     chemins = {}
@@ -200,13 +199,13 @@ def lancement(donnees):
     ti = process_time()
     selection = selectionParcelles(ces)
     timing(ti, 'Sélection des parcelles terminé en')
-    #Prise en compte de la proximité à la routes
-
+    global exclues
+    #Prise en compte des routes cadastrées
     if "Routes" in chemins:
         eel.progress(90/7)
         ti = process_time()
         route = chemins["Routes"]
-        routes_in_enveloppe = gpd.clip(route, enveloppe)
+        routes_in_enveloppe = gpd.overlay(route, enveloppe, how='intersection')
         routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe["geometry"].notnull()]
         #potentiel = routeDesserte(routes_in_enveloppe, potentiel)
         #timing(ti, 'Prise en compte de la proximité à la route terminée en')
@@ -220,7 +219,7 @@ def lancement(donnees):
     if "Voies ferrées" in chemins:
         eel.progress(90/7)
         selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection1, exclues)
-        print(exclues[exclues["filtres"] != 0])
+        print(exclues[exclues["filtres"] != '0'])
     else:
         eel.progress(90/7)
     #Prise en compte des Filtres
@@ -241,6 +240,7 @@ def lancement(donnees):
     #Test des parcelles baties identifiées
     parcelle_batie = selection[selection["type"] == "parcelle batie"]
     test_batie, emprise_batie, exclues = test_emprise_batie(parcelle_batie, chemins["Bâti"], exclues)
+    print(exclues)
     global potentiel
     potentiel = pd.concat([test_vide, test_batie])
     global potentiel_emprise
@@ -255,6 +255,8 @@ def lancement(donnees):
     #routes_in_enveloppe.plot(ax=ax, color='red', linewidth=0.1, legend=True)
     potentiel_emprise.plot(column='type', legend=True)
     fig, ax = plt.subplots(figsize=(12, 8))
+    exclues.plot(column='test_emprise', legend=True)
+    fig3, ax3 = plt.subplots(figsize=(12,8))
     potentiel.plot(ax=ax, column='type', legend=True)
     # Pie chart of potentiel parcelle complète
     potentiel_sum = potentiel.groupby("type").sum()
@@ -299,8 +301,9 @@ def export(exportCes):
         dossier = askdirectory()
         #root.withdraw()
         root.destroy()
-        potentiel.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel-parcelle', driver="GPKG")
-        potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel-emprise', driver="GPKG")
+        potentiel.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_parcelle', driver="GPKG")
+        potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_emprise', driver="GPKG")
+        exclues.to_file(dossier + '/' + 'resultats.gpkg', layer='parcelles_exlues', driver="GPKG")
         print(reglages)
         with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
             json.dump(reglages, json_file, ensure_ascii=False)

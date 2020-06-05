@@ -184,7 +184,7 @@ function recupDonnees(){
         }
       };
     mesVar.paramètres.défauts = 'vide';
-    console.log(mesVar.paramètres.perso);
+    console.log(mesVar.paramètres);
     })
   }
 }
@@ -198,7 +198,7 @@ function valeursTable(liste){
   const test = container.querySelector("#test").value;
   const bufBati = container.querySelector("#bufBati").value;
   for (const valeur of liste) {
-     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value='+route+'>m</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="cesMax" value='+cesMax+'>m</td><td><input type="number" class="test" value='+test+'>m</td><td><input type="number" class="bufBati" value='+bufBati+'>m</td></tr>').appendTo('#table-env');
+     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value='+route+'>m</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="cesMax" value='+cesMax+'>%</td><td><input type="number" class="test" value='+test+'>m</td><td><input type="number" class="bufBati" value='+bufBati+'>m</td></tr>').appendTo('#table-env');
   }
 }
 
@@ -207,8 +207,8 @@ $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
     let filterPlace = $("div#filter");
     let name = prompt("Indiquez le nom du filtre : ");
-    $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test filtre" id='+name+'>'+name+'</button><button class="remove">X</button><i></i><span id="vf-canvas" class="data-info"></span><div class="buffer"><input type="number" value=0><button class="okBuffer">OK</button></div></div>').appendTo(filterPlace.children("div"));
-    $(".group").on('click',".btn-test.filtre", function(){
+    $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test filtre" id="filtre">'+name+'</button><button class="remove">X</button><i></i><span id="vf-canvas" class="data-info"></span><div class="buffer"><input type="number" value=0><button class="okBuffer">OK</button></div></div>').appendTo(filterPlace.children("div"));
+    $(".group").on('click','#filtre', function(){
       let select = $(".donnees.classLi").html();
       let divParent = $(this).parent();
       $(divParent).children("span").html(select);

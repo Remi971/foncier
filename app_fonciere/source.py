@@ -3,13 +3,26 @@
 import geopandas as gpd
 import pandas as pd
 
-
+def explode(indata):
+    indf = indata.copy()
+    outdf = gpd.GeoDataFrame(columns=indf.columns)
+    for idx, row in indf.iterrows():
+        if row.geometry.geom_type in ['Polygon', 'LineString', 'Point']:
+            outdf = outdf.append(row,ignore_index=True)
+        if row.geometry.geom_type in ['MultiPolygon', 'MultiPoint', 'MultiString']:
+            multdf = gpd.GeoDataFrame(columns=indf.columns)
+            recs = len(row.geometry)
+            multdf = multdf.append([row]*recs,ignore_index=True)
+            for geom in range(recs):
+                multdf.loc[geom,'geometry'] = row.geometry[geom]
+            outdf = outdf.append(multdf,ignore_index=True)
+    return outdf
 #Cleaning des couches SIG (Elimination des geometries invalid et nulle et de mltipolygon à polgon)
 def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
     gdf = gdf[gdf["geometry"].is_valid]
     gdf = gdf[gdf["geometry"].notnull()]
     gdf = gdf.to_crs({'init': 'epsg:2154'})
-    gdf.explode()
+    gdf = explode(gdf)
     gdf.reset_index(drop=True)
     gdf = gdf.set_geometry("geometry")
     for i in list(gdf.columns):
@@ -65,7 +78,7 @@ def test_emprise_vide(parcelles, exclues):
     couche_buf["surf_par"] = couche_buf["geometry"].area
     liste_id = [i for i in couche_buf['id_par']]
     #selection = selection.loc[~selection['id_par'].isin(liste_id)]
-    exclues.loc[~exclues["id_par"].isin(liste_id), "filtres"] = 'echec du test'
+    exclues.loc[~exclues["id_par"].isin(liste_id), "test_emprise"] = 'echec du test dents creuses'
     couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
     return couche, couche_buf, exclues
 
@@ -81,9 +94,16 @@ def test_emprise_batie(parcelles, bati, exclues):
     emprise = emprise[emprise["geometry"].area >= emprise["non-batie"]]
     emprise["surf_par"] = emprise["geometry"].area
     liste_id = [i for i in emprise['id_par']]
-    exclues.loc[~exclues["id_par"].isin(liste_id) and exclues["filtres"] != "0", "filtres"] = 'echec du test'
+    exclues.loc[~exclues["id_par"].isin(liste_id), "test_emprise"] = 'echec du test division parcellaire'
     couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
-    emprise.geometry = emprise.geometry.apply(lambda x: x.minimum_rotaded_rectangle)
+    print(emprise)
+    # for row in emprise.rows:
+    #     print(type(row))
+    #     print(row)
+        # for x, y in item.exterior.coords:
+        #     row["geometry"] = MultiPoint(x, y)
+        #     row["geometry"] = row["geometry"].minimum_rotaded_rectangle
+        #emprise.geometry = emprise.geometry.apply(lambda x: x.minimum_rotaded_rectangle)
     return couche, emprise, exclues
 
 #INUTILE
@@ -110,6 +130,7 @@ def routeCadastrees(route, potentiel):
     route = route.set_geometry("geometry")
     parcelles = potentiel.copy()
     print('\n - Calcul du CES des routes')
+    route.crs = parcelles.crs
     intersection = gpd.overlay(route, parcelles, how='intersection')
     dissolve = intersection.dissolve(by='id_par').reset_index()
     dissolve.insert(2, "surf_route", dissolve["geometry"].area)
@@ -133,6 +154,7 @@ def voiesFerrees(voies, potentiel, exclues):
     voie_ferree = voies.copy()
     voie_ferree["geometry"] = voie_ferree.buffer(1)
     #voie_ferree = Traitement.clean_data(voie_ferree)
+    voie_ferree.crs = potentiel.crs
     exclues.loc[exclues["geometry"].intersects(voie_ferree["geometry"]), "filtres"] = 'voies ferrees'
     couche = potentiel[potentiel.disjoint(voie_ferree.unary_union)]
     return couche, exclues
@@ -140,9 +162,13 @@ def voiesFerrees(voies, potentiel, exclues):
 def filtre(potentiel, couche, buffer, nom, exclues):
     print('\n   ##  Prise en compte des filtres  ##   ')
     filtre = couche.copy()
+    filtre.crs = potentiel.crs
     if buffer != 0:
         filtre["geometry"] = filtre["geometry"].buffer(buffer)
     difference = gpd.overlay(potentiel, filtre, how='difference')
-    exclues.loc[exclues["geometry"].intersects(filtre["geometry"]), "filtres"] = nom
+    intersection = potentiel[potentiel["geometry"].intersects(filtre["geometry"])]
+    intersection.reset_index(drop=True)
+    liste_id = [i for i in intersection['id_par']]
+    exclues.loc[exclues['id_par'].isin(liste_id), "filtres"] = nom
     verification = selectionParcelles(difference)
     return verification, exclues
