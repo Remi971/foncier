@@ -138,7 +138,7 @@ def lancement(donnees):
             temps = round(temps / 60, 1)
             unite = 'minutes'
         print("\n   #####   {} {} {}  #####   \n".format(intitule,temps,unite))
-    print('\n### Lancement du traitement ### \n'+ strftime("%a, %d %b %Y %H:%M:%S", localtime()) + '\n ## Prise en compte de la structuration territoriale ##')
+    print('\n   ##### Lancement du traitement #####   \n'+ '\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime())+ '\n' + '\n   ##   Prise en compte de la structuration territoriale   ##   \n')
     eel.progress(90/7)
     ti = process_time()
     if donnees['paramètres']['perso'] == 'vide':
@@ -198,6 +198,7 @@ def lancement(donnees):
     eel.progress(90/7)
     ti = process_time()
     selection = selectionParcelles(ces)
+    selection_initiale = selection.copy()
     timing(ti, 'Sélection des parcelles terminé en')
     global exclues
     #Prise en compte des routes cadastrées
@@ -219,7 +220,6 @@ def lancement(donnees):
     if "Voies ferrées" in chemins:
         eel.progress(90/7)
         selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection1, exclues)
-        print(exclues[exclues["filtres"] != '0'])
     else:
         eel.progress(90/7)
     #Prise en compte des Filtres
@@ -236,17 +236,20 @@ def lancement(donnees):
     eel.progress(90/7)
     ti = process_time()
     parcelle_vide = selection[selection["type"] == "parcelle vide"]
-    test_vide, emprise_vide, exclues = test_emprise_vide(parcelle_vide, exclues)
+    emprise_vide, exclues = test_emprise_vide(parcelle_vide, exclues)
     #Test des parcelles baties identifiées
     parcelle_batie = selection[selection["type"] == "parcelle batie"]
-    test_batie, emprise_batie, exclues = test_emprise_batie(parcelle_batie, chemins["Bâti"], exclues)
-    print(exclues)
-    global potentiel
-    potentiel = pd.concat([test_vide, test_batie])
-    global potentiel_emprise
-    potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
+    global boundingBox
+    emprise_batie, exclues, boundingBox = test_emprise_batie(parcelle_batie, chemins["Bâti"], exclues)
     timing(ti, 'Test des parcelles terminé en')
 
+    global potentiel_emprise
+    potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
+    liste_id = [i for i in emprise_batie["id_par"]] + [i for i in emprise_vide["id_par"]]
+    global potentiel
+    potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(liste_id)]
+    exclues = exclues.loc[~exclues['id_par'].isin(liste_id)]
+    exclues.loc[exclues.geometry.isna(), "test_emprise"]
     timing(t0, 'Traitement terminé! en')
     print('\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime()))
     #CHARTS and MAPS
@@ -304,6 +307,7 @@ def export(exportCes):
         potentiel.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_parcelle', driver="GPKG")
         potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_emprise', driver="GPKG")
         exclues.to_file(dossier + '/' + 'resultats.gpkg', layer='parcelles_exlues', driver="GPKG")
+        boundingBox.to_file(dossier + '/' + 'resultats.gpkg', layer='boundingBox', driver="GPKG")
         print(reglages)
         with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
             json.dump(reglages, json_file, ensure_ascii=False)

@@ -2,6 +2,7 @@
 
 import geopandas as gpd
 import pandas as pd
+from shapely.geometry import MultiPoint
 
 def explode(indata):
     indf = indata.copy()
@@ -79,32 +80,49 @@ def test_emprise_vide(parcelles, exclues):
     liste_id = [i for i in couche_buf['id_par']]
     #selection = selection.loc[~selection['id_par'].isin(liste_id)]
     exclues.loc[~exclues["id_par"].isin(liste_id), "test_emprise"] = 'echec du test dents creuses'
-    couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
-    return couche, couche_buf, exclues
+    return couche_buf, exclues
 
 #Test des emprises mobilisables des parcelles bâtie
 def test_emprise_batie(parcelles, bati, exclues):
     print("\n   ## Test des parcelles baties   ##   \n")
     bati_buf = bati.copy()
+    parcelles.crs = bati.crs
     bati_buf = gpd.overlay(bati_buf, parcelles, how='intersection')
     bati_buf['geometry'] = bati_buf.apply(lambda x: x.geometry.buffer(x.bufBati), axis=1)
     emprise = gpd.overlay(parcelles, bati_buf, how='difference')
     emprise['geometry'] = emprise.apply(lambda x: x.geometry.buffer(-x.test).buffer(x.test), axis=1)
-    #emprise["geometry"] = emprise.buffer(-val_buffer).buffer(val_buffer)
+    #enregistrement des parcelles ne passant pas le test dans la couche exclues
+    emprise_echec = emprise[emprise.geometry.area < emprise["non-batie"]]
+    liste_id = [i for i in emprise_echec['id_par']]
+    exclues.loc[exclues["id_par"].isin(liste_id), "test_emprise"] = 'echec du test division parcellaire'
+    #Maintien des parcelles passant le test avec succès dans la couche emprise
+    print('\n   EMPRISE   \n')
+    print(emprise.columns)
+    print(emprise)
     emprise = emprise[emprise["geometry"].area >= emprise["non-batie"]]
     emprise["surf_par"] = emprise["geometry"].area
-    liste_id = [i for i in emprise['id_par']]
-    exclues.loc[~exclues["id_par"].isin(liste_id), "test_emprise"] = 'echec du test division parcellaire'
-    couche = parcelles.loc[parcelles['id_par'].isin(liste_id)]
-    print(emprise)
-    # for row in emprise.rows:
-    #     print(type(row))
-    #     print(row)
-        # for x, y in item.exterior.coords:
-        #     row["geometry"] = MultiPoint(x, y)
-        #     row["geometry"] = row["geometry"].minimum_rotaded_rectangle
-        #emprise.geometry = emprise.geometry.apply(lambda x: x.minimum_rotaded_rectangle)
-    return couche, emprise, exclues
+    bbox = emprise.copy()
+    bbox = explode(bbox)
+    bbox.crs = parcelles.crs
+    print('\n   BBOX   \n')
+    print(bbox.columns)
+    print(bbox)
+    parc = parcelles.copy()
+    for i in list(parc.columns):
+        if i in ["geometry", "id_par"]:
+            pass
+        else:
+            parc = parc.drop(i, axis=1)
+    parc = parc.rename(columns={'id_par': 'id'})
+    bbox.geometry = bbox.geometry.apply(lambda geom: MultiPoint(list(geom.exterior.coords)))
+    bbox.geometry = bbox.geometry.apply(lambda geom: geom.minimum_rotated_rectangle)
+    intersection = gpd.overlay(bbox, parc, how='intersection')
+    print('\n   INTERSECTION   \n')
+    print(intersection.columns)
+    print(intersection)
+    liste_id2 = [i for i in bbox['id_par']]
+    intersection = intersection.loc[intersection['id_par'].isin(liste_id2)]
+    return emprise, exclues, intersection
 
 #INUTILE
 def routeDesserte(route, potentiel):
@@ -124,7 +142,7 @@ def routeDesserte(route, potentiel):
     #print("Merge entre l'intersection et le potentiel : OK!\n")
 
 def routeCadastrees(route, potentiel):
-    print('\n   ##  Exclusion des parcelle cadastrées   ##   ')
+    print('\n   ##  Exclusion des routes cadastrées   ##   ')
     # buffer de 5m sur les routes
     route["geometry"] = route.buffer(5)
     route = route.set_geometry("geometry")
@@ -166,7 +184,7 @@ def filtre(potentiel, couche, buffer, nom, exclues):
     if buffer != 0:
         filtre["geometry"] = filtre["geometry"].buffer(buffer)
     difference = gpd.overlay(potentiel, filtre, how='difference')
-    intersection = potentiel[potentiel["geometry"].intersects(filtre["geometry"])]
+    intersection = potentiel[potentiel["geometry"].intersects(filtre["geometry"].any())]
     intersection.reset_index(drop=True)
     liste_id = [i for i in intersection['id_par']]
     exclues.loc[exclues['id_par'].isin(liste_id), "filtres"] = nom
