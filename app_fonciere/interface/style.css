@@ -278,6 +278,13 @@ span {
   background-color: #c3515a;
 }
 
+.Filtres_text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
 .Lancement {
   display: block;
   text-align: center;

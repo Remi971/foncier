@@ -112,7 +112,7 @@ def structuration_territoriale(chemin, nom):
 def unique_values(champs):
     global enveloppe
     enveloppe = clean_data(structure, champs, ["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"])
-    enveloppe["geometry"] = enveloppe.buffer(0)
+    enveloppe.geometry = enveloppe.buffer(0)
     enveloppe = enveloppe.dissolve(by=champs).reset_index()
     liste_valeur = list(enveloppe[champs])
     enveloppe = enveloppe.set_index(champs, drop=False)
@@ -207,7 +207,7 @@ def lancement(donnees):
         ti = process_time()
         route = chemins["Routes"]
         routes_in_enveloppe = gpd.overlay(route, enveloppe, how='intersection')
-        routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe["geometry"].notnull()]
+        routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe.geometry.notnull()]
         #potentiel = routeDesserte(routes_in_enveloppe, potentiel)
         #timing(ti, 'Prise en compte de la proximité à la route terminée en')
         #ti = process_time()
@@ -216,7 +216,6 @@ def lancement(donnees):
     else:
         eel.progress(90/7)
     #Prise en compte des voies ferrées si renseignées
-
     if "Voies ferrées" in chemins:
         eel.progress(90/7)
         selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection1, exclues)

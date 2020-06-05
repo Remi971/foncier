@@ -203,11 +203,16 @@ function valeursTable(liste){
 }
 
 // Ajout de filtres
+let clicked = false;
 $(document).ready(function(){
   $("#btn-addFilter").on('click', function(){
     let filterPlace = $("div#filter");
     let name = prompt("Indiquez le nom du filtre : ");
     $('<div class="group"><button style= "background-color: #8e1f31"  class="btn-test filtre" id="filtre">'+name+'</button><button class="remove">X</button><i></i><span id="vf-canvas" class="data-info"></span><div class="buffer"><input type="number" value=0><button class="okBuffer">OK</button></div></div>').appendTo(filterPlace.children("div"));
+    if(!clicked){
+      $("<p style='font-size: 0.7em'>Distance de buffer<br>du filtre (en m)</p>").appendTo(".buffer_filtre");
+      clicked = true;
+    }
     $(".group").on('click','#filtre', function(){
       let select = $(".donnees.classLi").html();
       let divParent = $(this).parent();
