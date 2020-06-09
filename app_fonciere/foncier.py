@@ -185,6 +185,10 @@ def lancement(donnees):
             chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
     #Selection des parcelles qui touchent l'enveloppe
     parcelle = chemins["Parcelles"]
+    print('\nPARCELLE\n')
+    print(type(parcelle))
+    print('\nenveloppe\n')
+    print(enveloppe)
     parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
     parcelle_intersect.crs = enveloppe.crs
     timing(ti, 'Prise en compte de la structuration territoriale terminée en')
