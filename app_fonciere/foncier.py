@@ -248,6 +248,7 @@ def lancement(donnees):
 
     global potentiel_emprise
     potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
+    potentiel_emprise = explode(potentiel_emprise)
     liste_id = [i for i in emprise_batie["id_par"]] + [i for i in emprise_vide["id_par"]]
     global potentiel
     potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(liste_id)]

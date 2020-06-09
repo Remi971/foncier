@@ -176,7 +176,8 @@ def filtre(potentiel, couche, buffer, nom, exclues):
     if buffer != 0:
         filtre.geometry = filtre.geometry.buffer(buffer)
     difference = gpd.overlay(potentiel, filtre, how='difference')
-    intersection = potentiel[potentiel.geometry.intersects(filtre.geometry.any())]
+    intersection = gpd.overlay(potentiel, filtre, how='intersection')
+    # intersection = potentiel[potentiel.geometry.intersects(filtre.geometry.any())]
     intersection.reset_index(drop=True)
     liste_id = [i for i in intersection['id_par']]
     exclues.loc[exclues['id_par'].isin(liste_id), "filtres"] = nom

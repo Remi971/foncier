@@ -291,6 +291,7 @@ $(document).ready(function(){
     $('#param-confirm').css('visibility', 'visible');
     $('.columnChoice').css('visibility', 'visible');
     this.className = 'btn-test on';
+    this.html('Valider les paramètres personnalisés')
     mesVar.paramètres["perso"] = {
       champs : '',
       valeurs : {},
