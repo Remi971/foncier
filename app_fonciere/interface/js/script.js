@@ -283,6 +283,7 @@ $(document).ready(function(){
     let paramBufBati = $("#bufBati").val();
     mesVar.paramètres.défauts["bufBati"] = paramBufBati;
     mesVar.paramètres.perso = 'vide';
+    console.log(mesVar);
     $(this).css("background-color", "#08bd50");
     $("#param-perso").css("background-color", "#1F3869")
   })

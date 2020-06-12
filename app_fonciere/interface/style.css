@@ -105,7 +105,7 @@ body {
   color: var(--citadia);
   border: 2px solid var(--citadia);
   background-color: var(--light);
-  cursor: url("/images/refresh_icon.svg"), progress;
+  cursor: url("/images/refresh_icon.svg") 10 10, progress;
 }
 
 .red {

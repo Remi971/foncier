@@ -40,7 +40,7 @@
             </select>
           <button class="btn-test" id="btn-valid">Sélection</button>
           <button class="btn-test" id="btn-liste">Lister les données</button>
-          <button id="refresh" onclick="location.reload()">Rafraîchir la page</button>
+          <button id="refresh" onclick="location.reload()" title="Cliquez pour tout remettre à zéro.">Rafraîchir la page</button>
           <!-- <button class="btn-test" id=btn-folder>Dossier</button> -->
           <!-- <a href="" class="bouton" id="valider"><div class="btn-test">Valider</div></a> -->
         </div>
@@ -73,7 +73,7 @@
             <div class="buffer"></div>
           </div>
           <div class="group">
-            <button class="btn-test data" id="btn-env">Structuration territoriale</button>
+            <button class="btn-test data" id="btn-env" title="Enveloppe urbaine">Structuration territoriale</button>
             <i></i>
             <span id="struct-canvas" class="data-info"></span>
             <div class="buffer"></div>
@@ -132,15 +132,15 @@
             <label>Surface minimale de la parcelle bâtie</label>
             :<input type="number" id="batie" value="1000">m
           </div>
-          <div class="cesMax">
+          <div class="cesMax" title="Coefficient d'emprise au sol maximum de la parcelle divisible.">
             <label>CES maximum de la parcelle divisible</label>
             :<input type="number" id="cesMax" value="40">%
           </div>
-          <div class="test">
+          <div class="test" title="Le test consiste à identifier l'emprise mobilisable de la parcelle bâtie et non bâti à l'aide d'un traitement de dilatation-erosion.">
             <label>Distance du Buffer pour le test</label>
             :<input type="number" id="test" value="10">m
           </div>
-          <div class="bufBati">
+          <div class="bufBati" title="Distance autour du bâti non mobilisable qui sera donc exclue du potentiel.">
             <label>Distance Buffer autour du bati</label>
             :<input type="number" id="bufBati" value="4">m
           </div>
