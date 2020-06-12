@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from time import process_time, strftime, localtime
 import json
 import warnings
-from source import explode, clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeDesserte, routeCadastrees, voiesFerrees, filtre
+from source import explode, clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeCadastrees, voiesFerrees, filtre
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
@@ -100,7 +100,7 @@ def structuration_territoriale(chemin, nom):
         else:
             structure[i].fillna(0, inplace = True)
     liste = [i for i in structure.columns]
-    structure.insert(len(structure.columns), "d_min_route", 100)
+    # structure.insert(len(structure.columns), "d_min_route", 100)
     structure.insert(len(structure.columns), "non-batie", 400)
     structure.insert(len(structure.columns), "batie", 1000)
     structure.insert(len(structure.columns), "cesMax", 40)
@@ -111,12 +111,12 @@ def structuration_territoriale(chemin, nom):
 @eel.expose
 def unique_values(champs):
     global enveloppe
-    enveloppe = clean_data(structure, champs, ["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"])
+    enveloppe = clean_data(structure, champs, ["non-batie", "batie", "cesMax", "test", "bufBati"])
     enveloppe.geometry = enveloppe.buffer(0)
     enveloppe = enveloppe.dissolve(by=champs).reset_index()
     liste_valeur = list(enveloppe[champs])
     enveloppe = enveloppe.set_index(champs, drop=False)
-    enveloppe.insert(len(enveloppe.columns), "d_min_route", 100)
+    # enveloppe.insert(len(enveloppe.columns), "d_min_route", 100)
     enveloppe.insert(len(enveloppe.columns), "non-batie", 400)
     enveloppe.insert(len(enveloppe.columns), "batie", 1000)
     enveloppe.insert(len(enveloppe.columns), "cesMax", 40)
@@ -144,9 +144,9 @@ def lancement(donnees):
     if donnees['paramètres']['perso'] == 'vide':
         param = donnees["paramètres"]["défauts"]
         global enveloppe
-        enveloppe = clean_data(structure, ["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"])
+        enveloppe = clean_data(structure, ["non-batie", "batie", "cesMax", "test", "bufBati"])
         enveloppe["geometry"] = enveloppe.buffer(0)
-        enveloppe['d_min_route'] = param['d_min_route']
+        # enveloppe['d_min_route'] = param['d_min_route']
         enveloppe['non-batie'] = param['non-batie']
         enveloppe['batie'] = param['batie']
         enveloppe['cesMax'] = param['cesMax']
@@ -156,7 +156,7 @@ def lancement(donnees):
         param = donnees["paramètres"]["perso"]["valeurs"]
         liste = list(param.keys()) # nom des lignes
         champs = donnees["paramètres"]["perso"]["champs"]
-        l_route = [item["d_min_route"] for item in param.values()]
+        # l_route = [item["d_min_route"] for item in param.values()]
         l_non_batie = [item["non-batie"] for item in param.values()]
         l_batie = [item["batie"] for item in param.values()]
         l_ces = [item["cesMax"] for item in param.values()]
@@ -164,7 +164,7 @@ def lancement(donnees):
         l_buf_bati = [item["bufBati"] for item in param.values()]
         d = {
             champs : liste,
-            "d_min_route" : l_route,
+            # "d_min_route" : l_route,
             "non-batie" : l_non_batie,
             "batie" : l_batie,
             "cesMax" : l_ces,
@@ -185,10 +185,6 @@ def lancement(donnees):
             chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
     #Selection des parcelles qui touchent l'enveloppe
     parcelle = chemins["Parcelles"]
-    print('\nPARCELLE\n')
-    print(type(parcelle))
-    print('\nenveloppe\n')
-    print(enveloppe)
     parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
     parcelle_intersect.crs = enveloppe.crs
     timing(ti, 'Prise en compte de la structuration territoriale terminée en')

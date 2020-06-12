@@ -40,7 +40,7 @@ def coeffEmpriseSol(bati, parcelle) :
     bati = bati.copy()
     parcelle = parcelle.copy()
     #Maintien des colonnes paramètres et conversion en valeur nuérique
-    parcelle[["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"]] = parcelle[["d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"]].apply(pd.to_numeric)
+    parcelle[["non-batie", "batie", "cesMax", "test", "bufBati"]] = parcelle[["non-batie", "batie", "cesMax", "test", "bufBati"]].apply(pd.to_numeric)
     parcelle.insert(len(parcelle.columns), "id_par", range(1, 1 + len(parcelle)))
     intersection = gpd.overlay(parcelle, bati, how='intersection')
     dissolve = intersection.dissolve(by="id_par").reset_index()
@@ -51,7 +51,7 @@ def coeffEmpriseSol(bati, parcelle) :
     coeff['ces'] = coeff['surf_bat']/coeff['surf_par']*100
     coeff = coeff.fillna(0)
     for i in list(coeff.columns):
-         if i not in ['id_par','surf_par', 'surf_bat', 'ces', 'geometry', "d_min_route", "non-batie", "batie", "cesMax", "test", "bufBati"]:
+         if i not in ['id_par','surf_par', 'surf_bat', 'ces', 'geometry', "non-batie", "batie", "cesMax", "test", "bufBati"]:
             coeff = coeff.drop(i, axis=1)
     coeff.crs = ('+init=epsg:2154')
     return(coeff)
@@ -117,19 +117,19 @@ def test_emprise_batie(parcelles, bati, exclues):
     intersection = explode(intersection)
     return emprise, exclues, intersection
 #INUTILE
-def routeDesserte(route, potentiel):
-    print("\n   ## Prise en compte de la proximité à la route   ##   \n")
-    buffer_route = route.copy()
-    buffer_route['geometry'] = buffer_route.apply(lambda x: x.geometry.buffer(x.d_min_route), axis=1)
-    buffer_route.insert(0, "desserte",'1')
-    buffer_route = buffer_route.dissolve("desserte", as_index=False)
-    buffer_route = clean_data(buffer_route)
-    print('\n - Buffer autour des routes :OK!\n')
-    intersection = gpd.overlay(potentiel, buffer_route, how='intersection')
-    print('\n - Intersection entre le potentiel et le buffer des routes : OK!\n')
-    liste_id = [i for i in intersection['id_par']]
-    couche = potentiel.loc[potentiel['id_par'].isin(liste_id)]
-    return couche
+# def routeDesserte(route, potentiel):
+#     print("\n   ## Prise en compte de la proximité à la route   ##   \n")
+#     buffer_route = route.copy()
+#     buffer_route['geometry'] = buffer_route.apply(lambda x: x.geometry.buffer(x.d_min_route), axis=1)
+#     buffer_route.insert(0, "desserte",'1')
+#     buffer_route = buffer_route.dissolve("desserte", as_index=False)
+#     buffer_route = clean_data(buffer_route)
+#     print('\n - Buffer autour des routes :OK!\n')
+#     intersection = gpd.overlay(potentiel, buffer_route, how='intersection')
+#     print('\n - Intersection entre le potentiel et le buffer des routes : OK!\n')
+#     liste_id = [i for i in intersection['id_par']]
+#     couche = potentiel.loc[potentiel['id_par'].isin(liste_id)]
+#     return couche
     #potentiel = potentiel.merge(intersection, how='left', on='id_par', suffixes=('', '_y'))
     #print("Merge entre l'intersection et le potentiel : OK!\n")
 

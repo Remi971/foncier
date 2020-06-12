@@ -160,45 +160,46 @@ $(".group").on('click','.btn-test', function(){
 function recupDonnees(){
   if(document.querySelector('.on')){
   document.querySelector('.on').addEventListener('click', function() {
-    let nomColumn = $("tr.titre th:first-child").html();
-    console.log(nomColumn);
-    mesVar.paramètres.perso.champs = nomColumn;
-    const tr = document.querySelectorAll("tr.donnees");
-    for (const item of tr) {
-      let nodes = item.querySelectorAll('td');
-      let first = nodes[0].innerHTML
-      let inputs = item.querySelectorAll('input')
-      let value0 = parseInt(inputs[0].value);
-      let value1 = parseInt(inputs[1].value);
-      let value2 = parseInt(inputs[2].value);
-      let value3 = parseInt(inputs[3].value);
-      let value4 = parseInt(inputs[4].value);
-      let value5 = parseInt(inputs[5].value);
-      mesVar.paramètres.perso.valeurs[first] = {
-          "d_min_route" : value0,
-          "non-batie" : value1,
-          "batie" : value2,
-          "cesMax" : value3,
-          "test" : value4,
-          "bufBati" : value5,
-        }
-      };
-    mesVar.paramètres.défauts = 'vide';
-    console.log(mesVar.paramètres);
+  let nomColumn = $("tr.titre th:first-child").html();
+  console.log(nomColumn);
+  mesVar.paramètres.perso.champs = nomColumn;
+  const tr = document.querySelectorAll("tr.donnees");
+  for (const item of tr) {
+    let nodes = item.querySelectorAll('td');
+    let first = nodes[0].innerHTML
+    let inputs = item.querySelectorAll('input')
+    let value0 = parseInt(inputs[0].value);
+    let value1 = parseInt(inputs[1].value);
+    let value2 = parseInt(inputs[2].value);
+    let value3 = parseInt(inputs[3].value);
+    let value4 = parseInt(inputs[4].value);
+    // let value5 = parseInt(inputs[5].value);
+    mesVar.paramètres.perso.valeurs[first] = {
+        // "d_min_route" : value0,
+        "non-batie" : value0,
+        "batie" : value1,
+        "cesMax" : value2,
+        "test" : value3,
+        "bufBati" : value4,
+      }
+    };
+  mesVar.paramètres.défauts = 'vide';
+  console.log(mesVar.paramètres);
+  $(".on").css("background-color", "#08bd50");
     })
   }
 }
 //Fonction qui va remplir le tableau avec les paramètres de la structuration territoriale avec les valeurs par défaut
 function valeursTable(liste){
   const container = document.querySelector("#container1");
-  const route = container.querySelector("#route").value;
+  // const route = container.querySelector("#route").value;
   const nonBatie = container.querySelector("#non-batie").value;
   const batie = container.querySelector("#batie").value;
   const cesMax = container.querySelector("#cesMax").value;
   const test = container.querySelector("#test").value;
   const bufBati = container.querySelector("#bufBati").value;
   for (const valeur of liste) {
-     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="d_min_route" value='+route+'>m</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="cesMax" value='+cesMax+'>%</td><td><input type="number" class="test" value='+test+'>m</td><td><input type="number" class="bufBati" value='+bufBati+'>m</td></tr>').appendTo('#table-env');
+     $('<tr class="donnees" id='+valeur+'><td>'+valeur+'</td><td><input type="number" class="non-batie" value='+nonBatie+'>m</td><td><input type="number" class="batie" value='+batie+'>m</td><td><input type="number" class="cesMax" value='+cesMax+'>%</td><td><input type="number" class="test" value='+test+'>m</td><td><input type="number" class="bufBati" value='+bufBati+'>m</td></tr>').appendTo('#table-env');
   }
 }
 
@@ -269,8 +270,8 @@ let ulColumns = $("ul#columns")
 $(document).ready(function(){
   $("#valid-param").on("click", function(){
     mesVar.paramètres["défauts"] = {};
-    let paramRoute = $("#route").val();
-    mesVar.paramètres.défauts["d_min_route"] = paramRoute;
+    // let paramRoute = $("#route").val();
+    // mesVar.paramètres.défauts["d_min_route"] = paramRoute;
     let paramNonBatie = $("#non-batie").val();
     mesVar.paramètres.défauts["non-batie"] = paramNonBatie;
     let paramBatie = $("#batie").val();
@@ -281,17 +282,20 @@ $(document).ready(function(){
     mesVar.paramètres.défauts["test"] = paramTest;
     let paramBufBati = $("#bufBati").val();
     mesVar.paramètres.défauts["bufBati"] = paramBufBati;
-    mesVar.paramètres.perso = 'vide'
+    mesVar.paramètres.perso = 'vide';
+    $(this).css("background-color", "#08bd50");
+    $("#param-perso").css("background-color", "#1F3869")
   })
   $(".off").on('click', function(){
     $("ul#columns").empty();
+    $("#valid-param").css("background-color", "#1F3869");
     listeStructuration.forEach(column => {
       $('<li class="columns"></li>').html(column).appendTo(ulColumns);
       })
     $('#param-confirm').css('visibility', 'visible');
     $('.columnChoice').css('visibility', 'visible');
     this.className = 'btn-test on';
-    this.html('Valider les paramètres personnalisés')
+    $(this).html('Valider les paramètres personnalisés')
     mesVar.paramètres["perso"] = {
       champs : '',
       valeurs : {},
@@ -302,7 +306,7 @@ $(document).ready(function(){
       $(this).toggleClass("classLi");
       let selectColumns = $(".columns.classLi").html();
       $('#table-env').empty();
-      $('<tr class="titre"><th>'+selectColumns+'</th><th>Distance minimal à la route</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th><th>Distance du buffer pour le test</th><th>Distance du buffer autour du bâti</th></tr>').appendTo('#table-env');
+      $('<tr class="titre"><th>'+selectColumns+'</th><th>Surface minimale de la parcelle non bâtie</th><th>Surface minimale de la parcelle bâtie</th><th>CES maximum de la parcelle divisible</th><th>Distance du buffer pour le test</th><th>Distance du buffer autour du bâti</th></tr>').appendTo('#table-env');
       listeValues(selectColumns);
     })
   })

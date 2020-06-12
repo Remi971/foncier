@@ -99,6 +99,15 @@ body {
   text-decoration-line: none;
 }
 
+#refresh {
+  border-radius: 20px;
+  padding: 5px 10px;
+  color: var(--citadia);
+  border: 2px solid var(--citadia);
+  background-color: var(--light);
+  cursor: url("/images/refresh_icon.svg"), progress;
+}
+
 .red {
   background-color : #b71c1c;
 }

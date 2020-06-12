@@ -23,9 +23,9 @@
       <img src="images/Logo_Citadia.png" alt="Citadia logo" class="logo">
     </div>
     <div class="tab"><!--TAB-->
-      <button class="tablinks" onclick="openTab(event, 'Import')" id="defaultOpen"><i class="fas fa-file-import"></i> Données</button>
+      <button class="tablinks" onclick="openTab(event, 'Enveloppe')"><i class="fas fa-pencil-alt"></i> Enveloppe urbaine</button>
+      <button class="tablinks" onclick="openTab(event, 'Import')" id="defaultOpen"><i class="fas fa-file-import"></i> Potentiel foncier</button>
       <button class="tablinks" onclick="openTab(event, 'Paramètres')"><i class="fas fa-cog"></i> Paramètres</button>
-      <button class="tablinks" onclick="openTab(event, 'Enveloppe')"><i class="fas fa-pencil-alt"></i> Enveloppe</button>
       <button id="btn-map" class="tablinks" onclick="openTab(event, 'visualisation')"><i class="fas fa-map-marker-alt"></i> Visualisation</button>
     </div>
 
@@ -40,6 +40,7 @@
             </select>
           <button class="btn-test" id="btn-valid">Sélection</button>
           <button class="btn-test" id="btn-liste">Lister les données</button>
+          <button id="refresh" onclick="location.reload()">Rafraîchir la page</button>
           <!-- <button class="btn-test" id=btn-folder>Dossier</button> -->
           <!-- <a href="" class="bouton" id="valider"><div class="btn-test">Valider</div></a> -->
         </div>
@@ -119,10 +120,10 @@
       <h3>Paramètres</h3>
       <div class="wrapper">
         <div id=container1 class="container">
-          <div class="route">
+          <!-- <div class="route">
             <label>Distance minimale à la route</label>
             :<input id="route" type="number" value="100">m
-          </div>
+          </div> -->
           <div class="non-batie">
             <label>Surface minimale de la parcelle non bâtie</label>
             :<input type="number" id="non-batie" value="400">m
