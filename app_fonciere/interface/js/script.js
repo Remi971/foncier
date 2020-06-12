@@ -72,6 +72,10 @@ async function exportResultat(exportCes, callback) {
   result = await eel.export(exportCes)();
   callback(result);
 }
+
+async function dataViz(){
+  potentiel = await eel.visualisation()();
+}
 //Valider le choix de la source de donnée
 $(document).ready(function(){
   //Bouton de validation de la source de donnée (Dossier ou GPKG)
@@ -362,7 +366,7 @@ function progress(num) {
 }
 
 //VISUALISATION map
-let mymap = L.map('mapid').setView([43.947991, 4.80875], 13);
+//Fond de plans
 let Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
 	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
 });
@@ -370,7 +374,28 @@ let OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{
 	maxZoom: 19,
 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 });
-Esri_WorldImagery.addTo(mymap);
+//Layer groups
+let baseMaps = {
+  "Image satellite": Esri_WorldImagery,
+  "Open Street Map": OpenStreetMap_Mapnik
+};
+//Layers control
+// let overlayMaps = {
+//
+// }
+// The map
+let mymap = L.map('mapid', {
+  layers: [Esri_WorldImagery, OpenStreetMap_Mapnik]
+}).setView([43.947991, 4.80875], 13);
+
+L.control.layers(baseMaps).addTo(mymap)
+
+//Esri_WorldImagery.addTo(mymap);
+
+// const potentiel = dataViz();
+// console.log(potentiel);
+// L.geoJSON(potentiel).addTo(mymap)
+
 $(document).ready(function() {
   $("#btn-map").on('click', function() {
     setTimeout(function() { mymap.invalidateSize()}, 1);
