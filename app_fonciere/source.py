@@ -86,36 +86,42 @@ def test_emprise_batie(parcelles, bati, exclues):
     print("\n   ## Test des parcelles baties   ##   \n")
     bati_buf = bati.copy()
     parcelles.crs = bati.crs
-    bati_buf = gpd.overlay(bati_buf, parcelles, how='intersection')
-    bati_buf['geometry'] = bati_buf.apply(lambda x: x.geometry.buffer(x.bufBati), axis=1)
+    bati_buf = gpd.overlay(bati_buf, parcelles, how='intersection') #Découpage du bati par les parcelles
+    bati_buf = bati_buf[bati_buf.geometry.area > 10] #Suppression des petits bouts (10m²)
+    bati_buf['geometry'] = bati_buf.apply(lambda x: x.geometry.buffer(x.bufBati), axis=1) #buffer d'après les paramètres
+    bati_bbox = bati_buf.copy()
+    bati_buf = gpd.overlay(parcelles, bati_buf, how='intersection') #intersection entre les parcelles et le buffer bu bati
+    bati_buf = bati_buf[bati_buf.id_par_1 == bati_buf.id_par_2] #Maintien des parties du buffer correspondant au bati sur la parcelle
+    #EMPRISE MOBILISABLE = Patatoïdes
     emprise = gpd.overlay(parcelles, bati_buf, how='difference')
+    emprise = explode(emprise)
+    bbox = emprise.copy()
     emprise['geometry'] = emprise.apply(lambda x: x.geometry.buffer(-x.test).buffer(x.test), axis=1)
     #enregistrement des parcelles ne passant pas le test dans la couche exclues
     emprise_echec = emprise[emprise.geometry.area < emprise["non-batie"]]
-    liste_id = [i for i in emprise_echec['id_par']]
-    exclues.loc[exclues["id_par"].isin(liste_id), "test_emprise"] = 'echec du test division parcellaire'
+    liste_id_echec = [i for i in emprise_echec['id_par']]
+    exclues.loc[exclues["id_par"].isin(liste_id_echec), "test_emprise"] = 'echec du test division parcellaire'
     #Maintien des parcelles passant le test avec succès dans la couche emprise
     emprise = emprise[emprise.geometry.area >= emprise["non-batie"]]
     emprise["surf_par"] = emprise.geometry.area
-    emprise = explode(emprise)
-    #Calcul du Bounding Box des emprise disponibles en division parcellaire
-    bbox = emprise.copy()
-    bbox.crs = parcelles.crs
-    bbox.geometry = bbox.geometry.apply(lambda geom: MultiPoint(list(geom.exterior.coords)))
-    bbox.geometry = bbox.geometry.apply(lambda geom: geom.minimum_rotated_rectangle)
+    ##### METHODE DES BOUNDING BOX #####
+    #BoundingBox du buffer du bâti
+    bati_buf_bbox = bati_buf.copy()
+    bati_buf_bbox.geometry = bati_buf.geometry.apply(lambda geom: MultiPoint(list(geom.exterior.coords)))
+    bati_buf_bbox.geometry = bati_buf.geometry.apply(lambda geom: geom.minimum_rotated_rectangle)
+    bati_buf_bbox = bati_buf_bbox[['id_par_1', 'geometry']]
     #Intersection des bounding box avec les parcelles
-    parc = parcelles.copy()
-    for i in list(parc.columns):
-        if i in ["geometry", "id_par"]:
-            pass
-        else:
-            parc = parc.drop(i, axis=1)
-    parc = parc.rename(columns={'id_par': 'id'})
-    intersection = gpd.overlay(bbox, parc, how='intersection')
-    liste_id2 = [i for i in bbox['id_par']]
-    intersection = intersection.loc[intersection['id_par'].isin(liste_id2)]
+    intersection = gpd.overlay(bati_buf_bbox, parcelles, how='intersection')
+    intersection = intersection[intersection.id_par == intersection.id_par_1]
     intersection = explode(intersection)
-    return emprise, exclues, intersection
+    intersection = intersection.dissolve(by='id_par_1')
+    #Difference entre les parcelles divisibles et le bounding box du bâti
+    liste_id_inter = [i for i in intersection['id_par']]
+    parc = parcelles.loc[parcelles['id_par'].isin(liste_id_inter)]
+    difference = gpd.overlay(parc, intersection, how='difference')
+    difference = explode(difference)
+    difference = difference[difference.geometry.area >= difference["non-batie"]]
+    return emprise, exclues, difference
 #INUTILE
 # def routeDesserte(route, potentiel):
 #     print("\n   ## Prise en compte de la proximité à la route   ##   \n")

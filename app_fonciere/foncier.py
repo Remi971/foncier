@@ -274,7 +274,10 @@ def lancement(donnees):
             shadow=False, startangle=90)
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     ax1.set_title("Répartition du potentiel foncier estimé à : {} ha".format(somme))
+    plt.show()
 
+@eel.expose
+def dataviz(couche):
     # Pie chart of potentiel emprise mobilisable
     potentiel_emprise_sum = potentiel_emprise.groupby("type").sum()
     batie2 = round(potentiel_emprise_sum["surf_par"][0] / 10000, 0)
@@ -288,8 +291,6 @@ def lancement(donnees):
             shadow=False, startangle=90)
     ax2.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     ax2.set_title("Répartition du foncier mobilisable estimé à : {} ha".format(somme2))
-
-    plt.show()
 
 @eel.expose
 def export(exportCes):
