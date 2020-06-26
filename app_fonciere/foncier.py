@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from time import process_time, strftime, localtime
 import json
 import warnings
+import pprint
 from source import explode, clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeCadastrees, voiesFerrees, filtre
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
@@ -245,10 +246,10 @@ def lancement(donnees):
     global potentiel_emprise
     potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
     potentiel_emprise = explode(potentiel_emprise)
-    liste_id = [i for i in emprise_batie["id_par"]] + [i for i in emprise_vide["id_par"]]
+    liste_id = [i for i in emprise_batie["id_par"]] + [i for i in emprise_vide["id_par"]] + [i for i in boundingBox["id_par_1"]]
     global potentiel
-    potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(liste_id)]
-    exclues = exclues.loc[~exclues['id_par'].isin(liste_id)]
+    potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(set(liste_id))]
+    exclues = exclues.loc[~exclues['id_par'].isin(set(liste_id))]
     exclues.loc[exclues.geometry.isna(), "test_emprise"]
     timing(t0, 'Traitement terminé! en')
     print('\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime()))
@@ -309,7 +310,8 @@ def export(exportCes):
         potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_emprise', driver="GPKG")
         exclues.to_file(dossier + '/' + 'resultats.gpkg', layer='parcelles_exlues', driver="GPKG")
         boundingBox.to_file(dossier + '/' + 'resultats.gpkg', layer='boundingBox', driver="GPKG")
-        print(reglages)
+        pp = pprint.PrettyPrinter()
+        pp.pprint(reglages)
         with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
             json.dump(reglages, json_file, ensure_ascii=False)
         if exportCes:
