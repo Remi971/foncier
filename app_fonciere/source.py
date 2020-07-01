@@ -69,7 +69,7 @@ def selectionParcelles(ces):
     return selection
 
 #Test des emprises mobilisables des parcelles non bâtie
-def test_emprise_vide(parcelles, exclues):
+def test_emprise_vide(parcelles, exclues=None):
     print("\n   ## Test des parcelles vides   ##   \n")
     couche_buf = parcelles.copy()
     #Applique un buffer pour chaque entité suivant la valeur de la colonne "test" correspondante
@@ -78,11 +78,14 @@ def test_emprise_vide(parcelles, exclues):
     couche_buf["surf_par"] = couche_buf.geometry.area
     liste_id = [i for i in couche_buf['id_par']]
     #selection = selection.loc[~selection['id_par'].isin(liste_id)]
-    exclues.loc[~exclues["id_par"].isin(liste_id), "test_emprise"] = 'echec du test dents creuses'
-    return couche_buf, exclues
+    if exclues:
+        exclues.loc[~exclues["id_par"].isin(liste_id), "test_emprise"] = 'echec du test dents creuses'
+        return couche_buf, exclues
+    else:
+        return couche_buf
 
 #Test des emprises mobilisables des parcelles bâtie
-def test_emprise_batie(parcellesBaties, bati, exclues):
+def test_emprise_batie(parcellesBaties, bati, exclues=None):
     print("\n   ## Test des parcelles baties   ##   \n")
     bati_buf = bati.copy()
     parcellesBaties.crs = bati.crs
@@ -100,7 +103,6 @@ def test_emprise_batie(parcellesBaties, bati, exclues):
     #enregistrement des parcelles ne passant pas le test dans la couche exclues
     emprise_echec = emprise[emprise.geometry.area < emprise["non-batie"]]
     liste_id_echec = [i for i in emprise_echec['id_par']]
-    exclues.loc[exclues["id_par"].isin(liste_id_echec), "test_emprise"] = 'echec du test division parcellaire'
     #Maintien des parcelles passant le test avec succès dans la couche emprise
     emprise = emprise[emprise.geometry.area >= emprise["non-batie"]]
     emprise["surf_par"] = emprise.geometry.area
@@ -123,7 +125,11 @@ def test_emprise_batie(parcellesBaties, bati, exclues):
     inter = gpd.overlay(difference, parcellesBaties.loc[parcellesBaties['id_par'].isin([i for i in difference['id_par']])], how='intersection')
     inter = inter[inter.id_par_1 == inter.id_par_2]
     inter["surf"] = inter.geometry.area
-    return emprise, exclues, inter
+    if exclues:
+        exclues.loc[exclues["id_par"].isin(liste_id_echec), "test_emprise"] = 'echec du test division parcellaire'
+        return emprise, inter, exclues
+    else:
+        return emprise, inter
 #INUTILE
 # def routeDesserte(route, potentiel):
 #     print("\n   ## Prise en compte de la proximité à la route   ##   \n")

@@ -236,11 +236,17 @@ def lancement(donnees):
     eel.progress(90/7)
     ti = process_time()
     parcelle_vide = selection[selection["type"] == "parcelle vide"]
-    emprise_vide, exclues = test_emprise_vide(parcelle_vide, exclues)
+    try:
+        emprise_vide, exclues = test_emprise_vide(parcelle_vide, exclues)
+    except NameError:
+        emprise_vide = test_emprise_vide(parcelle_vide)
     #Test des parcelles baties identifiées
     parcelle_batie = selection[selection["type"] == "parcelle batie"]
     global boundingBox
-    emprise_batie, exclues, boundingBox = test_emprise_batie(parcelle_batie, chemins["Bâti"], exclues)
+    try:
+        emprise_batie, boundingBox, exclues = test_emprise_batie(parcelle_batie, chemins["Bâti"], exclues)
+    except NameError:
+        emprise_batie, boundingBox = test_emprise_batie(parcelle_batie, chemins["Bâti"])
     timing(ti, 'Test des parcelles terminé en')
 
     global potentiel_emprise
@@ -249,8 +255,11 @@ def lancement(donnees):
     liste_id = [i for i in emprise_batie["id_par"]] + [i for i in emprise_vide["id_par"]] + [i for i in boundingBox["id_par_1"]]
     global potentiel
     potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(set(liste_id))]
-    exclues = exclues.loc[~exclues['id_par'].isin(set(liste_id))]
-    exclues.loc[exclues.geometry.isna(), "test_emprise"]
+    try:
+        exclues = exclues.loc[~exclues['id_par'].isin(set(liste_id))]
+        exclues.loc[exclues.geometry.isna(), "test_emprise"]
+    except NameError:
+        pass
     timing(t0, 'Traitement terminé! en')
     print('\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime()))
     #CHARTS and MAPS
@@ -259,8 +268,6 @@ def lancement(donnees):
     #routes_in_enveloppe.plot(ax=ax, color='red', linewidth=0.1, legend=True)
     potentiel_emprise.plot(column='type', legend=True)
     fig, ax = plt.subplots(figsize=(12, 8))
-    exclues.plot(column='test_emprise', legend=True)
-    fig3, ax3 = plt.subplots(figsize=(12,8))
     potentiel.plot(ax=ax, column='type', legend=True)
     # Pie chart of potentiel parcelle complète
     potentiel_sum = potentiel.groupby("type").sum()
@@ -308,7 +315,10 @@ def export(exportCes):
         root.destroy()
         potentiel.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_parcelle', driver="GPKG")
         potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_emprise', driver="GPKG")
-        exclues.to_file(dossier + '/' + 'resultats.gpkg', layer='parcelles_exlues', driver="GPKG")
+        try:
+            exclues.to_file(dossier + '/' + 'resultats.gpkg', layer='parcelles_exlues', driver="GPKG")
+        except NameError:
+            pass
         boundingBox.to_file(dossier + '/' + 'resultats.gpkg', layer='boundingBox', driver="GPKG")
         pp = pprint.PrettyPrinter()
         pp.pprint(reglages)
