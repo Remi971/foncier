@@ -221,22 +221,31 @@ def lancement(donnees):
         eel.progress(90/7)
         ti = process_time()
         route = chemins["Routes"]
-        if enveloppe is not None:
+        try:
             routes_in_enveloppe = gpd.overlay(route, enveloppe, how='intersection')
             routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe.geometry.notnull()]
+            selection1, exclues = routeCadastrees(routes_in_enveloppe, selection)
+        except NameError:
+            selection1, exclues = routeCadastrees(route, selection)
         #potentiel = routeDesserte(routes_in_enveloppe, potentiel)
         #timing(ti, 'Prise en compte de la proximité à la route terminée en')
         #ti = process_time()
-            selection1, exclues = routeCadastrees(routes_in_enveloppe, selection)
-        else:
-            selection1, exclues = routeCadastrees(route, selection)
         timing(ti, 'Exclusion des routes cadastrées terminée en')
     else:
         eel.progress(90/7)
     #Prise en compte des voies ferrées si renseignées
     if "Voies ferrées" in chemins:
         eel.progress(90/7)
-        selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection1, exclues)
+        if "Routes" in chemins:
+            try:
+                selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection1, exclues)
+            except NameError:
+                selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection1)
+        else:
+            try:
+                selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection, exclues)
+            except NameError:
+                selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection)
     else:
         eel.progress(90/7)
     #Prise en compte des Filtres
@@ -244,11 +253,17 @@ def lancement(donnees):
     for couche in donnees["dossier"]["couches"]:
         if couche not in couches and couche != 'Structuration territoriale':
             chemins[couche] = clean_data(gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche]))
-            selection, exclues = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]), couche, exclues)
+            try:
+                selection, exclues = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]), couche, exclues)
+            except NameError:
+                selection, exclues = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]), couche)
     for couche in donnees["gpkg"]["layers"]:
         if couche not in couches and couche != 'Structuration territoriale':
             chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
-            selection, exclues = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]), couche, exclues)
+            try:
+                selection, exclues = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]), couche, exclues)
+            except NameError:
+                selection, exclues = filtre(selection, chemins[couche], int(donnees["paramètres"]["filtres"][couche]), couche)
     #Test des parcelles vides identifiées
     eel.progress(90/7)
     ti = process_time()
@@ -283,7 +298,7 @@ def lancement(donnees):
     #ces.plot(column='ces', cmap='Reds', legend=True)
     #chemins["Voies ferrées"].plot(ax=ax, color='black', linestyle='dashed', legend=True)
     #routes_in_enveloppe.plot(ax=ax, color='red', linewidth=0.1, legend=True)
-    potentiel_emprise.plot(column='type', legend=True)
+    #potentiel_emprise.plot(column='type', legend=True)
     fig, ax = plt.subplots(figsize=(12, 8))
     potentiel.plot(ax=ax, column='type', legend=True)
     # Pie chart of potentiel parcelle complète
@@ -330,18 +345,23 @@ def export(exportCes):
         dossier = askdirectory()
         #root.withdraw()
         root.destroy()
+        potentiel.crs = {'init': 'epsg:2154'}
         potentiel.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_parcelle', driver="GPKG")
+        potentiel_emprise.crs = {'init': 'epsg:2154'}
         potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_emprise', driver="GPKG")
         try:
+            exclues.crs = {'init': 'epsg:2154'}
             exclues.to_file(dossier + '/' + 'resultats.gpkg', layer='parcelles_exlues', driver="GPKG")
         except NameError:
             pass
+        boundingBox.crs = {'init': 'epsg:2154'}
         boundingBox.to_file(dossier + '/' + 'resultats.gpkg', layer='boundingBox', driver="GPKG")
         pp = pprint.PrettyPrinter()
         pp.pprint(reglages)
         with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
             json.dump(reglages, json_file, ensure_ascii=False)
         if exportCes:
+            ces.crs = {'init': 'epsg:2154'}
             ces.to_file(dossier + '/' + 'resultats.gpkg',layer='ces', driver='GPKG')
         return err
 

@@ -78,7 +78,7 @@ def test_emprise_vide(parcelles, exclues=None):
     couche_buf["surf_par"] = couche_buf.geometry.area
     liste_id = [i for i in couche_buf['id_par']]
     #selection = selection.loc[~selection['id_par'].isin(liste_id)]
-    if exclues:
+    if exclues is not None:
         exclues.loc[~exclues["id_par"].isin(liste_id), "test_emprise"] = 'echec du test dents creuses'
         return couche_buf, exclues
     else:
@@ -125,7 +125,7 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     inter = gpd.overlay(difference, parcellesBaties.loc[parcellesBaties['id_par'].isin([i for i in difference['id_par']])], how='intersection')
     inter = inter[inter.id_par_1 == inter.id_par_2]
     inter["surf"] = inter.geometry.area
-    if exclues:
+    if exclues is not None:
         exclues.loc[exclues["id_par"].isin(liste_id_echec), "test_emprise"] = 'echec du test division parcellaire'
         return emprise, inter, exclues
     else:
@@ -173,17 +173,19 @@ def routeCadastrees(route, potentiel):
     couche = potentiel.loc[~potentiel['id_par'].isin(liste_id)]
     return couche, parcelles
 
-def voiesFerrees(voies, potentiel, exclues):
+def voiesFerrees(voies, potentiel, exclues=None):
     print('\n   ##  Prise en compte des voies ferrées   ##   ')
     voie_ferree = voies.copy()
     voie_ferree.geometry = voie_ferree.buffer(1)
     #voie_ferree = Traitement.clean_data(voie_ferree)
     voie_ferree.crs = potentiel.crs
+    if exclues is None:
+        exclues = potentiel.copy()
     exclues.loc[exclues.geometry.intersects(voie_ferree.geometry), "filtres"] = 'voies ferrees'
     couche = potentiel[potentiel.disjoint(voie_ferree.unary_union)]
     return couche, exclues
 
-def filtre(potentiel, couche, buffer, nom, exclues):
+def filtre(potentiel, couche, buffer, nom, exclues=None):
     print('\n   ##  Prise en compte des filtres  ##   ')
     filtre = couche.copy()
     filtre.crs = potentiel.crs
@@ -194,6 +196,8 @@ def filtre(potentiel, couche, buffer, nom, exclues):
     # intersection = potentiel[potentiel.geometry.intersects(filtre.geometry.any())]
     intersection.reset_index(drop=True)
     liste_id = [i for i in intersection['id_par']]
+    if exclues is None:
+        exclues = potentiel.copy()
     exclues.loc[exclues['id_par'].isin(liste_id), "filtres"] = nom
     verification = selectionParcelles(difference)
     return verification, exclues
