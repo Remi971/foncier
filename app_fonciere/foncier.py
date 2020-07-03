@@ -191,7 +191,6 @@ def lancement(donnees):
         parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
         parcelle_intersect.crs = enveloppe.crs
     except NameError:
-        import pdb; pdb.set_trace()
         param = donnees["paramètres"]["défauts"]
         parcelle['non-batie'] = int(param['non-batie'])
         parcelle['batie'] = int(param['batie'])
@@ -285,6 +284,8 @@ def lancement(donnees):
     potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
     potentiel_emprise = explode(potentiel_emprise)
     liste_id = [i for i in emprise_batie["id_par"]] + [i for i in emprise_vide["id_par"]] + [i for i in boundingBox["id_par_1"]]
+    parcelle_vide = parcelle_vide.loc[parcelle_vide['id_par'].isin(i for i in emprise_vide['id_par'])]
+    boundingBox = pd.concat([boundingBox, parcelle_vide])
     global potentiel
     potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(set(liste_id))]
     try:
@@ -345,23 +346,23 @@ def export(exportCes):
         dossier = askdirectory()
         #root.withdraw()
         root.destroy()
-        potentiel.crs = {'init': 'epsg:2154'}
+        potentiel.crs =  "EPSG:2154"
         potentiel.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_parcelle', driver="GPKG")
         potentiel_emprise.crs = {'init': 'epsg:2154'}
         potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_emprise', driver="GPKG")
         try:
-            exclues.crs = {'init': 'epsg:2154'}
+            exclues.crs = "EPSG:2154"
             exclues.to_file(dossier + '/' + 'resultats.gpkg', layer='parcelles_exlues', driver="GPKG")
         except NameError:
             pass
-        boundingBox.crs = {'init': 'epsg:2154'}
+        boundingBox.crs = "EPSG:2154"
         boundingBox.to_file(dossier + '/' + 'resultats.gpkg', layer='boundingBox', driver="GPKG")
         pp = pprint.PrettyPrinter()
         pp.pprint(reglages)
         with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
             json.dump(reglages, json_file, ensure_ascii=False)
         if exportCes:
-            ces.crs = {'init': 'epsg:2154'}
+            ces.crs = "EPSG:2154"
             ces.to_file(dossier + '/' + 'resultats.gpkg',layer='ces', driver='GPKG')
         return err
 
