@@ -142,39 +142,40 @@ def lancement(donnees):
     print('\n   ##### Lancement du traitement #####   \n'+ '\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime())+ '\n' + '\n   ##   Prise en compte de la structuration territoriale   ##   \n')
     eel.progress(90/7)
     ti = process_time()
-    if donnees['paramètres']['perso'] == 'vide':
-        param = donnees["paramètres"]["défauts"]
-        global enveloppe
-        enveloppe = clean_data(structure, ["non-batie", "batie", "cesMax", "test", "bufBati"])
-        enveloppe["geometry"] = enveloppe.buffer(0)
-        # enveloppe['d_min_route'] = param['d_min_route']
-        enveloppe['non-batie'] = param['non-batie']
-        enveloppe['batie'] = param['batie']
-        enveloppe['cesMax'] = param['cesMax']
-        enveloppe['test'] = param['test']
-        enveloppe['bufBati'] = param['bufBati']
-    else:
-        param = donnees["paramètres"]["perso"]["valeurs"]
-        liste = list(param.keys()) # nom des lignes
-        champs = donnees["paramètres"]["perso"]["champs"]
-        # l_route = [item["d_min_route"] for item in param.values()]
-        l_non_batie = [item["non-batie"] for item in param.values()]
-        l_batie = [item["batie"] for item in param.values()]
-        l_ces = [item["cesMax"] for item in param.values()]
-        l_test = [item["test"] for item in param.values()]
-        l_buf_bati = [item["bufBati"] for item in param.values()]
-        d = {
-            champs : liste,
-            # "d_min_route" : l_route,
-            "non-batie" : l_non_batie,
-            "batie" : l_batie,
-            "cesMax" : l_ces,
-            "test" : l_test,
-            "bufBati" : l_buf_bati
-        }
-        df = pd.DataFrame(d)
-        df = df.set_index(champs)
-        enveloppe.update(df,overwrite=True)
+    if "Structuration territoriale" in donnees["dossier"]["couches"]:
+        if donnees['paramètres']['perso'] == 'vide':
+            param = donnees["paramètres"]["défauts"]
+            global enveloppe
+            enveloppe = clean_data(structure, ["non-batie", "batie", "cesMax", "test", "bufBati"])
+            enveloppe["geometry"] = enveloppe.buffer(0)
+            # enveloppe['d_min_route'] = param['d_min_route']
+            enveloppe['non-batie'] = int(param['non-batie'])
+            enveloppe['batie'] = int(param['batie'])
+            enveloppe['cesMax'] = int(param['cesMax'])
+            enveloppe['test'] = int(param['test'])
+            enveloppe['bufBati'] = int(param['bufBati'])
+        else:
+            param = donnees["paramètres"]["perso"]["valeurs"]
+            liste = list(param.keys()) # nom des lignes
+            champs = donnees["paramètres"]["perso"]["champs"]
+            # l_route = [item["d_min_route"] for item in param.values()]
+            l_non_batie = [item["non-batie"] for item in param.values()]
+            l_batie = [item["batie"] for item in param.values()]
+            l_ces = [item["cesMax"] for item in param.values()]
+            l_test = [item["test"] for item in param.values()]
+            l_buf_bati = [item["bufBati"] for item in param.values()]
+            d = {
+                champs : liste,
+                # "d_min_route" : l_route,
+                "non-batie" : l_non_batie,
+                "batie" : l_batie,
+                "cesMax" : l_ces,
+                "test" : l_test,
+                "bufBati" : l_buf_bati
+            }
+            df = pd.DataFrame(d)
+            df = df.set_index(champs)
+            enveloppe.update(df,overwrite=True)
 
     #Récupération des couches sélectionnées dans l'interface
     couches = ["Parcelles", "Bâti", "Routes", "Voies ferrées"]
@@ -186,14 +187,27 @@ def lancement(donnees):
             chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
     #Selection des parcelles qui touchent l'enveloppe
     parcelle = chemins["Parcelles"]
-    parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
-    parcelle_intersect.crs = enveloppe.crs
+    try:
+        parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
+        parcelle_intersect.crs = enveloppe.crs
+    except NameError:
+        import pdb; pdb.set_trace()
+        param = donnees["paramètres"]["défauts"]
+        parcelle['non-batie'] = int(param['non-batie'])
+        parcelle['batie'] = int(param['batie'])
+        parcelle['cesMax'] = int(param['cesMax'])
+        parcelle['test'] = int(param['test'])
+        parcelle['bufBati'] = int(param['bufBati'])
+
     timing(ti, 'Prise en compte de la structuration territoriale terminée en')
     #Calcul du CES
     eel.progress(90/7)
     ti = process_time()
     global ces
-    ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
+    try:
+        ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
+    except UnboundLocalError:
+        ces = coeffEmpriseSol(chemins["Bâti"], parcelle)
     timing(ti, 'Calcul du CES terminé en')
     #Sélection des parcelles
     eel.progress(90/7)
@@ -207,12 +221,15 @@ def lancement(donnees):
         eel.progress(90/7)
         ti = process_time()
         route = chemins["Routes"]
-        routes_in_enveloppe = gpd.overlay(route, enveloppe, how='intersection')
-        routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe.geometry.notnull()]
+        if enveloppe is not None:
+            routes_in_enveloppe = gpd.overlay(route, enveloppe, how='intersection')
+            routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe.geometry.notnull()]
         #potentiel = routeDesserte(routes_in_enveloppe, potentiel)
         #timing(ti, 'Prise en compte de la proximité à la route terminée en')
         #ti = process_time()
-        selection1, exclues = routeCadastrees(routes_in_enveloppe, selection)
+            selection1, exclues = routeCadastrees(routes_in_enveloppe, selection)
+        else:
+            selection1, exclues = routeCadastrees(route, selection)
         timing(ti, 'Exclusion des routes cadastrées terminée en')
     else:
         eel.progress(90/7)

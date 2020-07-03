@@ -16,7 +16,7 @@ function openTab(evt, tabName) {
 document.getElementById("defaultOpen").click();
 
 //Objet JSON qui va contenir le nom des sources de données, des couches, leur chemin et leurs paramètres pour chacune des variables
-const mesVar = {
+let mesVar = {
   gpkg:
   {
     nomGPKG:
@@ -325,6 +325,13 @@ $(document).ready(function() {
     if (mesVar.paramètres['défauts'] === "vide" && mesVar.paramètres['perso'] === "vide") {
       let answer = window.confirm("Vous n'avez pas valider les paramètres! Etes vous sûre de lancer le traitement avec les paramètres par défaut?")
       if (answer) {
+        mesVar.paramètres["défauts"] = {}
+        mesVar.paramètres.défauts["non-batie"] = $("#non-batie").val();
+        mesVar.paramètres.défauts["batie"] = $("#batie").val();
+        mesVar.paramètres.défauts["cesMax"] = $("#cesMax").val();
+        mesVar.paramètres.défauts["test"] = $("#test").val();
+        mesVar.paramètres.défauts["bufBati"] = $("#bufBati").val();
+        mesVar.paramètres.perso = 'vide';
         eel.lancement(mesVar,)()
       }
       else {
