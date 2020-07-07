@@ -112,8 +112,9 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     ##### METHODE DES BOUNDING BOX #####
     #BoundingBox du buffer du bâti
     bati_buf_bbox = bati_buf.copy()
-    bati_buf_bbox.geometry = bati_buf.geometry.apply(lambda geom: MultiPoint(list(geom.exterior.coords)))
-    bati_buf_bbox.geometry = bati_buf.geometry.apply(lambda geom: geom.minimum_rotated_rectangle)
+    bati_buf_bbox = explode(bati_buf_bbox)
+    bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: MultiPoint(list(geom.exterior.coords)))
+    bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: geom.minimum_rotated_rectangle)
     bati_buf_bbox = bati_buf_bbox[['id_par_1', 'geometry']]
     intersection = gpd.overlay(bati_buf_bbox, parcellesBaties, how='intersection') #intersection entre les parcelles et le bounding box du bâti
     intersection = intersection[intersection.id_par == intersection.id_par_1] #Maintien des parties du BoundingBox correspondant au bâti de la parcelle
