@@ -16,6 +16,7 @@ import json
 import warnings
 import pprint
 from source import explode, clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeCadastrees, voiesFerrees, filtre
+from reglages import exportReglages
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
@@ -358,6 +359,7 @@ def export(exportCes):
         boundingBox.to_file(dossier + '/' + 'resultats.gpkg', layer='boundingBox', driver="GPKG")
         pp = pprint.PrettyPrinter()
         pp.pprint(reglages)
+        exportReglages(reglages)
         with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
             json.dump(reglages, json_file, ensure_ascii=False)
         if exportCes:

@@ -6,8 +6,8 @@ dependencies:
   - attrs=19.3.0=py_0
   - boost-cpp=1.72.0=h0caebb8_0
   - bzip2=1.0.8=hfa6e2cd_2
-  - ca-certificates=2020.4.5.1=hecc5488_0
-  - certifi=2020.4.5.1=py36h9f0ad1d_0
+  - ca-certificates=2020.6.20=hecda079_0
+  - certifi=2020.6.20=py36h9f0ad1d_0
   - cfitsio=3.470=he774522_5
   - click=7.1.2=pyh9f0ad1d_0
   - click-plugins=1.1.1=py_0
@@ -28,7 +28,7 @@ dependencies:
   - hdf4=4.2.13=hf8e6fe8_1003
   - hdf5=1.10.6=nompi_ha405e13_100
   - icu=64.2=he025d50_1
-  - intel-openmp=2020.1=216
+  - intel-openmp=2020.0=166
   - jpeg=9c=hfa6e2cd_1001
   - kealib=1.4.13=h3b59ab9_1
   - kiwisolver=1.2.0=py36h246c5b5_0
@@ -51,6 +51,8 @@ dependencies:
   - libtiff=4.1.0=h885aae3_6
   - libwebp-base=1.1.0=hfa6e2cd_3
   - libxml2=2.9.10=h5d81f1c_1
+  - libxslt=1.1.33=h579f668_1
+  - lxml=4.5.1=py36hd9844f4_0
   - lz4-c=1.9.2=h62dcd97_1
   - m2w64-expat=2.1.1=2
   - m2w64-gcc-libgfortran=5.3.0=6
@@ -81,6 +83,7 @@ dependencies:
   - pyqt=5.12.3=py36h003fed8_3
   - python=3.6.10=he025d50_1009_cpython
   - python-dateutil=2.8.1=py_0
+  - python-docx=0.8.10=py_0
   - python_abi=3.6=1_cp36m
   - pytz=2020.1=pyh9f0ad1d_0
   - qt=5.12.5=h7ef1ec2_0
