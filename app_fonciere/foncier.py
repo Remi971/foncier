@@ -285,6 +285,10 @@ def lancement(donnees):
     potentiel_emprise = pd.concat([parcelle_vide, emprise_batie])
     potentiel_emprise = explode(potentiel_emprise)
     boundingBox = pd.concat([boundingBox, parcelle_vide])
+    boundingBox.reset_index(inplace=True)
+    boundingBox.loc[boundingBox['id_par'].isnull(), "id_par"] = boundingBox["id_par_1"]
+    boundingBox.drop("id_par_1", axis=1)
+    boundingBox["surf"] = boundingBox.geometry.area
     global potentiel
     liste_id = [i for i in emprise_vide["id_par"]] + [i for i in boundingBox["id_par_1"]]
     potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(set(liste_id))]
