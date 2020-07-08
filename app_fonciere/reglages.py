@@ -1,25 +1,5 @@
 from docx import Document
-from docx.shared import Inches
-
-# donnees = {
-# "gpkg": {
-# 	"nomGPKG": "C:/Users/Citadia/Downloads/GPKminipamiers (1).gpkg",
-# 	"layers": {
-# 		"Parcelles": "_Parcelles_Pamiers",
-# 		"Bâti": "_batiPamiers",
-# 		"Structuration territoriale": "_enveloppesV2_20180323",
-# 		"terrains": "terrain_sport"}
-# 		},
-# "dossier": {
-# 	"chemin": {},
-# 	"couches": {}
-# 	},
-# "paramètres": {
-# 	"défauts": {"non-batie": "400", "batie": "1000", "cesMax": "40", "test": "10", "bufBati": "8"},
-# 	"perso": "vide",
-# 	"filtres": {"terrains": 0}
-#     }
-#     }
+#from docx.shared import Inches POUR les images
 
 def exportReglages(data):
     document = Document()
@@ -38,6 +18,7 @@ def exportReglages(data):
 
     document.add_heading('Paramètres', 1)
     table = document.add_table(rows=1, cols=6)
+    table.style = 'LightGrid-Accent1'
     hdr_cells = table.rows[0].cells
     if data["paramètres"]["perso"] != 'vide':
         hdr_cells[0].text = data["paramètres"]["perso"]["champs"]
@@ -69,5 +50,3 @@ def exportReglages(data):
 
 
     document.save('reglages.docx')
-
-#exportReglages(donnees)
