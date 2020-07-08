@@ -142,7 +142,7 @@ def lancement(donnees):
     print('\n   ##### Lancement du traitement #####   \n'+ '\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime())+ '\n' + '\n   ##   Prise en compte de la structuration territoriale   ##   \n')
     eel.progress(90/7)
     ti = process_time()
-    if "Structuration territoriale" in donnees["dossier"]["couches"]:
+    if "Structuration territoriale" in donnees["dossier"]["couches"] or "Structuration territoriale" in donnees["gpkg"]["layers"]:
         if donnees['paramètres']['perso'] == 'vide':
             param = donnees["paramètres"]["défauts"]
             global enveloppe
@@ -279,17 +279,16 @@ def lancement(donnees):
     except NameError:
         emprise_batie, boundingBox = test_emprise_batie(parcelle_batie, chemins["Bâti"])
     timing(ti, 'Test des parcelles terminé en')
-
     global potentiel_emprise
-    potentiel_emprise = pd.concat([emprise_vide, emprise_batie])
-    potentiel_emprise = explode(potentiel_emprise)
-    liste_id = [i for i in emprise_batie["id_par"]] + [i for i in emprise_vide["id_par"]] + [i for i in boundingBox["id_par_1"]]
     parcelle_vide = parcelle_vide.loc[parcelle_vide['id_par'].isin(i for i in emprise_vide['id_par'])]
+    potentiel_emprise = pd.concat([parcelle_vide, emprise_batie])
+    potentiel_emprise = explode(potentiel_emprise)
     boundingBox = pd.concat([boundingBox, parcelle_vide])
     global potentiel
+    liste_id = [i for i in emprise_vide["id_par"]] + [i for i in boundingBox["id_par_1"]]
     potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(set(liste_id))]
     try:
-        exclues = exclues.loc[~exclues['id_par'].isin(set(liste_id))]
+        exclues = exclues.loc[~exclues['id_par'].isin(set(liste_id + [i for i in emprise_batie["id_par"]]))]
         exclues.loc[exclues.geometry.isna(), "test_emprise"]
     except NameError:
         pass

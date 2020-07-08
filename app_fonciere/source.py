@@ -35,6 +35,18 @@ def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
     gdf.insert(1, "id", range(1, 1 + len(gdf)))
     return gdf
 
+#Vérification de la topologie des couches avant traitement géomatique
+def tryOverlay(input1, input2, how=None):
+    try:
+        output = gpd.overlay(input1, input2, how=how)
+    except shapely.errors.TopologicalError:
+        input1 = input1[input1["geometry"].is_valid]
+        input1 = input1[input1["geometry"].notnull()]
+        input2 = input2[input2["geometry"].is_valid]
+        input2 = input2[input2["geometry"].notnull()]
+        output = gpd.overlay(input1, input2, how=how)
+    return output
+
 #Calcul du coefficient de l'emprise au sol avec maintient des colonnes paramètres et sauvegarde ou pas de la couche
 def coeffEmpriseSol(bati, parcelle) :
     print("\n   ##   Calcul du CES   ##   \n")
@@ -43,7 +55,7 @@ def coeffEmpriseSol(bati, parcelle) :
     #Maintien des colonnes paramètres et conversion en valeur nuérique
     parcelle[["non-batie", "batie", "cesMax", "test", "bufBati"]] = parcelle[["non-batie", "batie", "cesMax", "test", "bufBati"]].apply(pd.to_numeric)
     parcelle.insert(len(parcelle.columns), "id_par", range(1, 1 + len(parcelle)))
-    intersection = gpd.overlay(parcelle, bati, how='intersection')
+    intersection = tryOverlay(parcelle, bati, how='intersection')
     dissolve = intersection.dissolve(by="id_par").reset_index()
     dissolve.insert(len(dissolve.columns), "surf_bat", dissolve.geometry.area)
     dissolve.drop("geometry", axis=1, inplace=True)
@@ -91,16 +103,16 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     bati_buf = bati.copy()
     parcellesBaties.crs = "EPSG:2154"
     bati_buf.crs = "EPSG:2154"
-    bati_buf = gpd.overlay(bati_buf, parcellesBaties, how='intersection') #Découpage du bati par les parcelles baties
+    bati_buf = tryOverlay(bati_buf, parcellesBaties, how='intersection') #Découpage du bati par les parcelles baties
     #bati_buf = explode(bati_buf)
     bati_buf = bati_buf[bati_buf.geometry.area > 10] #Suppression des petits bouts (10m²)
     bati_buf['geometry'] = bati_buf.apply(lambda x: x.geometry.buffer(x.bufBati), axis=1) #buffer du bati d'après les paramètres
     bati_buf = bati_buf[["id", "id_par", "geometry"]]
-    bati_buf = gpd.overlay(parcellesBaties, bati_buf, how='intersection') #intersection entre les parcelles et le buffer bu bati
+    bati_buf = tryOverlay(parcellesBaties, bati_buf, how='intersection')#intersection entre les parcelles et le buffer bu bati
     bati_buf = bati_buf[bati_buf.id_par_1 == bati_buf.id_par_2] #Maintien des parties du buffer correspondant au bati sur la parcelle
     bati_buf.drop("id_par_2", axis=1, inplace=True)
     #EMPRISE MOBILISABLE = Patatoïdes
-    emprise = gpd.overlay(parcellesBaties, bati_buf, how='difference')
+    emprise = tryOverlay(parcellesBaties, bati_buf, how='difference')
     emprise = explode(emprise)
     emprise['geometry'] = emprise.apply(lambda x: x.geometry.buffer(-x.test).buffer(x.test), axis=1)
     #enregistrement des parcelles ne passant pas le test dans la couche exclues
@@ -116,18 +128,18 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: MultiPoint(list(geom.exterior.coords)))
     bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: geom.minimum_rotated_rectangle)
     bati_buf_bbox = bati_buf_bbox[['id_par_1', 'geometry']]
-    intersection = gpd.overlay(bati_buf_bbox, parcellesBaties, how='intersection') #intersection entre les parcelles et le bounding box du bâti
+    intersection = tryOverlay(bati_buf_bbox, parcellesBaties, how='intersection') #intersection entre les parcelles et le bounding
     intersection = intersection[intersection.id_par == intersection.id_par_1] #Maintien des parties du BoundingBox correspondant au bâti de la parcelle
     intersection = explode(intersection)
     intersection = intersection.dissolve(by='id_par_1') #regroupement des Bounding Box retenues par numéro de parcelle
     liste_id_inter = [i for i in intersection['id_par']]
     parc = parcellesBaties.loc[parcellesBaties['id_par'].isin(liste_id_inter)]
-    difference = gpd.overlay(parc, intersection, how='difference') #Difference entre les parcelles divisibles et le bounding box du bâti
+    difference = tryOverlay(parc, intersection, how='difference') #Difference entre les parcelles divisibles et le bounding box du bâti
     difference['geometry'] = difference.apply(lambda x: x.geometry.buffer(-5).buffer(5, cap_style=2, join_style=2), axis=1)
     difference = explode(difference)
     difference = difference[difference.geometry.area >= difference["non-batie"]]
     difference = difference[["id_par", "geometry"]]
-    inter = gpd.overlay(difference, parcellesBaties.loc[parcellesBaties['id_par'].isin([i for i in difference['id_par']])], how='intersection')
+    inter = tryOverlay(difference, parcellesBaties.loc[parcellesBaties['id_par'].isin([i for i in difference['id_par']])], how='intersection')
     inter = inter[inter.id_par_1 == inter.id_par_2]
     inter["surf"] = inter.geometry.area
     inter = inter[inter.geometry.area >= inter["non-batie"]]
@@ -137,22 +149,6 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
         return emprise, inter, exclues
     else:
         return emprise, inter
-#INUTILE
-# def routeDesserte(route, potentiel):
-#     print("\n   ## Prise en compte de la proximité à la route   ##   \n")
-#     buffer_route = route.copy()
-#     buffer_route['geometry'] = buffer_route.apply(lambda x: x.geometry.buffer(x.d_min_route), axis=1)
-#     buffer_route.insert(0, "desserte",'1')
-#     buffer_route = buffer_route.dissolve("desserte", as_index=False)
-#     buffer_route = clean_data(buffer_route)
-#     print('\n - Buffer autour des routes :OK!\n')
-#     intersection = gpd.overlay(potentiel, buffer_route, how='intersection')
-#     print('\n - Intersection entre le potentiel et le buffer des routes : OK!\n')
-#     liste_id = [i for i in intersection['id_par']]
-#     couche = potentiel.loc[potentiel['id_par'].isin(liste_id)]
-#     return couche
-    #potentiel = potentiel.merge(intersection, how='left', on='id_par', suffixes=('', '_y'))
-    #print("Merge entre l'intersection et le potentiel : OK!\n")
 
 def routeCadastrees(route, potentiel):
     print('\n   ##  Exclusion des routes cadastrées   ##   ')
