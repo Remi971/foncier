@@ -344,6 +344,7 @@ def export(exportCes):
         print(f'\nLe potentiel foncier concerne {len(potentiel)} parcelles\n')
     except NameError:
         err = True
+        print("Il n'y a pas de potentiel à exporter. Veuillez lancer un traitement.")
         return err
     else:
         root = tk.Tk()
@@ -361,14 +362,14 @@ def export(exportCes):
             pass
         boundingBox.crs = "EPSG:2154"
         boundingBox.to_file(dossier + '/' + 'resultats.gpkg', layer='boundingBox', driver="GPKG")
-        pp = pprint.PrettyPrinter()
-        pp.pprint(reglages)
+        # pp = pprint.PrettyPrinter()
         exportReglages(reglages)
-        with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
-            json.dump(reglages, json_file, ensure_ascii=False)
+        # with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
+        #     json.dump(reglages, json_file, ensure_ascii=False)
         if exportCes:
             ces.crs = "EPSG:2154"
             ces.to_file(dossier + '/' + 'resultats.gpkg',layer='ces', driver='GPKG')
+        print('\nExport terminé !\n')
         return err
 
 if __name__ == "__main__":
