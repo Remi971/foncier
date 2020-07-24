@@ -307,7 +307,10 @@ def lancement(donnees):
         couche.insert(len(couche.columns), "Suppr",'')
     ajout_champs(potentiel)
     ajout_champs(potentiel_emprise)
-    ajout_champs(exclues)
+    try:
+        ajout_champs(exclues)
+    except NameError:
+        pass
     ajout_champs(boundingBox)
     timing(t0, 'Traitement terminé! en')
     print('\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime()))
