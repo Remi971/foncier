@@ -3,7 +3,7 @@ from docx import Document
 
 def exportReglages(data):
     document = Document()
-
+    # TITRE
     document.add_heading('Réglages', 0)
     #Nom de la source de donnée et noms des couches utilisées
     if data["gpkg"]["nomGPKG"] != {}:
@@ -15,7 +15,7 @@ def exportReglages(data):
         document.add_heading(f'Base de données dans le dossier : {data["dossier"]["chemin"]}', level=2)
         for couche in data["dossier"]["couches"]:
             document.add_paragraph(f'{couche} : {data["dossier"]["couches"][couche]}', style='List Bullet')
-
+    #Paramètres
     document.add_heading('Paramètres', 1)
     table = document.add_table(rows=1, cols=6)
     table.style = 'LightGrid-Accent1'
