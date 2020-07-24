@@ -143,7 +143,6 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     difference = difference[["id_par", "geometry"]]
     inter = tryOverlay(difference, parcellesBaties.loc[parcellesBaties['id_par'].isin([i for i in difference['id_par']])], how='intersection')
     inter = inter[inter.id_par_1 == inter.id_par_2]
-    inter["surf"] = inter.geometry.area
     inter = inter[inter.geometry.area >= inter["non-batie"]]
     inter.drop("id_par_2", axis=1, inplace=True)
     if exclues is not None:

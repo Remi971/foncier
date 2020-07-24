@@ -48,5 +48,6 @@ def exportReglages(data):
         row_cells[4].text = str(data["paramètres"]["défauts"]["test"])
         row_cells[5].text = str(data["paramètres"]["défauts"]["bufBati"])
 
+    document.add_picture('/interface/images/Logo_Citadia.png')
 
     document.save('reglages.docx')
