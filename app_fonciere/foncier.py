@@ -267,13 +267,13 @@ def lancement(donnees):
     #Test des parcelles vides identifiées
     eel.progress(90/7)
     ti = process_time()
-    parcelle_vide = selection[selection["type"] == "parcelle vide"]
+    parcelle_vide = selection[selection["Potentiel"] == "Dents creuses"]
     try:
         emprise_vide, exclues = test_emprise_vide(parcelle_vide, exclues)
     except NameError:
         emprise_vide = test_emprise_vide(parcelle_vide)
     #Test des parcelles baties identifiées
-    parcelle_batie = selection[selection["type"] == "parcelle batie"]
+    parcelle_batie = selection[selection["Potentiel"] == "Division parcellaire"]
     global boundingBox
     try:
         emprise_batie, boundingBox, exclues = test_emprise_batie(parcelle_batie, chemins["Bâti"], exclues)
@@ -282,13 +282,14 @@ def lancement(donnees):
     timing(ti, 'Test des parcelles terminé en')
     global potentiel_emprise
     parcelle_vide = parcelle_vide.loc[parcelle_vide['id_par'].isin(i for i in emprise_vide['id_par'])]
-    potentiel_emprise = pd.concat([parcelle_vide, emprise_batie])
+    liste_id_vide = [ i for i in emprise_vide['id_par']]
+    potentiel_emprise = pd.concat([emprise_batie, selection_initiale.loc[selection_initiale['id_par'].isin(set(liste_id_vide))]])
     potentiel_emprise = explode(potentiel_emprise)
     boundingBox = pd.concat([boundingBox, parcelle_vide])
     boundingBox.reset_index(inplace=True)
     boundingBox.loc[boundingBox['id_par'].isnull(), "id_par"] = boundingBox["id_par_1"]
     boundingBox.drop("id_par_1", axis=1)
-    boundingBox["surf"] = boundingBox.geometry.area
+    boundingBox["Surf"] = round(boundingBox.geometry.area, 2)
     global potentiel
     liste_id = [i for i in emprise_vide["id_par"]] + [i for i in boundingBox["id_par_1"]]
     potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(set(liste_id))]
@@ -297,6 +298,15 @@ def lancement(donnees):
         exclues.loc[exclues.geometry.isna(), "test_emprise"]
     except NameError:
         pass
+    def ajout_champs(couche):
+        couche.insert(len(couche.columns), "Commune",'')
+        couche.insert(len(couche.columns), "Comment",'')
+        couche.insert(len(couche.columns), "Date",strftime("%a, %d %b %Y %H:%M:%S", localtime()))
+        couche.insert(len(couche.columns), "Suppr",'')
+    ajout_champs(potentiel)
+    ajout_champs(potentiel_emprise)
+    ajout_champs(exclues)
+    ajout_champs(boundingBox)
     timing(t0, 'Traitement terminé! en')
     print('\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime()))
     #CHARTS and MAPS
@@ -305,13 +315,13 @@ def lancement(donnees):
     #routes_in_enveloppe.plot(ax=ax, color='red', linewidth=0.1, legend=True)
     #potentiel_emprise.plot(column='type', legend=True)
     fig, ax = plt.subplots(figsize=(12, 8))
-    potentiel.plot(ax=ax, column='type', legend=True)
+    potentiel.plot(ax=ax, column='Potentiel', legend=True)
     # Pie chart of potentiel parcelle complète
-    potentiel_sum = potentiel.groupby("type").sum()
+    potentiel_sum = potentiel.groupby("Potentiel").sum()
     batie = round(potentiel_sum["surf_par"][0] / 10000, 0)
     vide = round(potentiel_sum["surf_par"][1] / 10000, 0)
     sizes = [batie, vide]
-    labels = 'Parcelle batie ({} ha)'.format(batie), 'Parcelle vide ({} ha)'.format(vide)
+    labels = 'Dents creuses ({} ha)'.format(batie), 'Division parcellaire ({} ha)'.format(vide)
     somme = round((potentiel_sum["surf_par"][0] + potentiel_sum["surf_par"][1]) / 10000, 0)
     colors = ['#1f77b4', '#17becf']
     fig1, ax1 = plt.subplots()
@@ -324,7 +334,7 @@ def lancement(donnees):
 @eel.expose
 def dataviz(couche):
     # Pie chart of potentiel emprise mobilisable
-    potentiel_emprise_sum = potentiel_emprise.groupby("type").sum()
+    potentiel_emprise_sum = potentiel_emprise.groupby("Potentiel").sum()
     batie2 = round(potentiel_emprise_sum["surf_par"][0] / 10000, 0)
     vide2 = round(potentiel_emprise_sum["surf_par"][1] / 10000, 0)
     sizes2 = [batie2, vide2]

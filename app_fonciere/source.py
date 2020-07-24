@@ -3,6 +3,7 @@
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import MultiPoint
+import shapely
 
 def explode(indata):
     indf = indata.copy()
@@ -75,8 +76,8 @@ def selectionParcelles(ces):
     global selection
     selection = ces.copy()
     selection = selection[(selection["ces"] < 0.5) & (selection.geometry.area >= selection["non-batie"]) | (selection["ces"] >= 0.5) & (selection["ces"] < selection["cesMax"]) & (selection.geometry.area >= selection["batie"])]
-    selection.loc[selection['ces']>= 0.5, 'type'] = "parcelle batie"
-    selection.loc[selection['ces']< 0.5, 'type'] = "parcelle vide"
+    selection.loc[selection['ces']>= 0.5, 'Potentiel'] = "Division parcellaire"
+    selection.loc[selection['ces']< 0.5, 'Potentiel'] = "Dents creuses"
     selection["filtres"] = "0"
     #selection[["type"]] = selection["ces"].apply(lambda x: "parcelle vide" if x < 0.5 else "parcelle batie")
     return selection
@@ -103,7 +104,7 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     bati_buf = bati.copy()
     parcellesBaties.crs = "EPSG:2154"
     bati_buf.crs = "EPSG:2154"
-    bati_buf = tryOverlay(bati_buf, parcellesBaties, how='intersection') #Découpage du bati par les parcelles baties
+    bati_buf = tryOverlay(parcellesBaties, bati_buf, how='intersection') #Découpage du bati par les parcelles baties
     #bati_buf = explode(bati_buf)
     bati_buf = bati_buf[bati_buf.geometry.area > 10] #Suppression des petits bouts (10m²)
     bati_buf['geometry'] = bati_buf.apply(lambda x: x.geometry.buffer(x.bufBati), axis=1) #buffer du bati d'après les paramètres
@@ -124,6 +125,7 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     ##### METHODE DES BOUNDING BOX #####
     #BoundingBox du buffer du bâti
     bati_buf_bbox = bati_buf.copy()
+    bati_buf_bbox = bati_buf_bbox.dissolve(by='id_par_1', as_index=False)
     bati_buf_bbox = explode(bati_buf_bbox)
     bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: MultiPoint(list(geom.exterior.coords)))
     bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: geom.minimum_rotated_rectangle)
