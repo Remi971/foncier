@@ -1,10 +1,12 @@
 from docx import Document
+from time import strftime, localtime
 #from docx.shared import Inches POUR les images
 
 def exportReglages(data):
     document = Document()
     # TITRE
     document.add_heading('Réglages', 0)
+    date = document.add_paragraph(f'Date : {strftime("%a, %d %b %Y %H:%M:%S", localtime())}')
     #Nom de la source de donnée et noms des couches utilisées
     if data["gpkg"]["nomGPKG"] != {}:
         document.add_heading(f'Base de données Geopackage : {data["gpkg"]["nomGPKG"]}', level=2)
@@ -47,7 +49,5 @@ def exportReglages(data):
         row_cells[3].text = str(data["paramètres"]["défauts"]["cesMax"])
         row_cells[4].text = str(data["paramètres"]["défauts"]["test"])
         row_cells[5].text = str(data["paramètres"]["défauts"]["bufBati"])
-
-    document.add_picture('/interface/images/Logo_Citadia.png')
 
     document.save('reglages.docx')

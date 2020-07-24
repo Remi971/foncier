@@ -303,7 +303,7 @@ def lancement(donnees):
     def ajout_champs(couche):
         couche.insert(len(couche.columns), "Commune",'')
         couche.insert(len(couche.columns), "Comment",'')
-        couche.insert(len(couche.columns), "Date",strftime("%a, %d %b %Y %H:%M:%S", localtime()))
+        couche.insert(len(couche.columns), "Date",strftime("%d-%m-%Y", localtime()))
         couche.insert(len(couche.columns), "Suppr",'')
     ajout_champs(potentiel)
     ajout_champs(potentiel_emprise)
