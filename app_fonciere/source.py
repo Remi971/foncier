@@ -5,21 +5,34 @@ import pandas as pd
 from shapely.geometry import MultiPoint
 import shapely
 
-def explode(indata):
-    indf = indata.copy()
-    outdf = gpd.GeoDataFrame(columns=indf.columns)
-    for idx, row in indf.iterrows():
-        if row["geometry"].geom_type in ['Polygon', 'LineString', 'Point']:
-            outdf = outdf.append(row,ignore_index=True)
-        if row["geometry"].geom_type in ['MultiPolygon', 'MultiPoint', 'MultiString']:
-            multdf = gpd.GeoDataFrame(columns=indf.columns)
-            recs = len(row["geometry"])
-            multdf = multdf.append([row]*recs,ignore_index=True)
-            for geom in range(recs):
-                multdf.loc[geom,'geometry'] = row["geometry"][geom]
-            outdf = outdf.append(multdf,ignore_index=True)
-    outdf.crs = indata.crs
-    return outdf
+def explode(gpdf):
+    gpdf_singlepoly = gpdf[gpdf.geometry.type == 'Polygon']
+    gpdf_multipoly = gpdf[gpdf.geometry.type == 'MultiPolygon']
+
+    for i, row in gpdf_multipoly.iterrows():
+        Series_geometries = pd.Series(row.geometry)
+        df = pd.concat([gpd.GeoDataFrame(row, crs=gpdf_multipoly.crs).T]*len(Series_geometries), ignore_index=True)
+        df['geometry']  = Series_geometries
+        gpdf_singlepoly = pd.concat([gpdf_singlepoly, df])
+
+    gpdf_singlepoly.reset_index(inplace=True, drop=True)
+    return gpdf_singlepoly
+
+# def explode(indata):
+#     indf = indata.copy()
+#     outdf = gpd.GeoDataFrame(columns=indf.columns)
+#     for idx, row in indf.iterrows():
+#         if row["geometry"].geom_type in ['Polygon', 'LineString', 'Point']:
+#             outdf = outdf.append(row,ignore_index=True)
+#         if row["geometry"].geom_type in ['MultiPolygon', 'MultiPoint', 'MultiString']:
+#             multdf = gpd.GeoDataFrame(columns=indf.columns)
+#             recs = len(row["geometry"])
+#             multdf = multdf.append([row]*recs,ignore_index=True)
+#             for geom in range(recs):
+#                 multdf.loc[geom,'geometry'] = row["geometry"][geom]
+#             outdf = outdf.append(multdf,ignore_index=True)
+#     outdf.crs = indata.crs
+#     return outdf
 #Cleaning des couches SIG (Elimination des geometries invalid et nulle et de mltipolygon à polgon)
 def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
     gdf = gdf[gdf["geometry"].is_valid]

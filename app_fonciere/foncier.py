@@ -8,6 +8,7 @@ from fiona import listlayers
 from fiona import _shim, schema
 from pyproj import _datadir, datadir
 import geopandas as gpd
+#from geofeather import to_geofeather, from_geofeather, to_shp
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -142,7 +143,6 @@ def lancement(donnees):
         print("\n   #####   {} {} {}  #####   \n".format(intitule,temps,unite))
     print('\n   ##### Lancement du traitement #####   \n'+ '\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime())+ '\n' + '\n   ##   Prise en compte de la structuration territoriale   ##   \n')
     eel.progress(90/7)
-    ti = process_time()
     if "Structuration territoriale" in donnees["dossier"]["couches"] or "Structuration territoriale" in donnees["gpkg"]["layers"]:
         if donnees['paramètres']['perso'] == 'vide':
             param = donnees["paramètres"]["défauts"]
@@ -179,13 +179,17 @@ def lancement(donnees):
             enveloppe.update(df,overwrite=True)
 
     #Récupération des couches sélectionnées dans l'interface
+    print("\n   ##   Récupération des couches   ##   \n")
     couches = ["Parcelles", "Bâti", "Routes", "Voies ferrées"]
     chemins = {}
     for couche in couches:
+        print(f"\n   - Récupération de la couche {couche}")
+        ti = process_time()
         if couche in donnees["dossier"]["couches"]:
             chemins[couche] = clean_data(gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche]))
         elif couche in donnees["gpkg"]["layers"]:
             chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
+        timing(ti, f'{couche} récupéré en')
     #Selection des parcelles qui touchent l'enveloppe
     parcelle = chemins["Parcelles"]
     try:
@@ -225,12 +229,17 @@ def lancement(donnees):
             routes_in_enveloppe = gpd.overlay(route, enveloppe, how='intersection')
             routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe.geometry.notnull()]
             selection1, exclues = routeCadastrees(routes_in_enveloppe, selection)
+            timing(ti, 'Exclusion des routes cadastrées terminée en')
         except NameError:
             selection1, exclues = routeCadastrees(route, selection)
+            timing(ti, 'Exclusion des routes cadastrées terminée en')
+        except IndexError:
+            print("MESSAGE : Les routes n'intersectent pas les parcelles!")
+            chemins.pop("Routes")
         #potentiel = routeDesserte(routes_in_enveloppe, potentiel)
         #timing(ti, 'Prise en compte de la proximité à la route terminée en')
         #ti = process_time()
-        timing(ti, 'Exclusion des routes cadastrées terminée en')
+
     else:
         eel.progress(90/7)
     #Prise en compte des voies ferrées si renseignées
@@ -290,7 +299,7 @@ def lancement(donnees):
     boundingBox.loc[boundingBox['id_par'].isnull(), "id_par"] = boundingBox["id_par_1"]
     boundingBox = boundingBox[boundingBox["geometry"].is_valid]
     boundingBox = boundingBox[boundingBox["geometry"].notnull()]
-    boundingBox["Surf"] = round(boundingBox.geometry.area, 2)
+    #boundingBox["Surf"] = round(boundingBox.geometry.area, 2)
     boundingBox.drop("id_par_1", axis=1)
     global potentiel
     liste_id = [i for i in emprise_vide["id_par"]] + [i for i in boundingBox["id_par_1"]]
@@ -300,18 +309,27 @@ def lancement(donnees):
         exclues.loc[exclues.geometry.isna(), "test_emprise"]
     except NameError:
         pass
+
     def ajout_champs(couche):
-        couche.insert(len(couche.columns), "Commune",'')
-        couche.insert(len(couche.columns), "Comment",'')
+        couche.insert(len(couche.columns), "Surf",round(couche.geometry.area, 2))
+        try:
+            couche.insert(len(couche.columns), "Commune",'')
+        except ValueError:
+            couche.insert(len(couche.columns), "Commune1",'')
+        try:
+            couche.insert(len(couche.columns), "Comment",'')
+        except ValueError:
+            couche.insert(len(couche.columns), "Comment1",'')
         couche.insert(len(couche.columns), "Date",strftime("%d-%m-%Y", localtime()))
         couche.insert(len(couche.columns), "Suppr",'')
+
     ajout_champs(potentiel)
     ajout_champs(potentiel_emprise)
+    ajout_champs(boundingBox)
     try:
         ajout_champs(exclues)
     except NameError:
         pass
-    ajout_champs(boundingBox)
     timing(t0, 'Traitement terminé! en')
     print('\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime()))
     #CHARTS and MAPS
