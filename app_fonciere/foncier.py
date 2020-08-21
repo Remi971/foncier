@@ -15,7 +15,7 @@ import json
 import warnings
 import pprint
 from source import explode, clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeCadastrees, voiesFerrees, filtre
-from reglages import exportReglages, export_table
+from reglages import exportReglages, export_reglages_csv
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
