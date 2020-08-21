@@ -1,3 +1,6 @@
+# coding: utf-8
+
+import csv
 from docx import Document
 from time import strftime, localtime
 #from docx.shared import Inches POUR les images
@@ -51,3 +54,29 @@ def exportReglages(data):
         row_cells[5].text = str(data["paramètres"]["défauts"]["bufBati"])
 
     document.save('reglages.docx')
+
+def export_reglages_csv(data):
+    with open('reglages.csv', 'w', newline='') as csvfile:
+        fieldname = ['Source','non-batie', 'batie', 'cesMax', 'test', 'bufBati']
+        thewriter = csv.DictWriter(csvfile, fieldnames=fieldname, delimiter=';',
+                                quotechar = '|', quoting=csv.QUOTE_MINIMAL)
+        thewriter.writeheader()
+        if data["paramètres"]["défauts"] == "vide":
+            for k, v in data["paramètres"]["perso"]["valeurs"].items():
+                thewriter.writerow({'Source' : k,
+                                    'non-batie' : v['non-batie'],
+                                    'batie' : v['batie'],
+                                    'cesMax' : v['cesMax'],
+                                    'test' : v['test'],
+                                    'bufBati' : v['bufBati'],
+                                     })
+        else:
+            thewriter.writerow({
+            'Source' : "Par défauts",
+            'non-batie': data["paramètres"]["défauts"]["non-batie"],
+            'batie': data["paramètres"]["défauts"]["batie"],
+            'cesMax': data["paramètres"]["défauts"]["cesMax"],
+            'test': data["paramètres"]["défauts"]["test"],
+            'bufBati': data["paramètres"]["défauts"]["bufBati"],
+            })
+    return csvfile

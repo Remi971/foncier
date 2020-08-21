@@ -17,7 +17,7 @@ import json
 import warnings
 import pprint
 from source import explode, clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeCadastrees, voiesFerrees, filtre
-from reglages import exportReglages
+from reglages import exportReglages, export_reglages_csv
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
@@ -385,23 +385,23 @@ def export(exportCes):
         #root.withdraw()
         root.destroy()
         potentiel.crs =  "EPSG:2154"
-        potentiel.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_parcelle', driver="GPKG")
+        nom_sortie = f"{strftime("%d%m%Y", localtime())}resultats.gpkg"
+        potentiel.to_file(dossier + '/' + nom_sortie, layer='potentiel_parcelle', driver="GPKG")
         potentiel_emprise.crs = {'init': 'epsg:2154'}
-        potentiel_emprise.to_file(dossier + '/' + 'resultats.gpkg', layer='potentiel_emprise', driver="GPKG")
+        potentiel_emprise.to_file(dossier + '/' + nom_sortie, layer='potentiel_emprise', driver="GPKG")
         try:
             exclues.crs = "EPSG:2154"
-            exclues.to_file(dossier + '/' + 'resultats.gpkg', layer='parcelles_exlues', driver="GPKG")
+            exclues.to_file(dossier + '/' + nom_sortie, layer='parcelles_exlues', driver="GPKG")
         except NameError:
             pass
         boundingBox.crs = "EPSG:2154"
-        boundingBox.to_file(dossier + '/' + 'resultats.gpkg', layer='boundingBox', driver="GPKG")
-        # pp = pprint.PrettyPrinter()
+        boundingBox.to_file(dossier + '/' + nom_sortie, layer='boundingBox', driver="GPKG")
         exportReglages(reglages)
-        # with open(dossier + '/' + 'reglages.txt', 'w') as json_file:
-        #     json.dump(reglages, json_file, ensure_ascii=False)
+        export_csv = export_reglages_csv(reglages)
+        export_csv.to_file(dossier + '/' + nom_sortie, layer="")
         if exportCes:
             ces.crs = "EPSG:2154"
-            ces.to_file(dossier + '/' + 'resultats.gpkg',layer='ces', driver='GPKG')
+            ces.to_file(dossier + '/' + nom_sortie,layer='ces', driver='GPKG')
         print('\nExport terminé !\n')
         return err
 
