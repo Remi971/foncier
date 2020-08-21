@@ -1,5 +1,3 @@
-# coding:utf-8
-
 import eel
 import tkinter as tk
 from tkinter.filedialog import askdirectory, askopenfilename
@@ -17,7 +15,7 @@ import json
 import warnings
 import pprint
 from source import explode, clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeCadastrees, voiesFerrees, filtre
-from reglages import exportReglages, export_reglages_csv
+from reglages import exportReglages, export_table
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
@@ -385,7 +383,8 @@ def export(exportCes):
         #root.withdraw()
         root.destroy()
         potentiel.crs =  "EPSG:2154"
-        nom_sortie = f"{strftime("%d%m%Y", localtime())}resultats.gpkg"
+        date = strftime("%d%m%Y", localtime())
+        nom_sortie = f"{date}resultats.gpkg"
         potentiel.to_file(dossier + '/' + nom_sortie, layer='potentiel_parcelle', driver="GPKG")
         potentiel_emprise.crs = {'init': 'epsg:2154'}
         potentiel_emprise.to_file(dossier + '/' + nom_sortie, layer='potentiel_emprise', driver="GPKG")
@@ -396,9 +395,10 @@ def export(exportCes):
             pass
         boundingBox.crs = "EPSG:2154"
         boundingBox.to_file(dossier + '/' + nom_sortie, layer='boundingBox', driver="GPKG")
-        exportReglages(reglages)
-        export_csv = export_reglages_csv(reglages)
-        export_csv.to_file(dossier + '/' + nom_sortie, layer="")
+        exportReglages(reglages, dossier, date)
+        export_reglages_csv(reglages, dossier, date)
+        table = pd.DataFrame(export_csv)
+        table.to_file(dossier + '/' + nom_sortie, layer="reglages", driver="GPKG")
         if exportCes:
             ces.crs = "EPSG:2154"
             ces.to_file(dossier + '/' + nom_sortie,layer='ces', driver='GPKG')
