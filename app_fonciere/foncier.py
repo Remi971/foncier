@@ -397,8 +397,6 @@ def export(exportCes):
         boundingBox.to_file(dossier + '/' + nom_sortie, layer='boundingBox', driver="GPKG")
         exportReglages(reglages, dossier, date)
         export_reglages_csv(reglages, dossier, date)
-        table = pd.DataFrame(export_csv)
-        table.to_file(dossier + '/' + nom_sortie, layer="reglages", driver="GPKG")
         if exportCes:
             ces.crs = "EPSG:2154"
             ces.to_file(dossier + '/' + nom_sortie,layer='ces', driver='GPKG')
