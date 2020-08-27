@@ -318,7 +318,7 @@ def lancement(donnees):
             couche.insert(len(couche.columns), "Comment",'')
         except ValueError:
             couche.insert(len(couche.columns), "Comment1",'')
-        couche.insert(len(couche.columns), "Date",strftime("%d-%m-%Y", localtime()))
+        couche.insert(len(couche.columns), "Date",strftime("%d-%m-%Y %H:%M:%S", localtime()))
         couche.insert(len(couche.columns), "Suppr",'')
 
     ajout_champs(potentiel)
@@ -383,7 +383,7 @@ def export(exportCes):
         #root.withdraw()
         root.destroy()
         potentiel.crs =  "EPSG:2154"
-        date = strftime("%d%m%Y", localtime())
+        date = strftime("%d%m%Y_%H%M%S", localtime())
         nom_sortie = f"{date}resultats.gpkg"
         potentiel.to_file(dossier + '/' + nom_sortie, layer='potentiel_parcelle', driver="GPKG")
         potentiel_emprise.crs = {'init': 'epsg:2154'}
