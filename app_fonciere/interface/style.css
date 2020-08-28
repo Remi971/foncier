@@ -431,6 +431,12 @@ span {
   align-items: center;
 }
 
+/*Enveloppe urbaine*/
+.calcul_env {
+  display: flex;
+  justify-content: center;
+}
+
 #mapid {
   height: 600px;
 }

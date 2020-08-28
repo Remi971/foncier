@@ -19,13 +19,13 @@
 </head>
 <body>
     <div class="title"><!--TITRE-->
-      <h1>Identification du potentiel foncier</h1>
+      <h1>Application Foncière</h1>
       <img src="images/Logo_Citadia.png" alt="Citadia logo" class="logo">
     </div>
     <div class="tab"><!--TAB-->
+      <button class="tablinks" onclick="openTab(event, 'Import')" id="defaultOpen"><i class="fas fa-file-import"></i> Import des données</button>
       <button class="tablinks" onclick="openTab(event, 'Enveloppe')"><i class="fas fa-pencil-alt"></i> Enveloppe urbaine</button>
-      <button class="tablinks" onclick="openTab(event, 'Import')" id="defaultOpen"><i class="fas fa-file-import"></i> Potentiel foncier</button>
-      <button class="tablinks" onclick="openTab(event, 'Paramètres')"><i class="fas fa-cog"></i> Paramètres</button>
+      <button class="tablinks" onclick="openTab(event, 'Paramètres')"><i class="fas fa-cog"></i> Potentiel foncier</button>
       <button id="btn-map" class="tablinks" onclick="openTab(event, 'visualisation')"><i class="fas fa-map-marker-alt"></i> Visualisation</button>
     </div>
 
@@ -41,12 +41,9 @@
           <button class="btn-test" id="btn-valid">Sélection</button>
           <button class="btn-test" id="btn-liste">Lister les données</button>
           <button id="refresh" onclick="location.reload()" title="Cliquez pour tout remettre à zéro.">Rafraîchir la page</button>
-          <!-- <button class="btn-test" id=btn-folder>Dossier</button> -->
-          <!-- <a href="" class="bouton" id="valider"><div class="btn-test">Valider</div></a> -->
         </div>
 
         <div id="selection">
-            <!--<div id="image"></div>-->
             <h2 id=sourceName></h2>
         </div>
 
@@ -100,18 +97,6 @@
           <div class="btn-base"></div>
           <button class="btn-test" id="btn-addFilter">Ajouter un filtre</button>
         </div>
-        <div class="Lancement">
-          <h4>Lancements du traitement</h4>
-          <button class="btn-test red" id="btn-script">Lancement</button>
-        </div>
-      </div>
-      <div class="progress-bar" style="--width: 1" data-label="Loading..."></div>
-      <div class="export">
-        <div class="checkbox">
-          <input type="checkbox" id="ces_check">
-          <label for="ces_check">Exporter la couche CES</label>
-        </div>
-        <button class="btn-test" id="btn-export">Export des données</button>
       </div>
     </div>
 
@@ -162,19 +147,68 @@
           <div class="btn-confirm">
             <button class='btn-test' id="param-confirm">Confirmer le champs</button>
           </div>
-
         </div>
+      </div>
+      <div class="Lancement">
+        <h4>Lancements du traitement</h4>
+        <button class="btn-test red" id="btn-script">Lancement</button>
+      </div>
+      <div class="progress-bar" style="--width: 1" data-label="Loading..."></div>
+      <div class="export">
+        <div class="checkbox">
+          <input type="checkbox" id="ces_check">
+          <label for="ces_check">Exporter la couche CES</label>
+        </div>
+        <button class="btn-test" id="btn-export">Export des données</button>
       </div>
     </div>
 
     <div id="Enveloppe" class="tabcontent">
       <h3>Enveloppe</h3>
-      <p>Paramètres à prendre en compte dans le calcul de l'enveloppe urbaine</p>
+      <div id=container1 class="container">
+        <!-- <div class="route">
+          <label>Distance minimale à la route</label>
+          :<input id="route" type="number" value="100">m
+        </div> -->
+        <div class="min-batie">
+          <label>Surface minimale du bâtie</label>
+          :<input type="number" id="min-bati" value="30">m²
+        </div>
+        <div class="bufbati_env">
+          <label>Distance Buffer autour du bati</label>
+          :<input type="number" id="bufbati_env" value="30">m
+        </div>
+        <div class="dilatation">
+          <label>Distance Buffer pour la dilatation</label>
+          :<input type="number" id="dilatation" value="50">m
+        </div>
+        <div class="erosion">
+          <label>Distance Buffer pour l'érosion</label>
+          :<input type="number" id="erosion" value="30">m
+        </div>
+        <!-- <div class="cesMax" title="Coefficient d'emprise au sol maximum de la parcelle divisible.">
+          <label>CES maximum de la parcelle divisible</label>
+          :<input type="number" id="cesMax" value="40">%
+        </div>
+        <div class="test" title="Le test consiste à identifier l'emprise mobilisable de la parcelle bâtie et non bâti à l'aide d'un traitement de dilatation-erosion.">
+          <label>Distance du Buffer pour le test</label>
+          :<input type="number" id="test" value="10">m
+        </div>
+        <div class="bufBati" title="Distance autour du bâti non mobilisable qui sera donc exclue du potentiel.">
+          <label>Distance Buffer autour du bati</label>
+          :<input type="number" id="bufBati" value="8">m
+        </div> -->
+      </div>
+      <div class="calcul_env">
+        <button class='btn-test' id='calcul_env'>Calcul de l'enveloppe urbaine</button>
+      </div>
     </div>
+
     <div id="visualisation" class="tabcontent">
       <div id="mapid"></div>
     </div>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
+    <script type="text/javascript" src="js/script2.js"></script>
 </body>
 </html>
