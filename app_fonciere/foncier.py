@@ -309,7 +309,10 @@ def lancement(donnees):
         pass
 
     def ajout_champs(couche):
-        couche.insert(len(couche.columns), "Surf",round(couche.geometry.area, 2))
+        try:
+            couche.insert(len(couche.columns), "Surf",round(couche.geometry.area, 2))
+        except ValueError:
+            couche["Surf"] = round(couche.geometry.area, 2)
         try:
             couche.insert(len(couche.columns), "Commune",'')
         except ValueError:
