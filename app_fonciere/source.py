@@ -3,6 +3,7 @@
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import MultiPoint
+from shapely.geos import TopologicalError
 import shapely
 
 def explode(gpdf):
@@ -51,9 +52,10 @@ def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
 
 #Vérification de la topologie des couches avant traitement géomatique
 def tryOverlay(input1, input2, how=None):
+    print('Traitement {how}')
     try:
         output = gpd.overlay(input1, input2, how=how)
-    except shapely.errors.TopologicalError:
+    except TopologicalError:
         input1 = input1[input1["geometry"].is_valid]
         input1 = input1[input1["geometry"].notnull()]
         input2 = input2[input2["geometry"].is_valid]
@@ -117,16 +119,25 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     bati_buf = bati.copy()
     parcellesBaties.crs = "EPSG:2154"
     bati_buf.crs = "EPSG:2154"
-    bati_buf = tryOverlay(parcellesBaties, bati_buf, how='intersection') #Découpage du bati par les parcelles baties
+    bati_buf = tryOverlay(parcellesBaties, bati_buf, how='intersection') #Découpage du bati par rapport aux parcelles baties
     #bati_buf = explode(bati_buf)
     bati_buf = bati_buf[bati_buf.geometry.area > 10] #Suppression des petits bouts (10m²)
+    if len(bati_buf.bufBati.unique()) > 1:
+        bufBati = bati_buf.bufBati.unique()[0]
+        bati_buf['geometry'] = bati_buf.buffer(bufBati)
     bati_buf['geometry'] = bati_buf.apply(lambda x: x.geometry.buffer(x.bufBati), axis=1) #buffer du bati d'après les paramètres
     bati_buf = bati_buf[["id", "id_par", "geometry"]]
     bati_buf = tryOverlay(parcellesBaties, bati_buf, how='intersection')#intersection entre les parcelles et le buffer bu bati
     bati_buf = bati_buf[bati_buf.id_par_1 == bati_buf.id_par_2] #Maintien des parties du buffer correspondant au bati sur la parcelle
     bati_buf.drop("id_par_2", axis=1, inplace=True)
     #EMPRISE MOBILISABLE = Patatoïdes
-    emprise = tryOverlay(parcellesBaties, bati_buf, how='difference')
+    print("\n Calcul de l'emprise mobilisable")
+    try:
+        emprise = tryOverlay(parcellesBaties, bati_buf, how='difference')
+    except:
+        bati_buf2 = bati_buf.copy()
+        bati_buf2.geometry = bati_buf2.buffer(-0.01)
+        emprise = tryOverlay(parcellesBaties, bati_buf2, how='difference')
     emprise = explode(emprise)
     emprise['geometry'] = emprise.apply(lambda x: x.geometry.buffer(-x.test).buffer(x.test), axis=1)
     #enregistrement des parcelles ne passant pas le test dans la couche exclues
@@ -136,13 +147,14 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     emprise = emprise[emprise.geometry.area >= emprise["non-batie"]]
     emprise["surf_par"] = emprise.geometry.area
     ##### METHODE DES BOUNDING BOX #####
+    print("\n Calcul des Bounding Box")
     #BoundingBox du buffer du bâti
     bati_buf_bbox = bati_buf.copy()
     bati_buf_bbox = bati_buf_bbox.dissolve(by='id_par_1', as_index=False)
     bati_buf_bbox = explode(bati_buf_bbox)
     bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: MultiPoint(list(geom.exterior.coords)))
     bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: geom.minimum_rotated_rectangle)
-    bati_buf_bbox = bati_buf_bbox[['id_par_1', 'geometry']]
+    bati_buf_bbox = bati_buf_bbox[['id_par_1', 'geometry']].reset_index(drop=True)
     intersection = tryOverlay(bati_buf_bbox, parcellesBaties, how='intersection') #intersection entre les parcelles et le bounding
     intersection = intersection[intersection.id_par == intersection.id_par_1] #Maintien des parties du BoundingBox correspondant au bâti de la parcelle
     intersection = explode(intersection)

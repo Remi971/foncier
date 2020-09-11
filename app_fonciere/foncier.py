@@ -18,6 +18,7 @@ import warnings
 import pprint
 from source import explode, clean_data, coeffEmpriseSol, selectionParcelles, test_emprise_vide, test_emprise_batie, routeCadastrees, voiesFerrees, filtre
 from reglages import exportReglages, export_reglages_csv
+from colorama import Fore, Back, init, deinit
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
@@ -41,6 +42,8 @@ def selectionBDgpkg():
     #root.withdraw()
     root.destroy()
     return choix_du_dossier
+
+init()
 
 @eel.expose
 def liste_data(chemin):
@@ -101,7 +104,8 @@ def structuration_territoriale(chemin, nom):
         if structure[i].dtypes == 'object':
             structure[i].fillna('Valeur nulle', inplace = True)
         else:
-            structure[i].fillna(0, inplace = True)
+            structure = structure[structure["geometry"].notnull()]
+            structure[i].fillna('0', inplace = True)
     liste = [i for i in structure.columns]
     # structure.insert(len(structure.columns), "d_min_route", 100)
     structure.insert(len(structure.columns), "non-batie", 400)
@@ -140,8 +144,8 @@ def lancement(donnees):
         else:
             temps = round(temps / 60, 1)
             unite = 'minutes'
-        print("\n   #####   {} {} {}  #####   \n".format(intitule,temps,unite))
-    print('\n   ##### Lancement du traitement #####   \n'+ '\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime())+ '\n' + '\n   ##   Prise en compte de la structuration territoriale   ##   \n')
+        print(Fore.GREEN + "\n {} {} {}\n".format(intitule,temps,unite))
+    print(Fore.RED + '\n   ##### Lancement du traitement #####   \n'+ '\n' + strftime("%a, %d %b %Y %H:%M:%S", localtime())+ '\n' + '\n   ##   Prise en compte de la structuration territoriale   ##   \n')
     eel.progress(90/7)
     if "Structuration territoriale" in donnees["dossier"]["couches"] or "Structuration territoriale" in donnees["gpkg"]["layers"]:
         if donnees['paramètres']['perso'] == 'vide':
@@ -179,19 +183,22 @@ def lancement(donnees):
             enveloppe.update(df,overwrite=True)
 
     #Récupération des couches sélectionnées dans l'interface
-    print("\n   ##   Récupération des couches   ##   \n")
+    print(Fore.YELLOW + "\n   ##   Récupération des couches   ##   \n")
     couches = ["Parcelles", "Bâti", "Routes", "Voies ferrées"]
     chemins = {}
     for couche in couches:
-        print(f"\n   - Récupération de la couche {couche}")
         ti = process_time()
         if couche in donnees["dossier"]["couches"]:
-            chemins[couche] = clean_data(gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche]))
+            print(Fore.WHITE + f"\n   - Récupération de la couche {couche}")
+            chemins[couche] = gpd.read_file(donnees["dossier"]["chemin"] + '/' + donnees["dossier"]["couches"][couche])
+            timing(ti, f'{couche} récupéré en')
         elif couche in donnees["gpkg"]["layers"]:
-            chemins[couche] = clean_data(gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche]))
-        timing(ti, f'{couche} récupéré en')
+            print(Fore.WHITE + f"\n   - Récupération de la couche {couche}")
+            chemins[couche] = gpd.read_file(donnees["gpkg"]["nomGPKG"], layer=donnees["gpkg"]["layers"][couche])
+            timing(ti, f'{couche} récupéré en')
     #Selection des parcelles qui touchent l'enveloppe
-    parcelle = chemins["Parcelles"]
+    print(Fore.YELLOW + "\n # Nettoyage de la couche Parcelle #")
+    parcelle = clean_data(chemins["Parcelles"])
     try:
         parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
         parcelle_intersect.crs = enveloppe.crs
@@ -208,10 +215,12 @@ def lancement(donnees):
     eel.progress(90/7)
     ti = process_time()
     global ces
+    print(Fore.YELLOW + "\n # Nettoyage de la couche Bâti #")
+    bati = clean_data(chemins["Bâti"])
     try:
-        ces = coeffEmpriseSol(chemins["Bâti"], parcelle_intersect)
+        ces = coeffEmpriseSol(bati, parcelle_intersect)
     except UnboundLocalError:
-        ces = coeffEmpriseSol(chemins["Bâti"], parcelle)
+        ces = coeffEmpriseSol(bati, parcelle)
     timing(ti, 'Calcul du CES terminé en')
     #Sélection des parcelles
     eel.progress(90/7)
@@ -224,7 +233,7 @@ def lancement(donnees):
     if "Routes" in chemins:
         eel.progress(90/7)
         ti = process_time()
-        route = chemins["Routes"]
+        route = clean_data(chemins["Routes"])
         try:
             routes_in_enveloppe = gpd.overlay(route, enveloppe, how='intersection')
             routes_in_enveloppe = routes_in_enveloppe[routes_in_enveloppe.geometry.notnull()]
@@ -234,7 +243,7 @@ def lancement(donnees):
             selection1, exclues = routeCadastrees(route, selection)
             timing(ti, 'Exclusion des routes cadastrées terminée en')
         except IndexError:
-            print("MESSAGE : Les routes n'intersectent pas les parcelles!")
+            print(Fore.RED + "MESSAGE : Les routes n'intersectent pas les parcelles!")
             chemins.pop("Routes")
         #potentiel = routeDesserte(routes_in_enveloppe, potentiel)
         #timing(ti, 'Prise en compte de la proximité à la route terminée en')
@@ -245,16 +254,17 @@ def lancement(donnees):
     #Prise en compte des voies ferrées si renseignées
     if "Voies ferrées" in chemins:
         eel.progress(90/7)
+        voies_ferrees = clean_data(chemins["Voies ferrées"])
         if "Routes" in chemins:
             try:
-                selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection1, exclues)
+                selection, exclues = voiesFerrees(voies_ferrees, selection1, exclues)
             except NameError:
-                selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection1)
+                selection, exclues = voiesFerrees(voies_ferrees, selection1)
         else:
             try:
-                selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection, exclues)
+                selection, exclues = voiesFerrees(voies_ferrees, selection, exclues)
             except NameError:
-                selection, exclues = voiesFerrees(chemins["Voies ferrées"], selection)
+                selection, exclues = voiesFerrees(voies_ferrees, selection)
     else:
         eel.progress(90/7)
     #Prise en compte des Filtres
@@ -285,9 +295,9 @@ def lancement(donnees):
     parcelle_batie = selection[selection["Potentiel"] == "Division parcellaire"]
     global boundingBox
     try:
-        emprise_batie, boundingBox, exclues = test_emprise_batie(parcelle_batie, chemins["Bâti"], exclues)
+        emprise_batie, boundingBox, exclues = test_emprise_batie(parcelle_batie, bati, exclues)
     except NameError:
-        emprise_batie, boundingBox = test_emprise_batie(parcelle_batie, chemins["Bâti"])
+        emprise_batie, boundingBox = test_emprise_batie(parcelle_batie, bati)
     timing(ti, 'Test des parcelles terminé en')
     global potentiel_emprise
     parcelle_vide = parcelle_vide.loc[parcelle_vide['id_par'].isin(i for i in emprise_vide['id_par'])]
@@ -483,7 +493,7 @@ def enveloppe_urbaine(donnees, surf_bati_min, dilatation, erosion, bufbati_env):
     print("Couche '4_emprise_forte' exportée!")
 
     print("\n 5 - Intersection emprise faible et buffer autour du bâti")
-    bati_buffer = chemins["Bâti"].copy()
+    bati_buffer = bati.copy()
     bufbati_env = int(bufbati_env)
     bati_buffer.geometry = bati_buffer.buffer(bufbati_env)
     bati_buffer = clean_data(bati_buffer)
@@ -498,6 +508,7 @@ def enveloppe_urbaine(donnees, surf_bati_min, dilatation, erosion, bufbati_env):
         return False
     return True
 
+    deinit()
 if __name__ == "__main__":
     eel.init('interface')
     eel.start('index.html', size=(1000, 900))
