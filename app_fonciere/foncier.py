@@ -10,6 +10,8 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TKAgg')
 from time import process_time, strftime, localtime
 import json
 import warnings
