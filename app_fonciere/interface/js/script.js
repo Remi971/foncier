@@ -332,7 +332,7 @@ $(document).ready(function() {
         mesVar.paramètres.défauts["test"] = $("#test").val();
         mesVar.paramètres.défauts["bufBati"] = $("#bufBati").val();
         mesVar.paramètres.perso = 'vide';
-        eel.lancement(mesVar,)()
+        eel.lancement(mesVar)()
       }
       else {
         return;

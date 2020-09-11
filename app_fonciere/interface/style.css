@@ -416,8 +416,8 @@ span {
 }
 
 .btn-perso {
-  grid-column: 1 / 2;
-  grid-row: 2 / 3;
+  /* grid-column: 1 / 2;
+  grid-row: 2 / 3; */
   display: flex;
   justify-content: center;
 }
@@ -429,6 +429,12 @@ span {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/*Enveloppe urbaine*/
+.calcul_env {
+  display: flex;
+  justify-content: center;
 }
 
 #mapid {
