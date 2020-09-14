@@ -89,6 +89,7 @@ def selectionParcelles(ces):
     global selection
     selection = ces.copy()
     selection = selection[(selection["ces"] < 0.5) & (selection.geometry.area >= selection["non-batie"]) | (selection["ces"] >= 0.5) & (selection["ces"] < selection["cesMax"]) & (selection.geometry.area >= selection["batie"])]
+    selection.reset_index(drop=True)
     selection.loc[selection['ces']>= 0.5, 'Potentiel'] = "Division parcellaire"
     selection.loc[selection['ces']< 0.5, 'Potentiel'] = "Dents creuses"
     selection["filtres"] = "0"
