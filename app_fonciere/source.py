@@ -52,7 +52,7 @@ def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
 
 #Vérification de la topologie des couches avant traitement géomatique
 def tryOverlay(input1, input2, how=None):
-    print('Traitement {how}')
+    print(f'Traitement {how}')
     try:
         output = gpd.overlay(input1, input2, how=how)
     except TopologicalError:
@@ -154,7 +154,10 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     bati_buf_bbox = explode(bati_buf_bbox)
     bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: MultiPoint(list(geom.exterior.coords)))
     bati_buf_bbox.geometry = bati_buf_bbox.geometry.apply(lambda geom: geom.minimum_rotated_rectangle)
-    bati_buf_bbox = bati_buf_bbox[['id_par_1', 'geometry']].reset_index(drop=True)
+    bati_buf_bbox = bati_buf_bbox[['id_par_1', 'geometry']]
+    bati_buf_bbox = explode(bati_buf_bbox)
+    bati_buf_bbox.reset_index(drop=True)
+    parcellesBaties.reset_index(drop=True)
     intersection = tryOverlay(bati_buf_bbox, parcellesBaties, how='intersection') #intersection entre les parcelles et le bounding
     intersection = intersection[intersection.id_par == intersection.id_par_1] #Maintien des parties du BoundingBox correspondant au bâti de la parcelle
     intersection = explode(intersection)
