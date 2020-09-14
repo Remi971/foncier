@@ -81,12 +81,15 @@ def add_data(cle, chemin, *argv):
 #Fonction qui va inspecter la couche SIG et renvoyer le type de géométrie
 @eel.expose
 def geometryType(chemin, nom):
-    if chemin.endswith('gpkg'):
-        couche = gpd.read_file(chemin, layer=nom)
-    else:
-        couche = gpd.read_file(chemin + '/' + nom)
-    if len(couche) == 0:
-        return "Couche vide"
+    try:
+        if chemin.endswith('gpkg'):
+            couche = gpd.read_file(chemin, layer=nom)
+        else:
+            couche = gpd.read_file(chemin + '/' + nom)
+        if len(couche) == 0:
+            return "Couche vide"
+    except UnicodeDecodeError:
+        print("MESSAGE : Ne soyez pas comme Bruno, ne mettez pas d'accents dans le nom de vos champs! ;) ")
     else:
         type = str(couche["geometry"][0].geom_type)
         print(type)
