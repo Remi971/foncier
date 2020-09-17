@@ -42,6 +42,7 @@ def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
     gdf = explode(gdf)
     gdf.reset_index(drop=True)
     gdf = gdf.set_geometry("geometry")
+    gdf = gdf[gdf.geometry.area > 0.01]
     for i in list(gdf.columns):
         if i == "geometry":
             pass
@@ -49,6 +50,14 @@ def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
             gdf = gdf.drop(i, axis=1)
     gdf.insert(1, "id", range(1, 1 + len(gdf)))
     return gdf
+
+# Pour suppression des noeuds dupliqués
+def duplicate_nodes(geom):
+    liste = list(geom.exterior.coords)
+    for i in liste:
+        if liste.count(i) > 1:
+            liste.remove(i)
+            return Polygon(liste)
 
 #Vérification de la topologie des couches avant traitement géomatique
 def tryOverlay(input1, input2, how=None):
@@ -58,10 +67,17 @@ def tryOverlay(input1, input2, how=None):
     except TopologicalError:
         input1 = input1[input1["geometry"].is_valid]
         input1 = input1[input1["geometry"].notnull()]
+        input1.geometry = input1.geometry.apply(lambda geom: duplicate_nodes(geom))
+        if 'MultiPolygon' in input1.geometry.unique():
+            input1 = explode(input1)
         input2 = input2[input2["geometry"].is_valid]
         input2 = input2[input2["geometry"].notnull()]
+        if 'MultiPolygon' in input2.geometry.unique():
+            input2 = explode(input2)
+        input2.geometry = input2.geometry.apply(lambda geom: duplicate_nodes(geom))
         output = gpd.overlay(input1, input2, how=how)
     return output
+
 
 #Calcul du coefficient de l'emprise au sol avec maintient des colonnes paramètres et sauvegarde ou pas de la couche
 def coeffEmpriseSol(bati, parcelle) :
@@ -91,7 +107,6 @@ def selectionParcelles(ces):
     global selection
     selection = ces.copy()
     selection = selection[(selection["ces"] < 0.5) & (selection.geometry.area >= selection["non-batie"]) | (selection["ces"] >= 0.5) & (selection["ces"] < selection["cesMax"]) & (selection.geometry.area >= selection["batie"])]
-    selection.to_file("selection.shp")
     selection.loc[selection['ces']>= 0.5, 'Potentiel'] = "Division parcellaire"
     selection.loc[selection['ces']< 0.5, 'Potentiel'] = "Dents creuses"
     selection["filtres"] = "0"
@@ -159,7 +174,16 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     bati_buf_bbox = explode(bati_buf_bbox)
     bati_buf_bbox.reset_index(drop=True)
     parcellesBaties.reset_index(drop=True)
-    intersection = tryOverlay(bati_buf_bbox, parcellesBaties, how='intersection') #intersection entre les parcelles et le bounding
+    bati_buf_bbox.to_file('bati_buf_bbox.shp')
+    parcellesBaties.to_file('parcellesBaties.shp')
+    try:
+        intersection = tryOverlay(bati_buf_bbox, parcellesBaties, how='intersection') #intersection entre les parcelles et le bounding
+    except:
+        parcellesBaties = parcellesBaties.buffer(-0.01)
+        parcellesBaties = explode(parcellesBaties)
+        parcellesBaties = parcellesBaties[parcellesBaties.geometry.area > 0.001]
+        parcellesBaties = parcellesBaties.buffer(0.01, cap_style=2, join_style=2)
+        intersection = tryOverlay(bati_buf_bbox, parcellesBaties, how='intersection')
     intersection = intersection[intersection.id_par == intersection.id_par_1] #Maintien des parties du BoundingBox correspondant au bâti de la parcelle
     intersection = explode(intersection)
     intersection = intersection.dissolve(by='id_par_1') #regroupement des Bounding Box retenues par numéro de parcelle

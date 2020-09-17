@@ -204,6 +204,7 @@ def lancement(donnees):
     parcelle = clean_data(chemins["Parcelles"])
     try:
         parcelle_intersect = gpd.overlay(parcelle, enveloppe, how='intersection')
+        parcelle_intersect = clean_data(parcelle_intersect, "non-batie", "batie", "cesMax", "test", "bufBati")
         parcelle_intersect.crs = enveloppe.crs
     except NameError:
         param = donnees["paramètres"]["défauts"]
