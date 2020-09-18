@@ -2,7 +2,7 @@
 
 import geopandas as gpd
 import pandas as pd
-from shapely.geometry import MultiPoint
+from shapely.geometry import MultiPoint, Polygon
 from shapely.geos import TopologicalError
 import shapely
 
@@ -19,21 +19,6 @@ def explode(gpdf):
     gpdf_singlepoly.reset_index(inplace=True, drop=True)
     return gpdf_singlepoly
 
-# def explode(indata):
-#     indf = indata.copy()
-#     outdf = gpd.GeoDataFrame(columns=indf.columns)
-#     for idx, row in indf.iterrows():
-#         if row["geometry"].geom_type in ['Polygon', 'LineString', 'Point']:
-#             outdf = outdf.append(row,ignore_index=True)
-#         if row["geometry"].geom_type in ['MultiPolygon', 'MultiPoint', 'MultiString']:
-#             multdf = gpd.GeoDataFrame(columns=indf.columns)
-#             recs = len(row["geometry"])
-#             multdf = multdf.append([row]*recs,ignore_index=True)
-#             for geom in range(recs):
-#                 multdf.loc[geom,'geometry'] = row["geometry"][geom]
-#             outdf = outdf.append(multdf,ignore_index=True)
-#     outdf.crs = indata.crs
-#     return outdf
 #Cleaning des couches SIG (Elimination des geometries invalid et nulle et de mltipolygon à polgon)
 def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
     gdf = gdf[gdf["geometry"].is_valid]
@@ -67,14 +52,18 @@ def tryOverlay(input1, input2, how=None):
     except TopologicalError:
         input1 = input1[input1["geometry"].is_valid]
         input1 = input1[input1["geometry"].notnull()]
-        input1.geometry = input1.geometry.apply(lambda geom: duplicate_nodes(geom))
-        if 'MultiPolygon' in input1.geometry.unique():
+        try:
+            input1.geometry = input1.geometry.apply(lambda geom: duplicate_nodes(geom))
+        except AttributeError:
             input1 = explode(input1)
+            input1.geometry = input1.geometry.apply(lambda geom: duplicate_nodes(geom))
         input2 = input2[input2["geometry"].is_valid]
         input2 = input2[input2["geometry"].notnull()]
-        if 'MultiPolygon' in input2.geometry.unique():
+        try:
+            input2.geometry = input2.geometry.apply(lambda geom: duplicate_nodes(geom))
+        except AttributeError:
             input2 = explode(input2)
-        input2.geometry = input2.geometry.apply(lambda geom: duplicate_nodes(geom))
+            input2.geometry = input2.geometry.apply(lambda geom: duplicate_nodes(geom))
         output = gpd.overlay(input1, input2, how=how)
     return output
 
@@ -189,7 +178,12 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     intersection = intersection.dissolve(by='id_par_1') #regroupement des Bounding Box retenues par numéro de parcelle
     liste_id_inter = [i for i in intersection['id_par']]
     parc = parcellesBaties.loc[parcellesBaties['id_par'].isin(liste_id_inter)]
-    difference = tryOverlay(parc, intersection, how='difference') #Difference entre les parcelles divisibles et le bounding box du bâti
+    try:
+        difference = tryOverlay(parc, intersection, how='difference') #Difference entre les parcelles divisibles et le bounding box du bâti
+    except TopologicalError:
+        parc2 = parc.copy()
+        parc2.geometry = parc2.buffer(-0.01)
+        difference = tryOverlay(parc2, intersection, how='difference')
     difference['geometry'] = difference.apply(lambda x: x.geometry.buffer(-5).buffer(5, cap_style=2, join_style=2), axis=1)
     difference = explode(difference)
     difference = difference[difference.geometry.area >= difference["non-batie"]]
