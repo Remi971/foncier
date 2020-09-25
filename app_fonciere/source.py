@@ -21,18 +21,22 @@ def explode(gpdf):
 
 #Cleaning des couches SIG (Elimination des geometries invalid et nulle et de mltipolygon à polgon)
 def clean_data(gdf, *argv):    #Possibilité de garder certaines colonnes
-    gdf = gdf[gdf["geometry"].is_valid]
-    gdf = gdf[gdf["geometry"].notnull()]
-    gdf.to_crs("EPSG:2154")
-    gdf = explode(gdf)
-    gdf.reset_index(drop=True)
-    gdf = gdf.set_geometry("geometry")
-    gdf = gdf[gdf.geometry.area > 0.01]
     for i in list(gdf.columns):
         if i == "geometry":
             pass
         elif i not in argv or not argv:
             gdf = gdf.drop(i, axis=1)
+    gdf = gdf[gdf["geometry"].is_valid]
+    try:
+        gdf.to_crs("EPSG:2154")
+    except ValueError:
+        gdf.crs = "EPSG:2154"
+    #gdf = explode(gdf)
+    gdf = gdf[gdf["geometry"].notnull()]
+    gdf.reset_index(drop=True)
+    gdf = gdf.set_geometry("geometry")
+    if gdf.geometry[0] in ["MultiPolygon", "Polygon"]:
+        gdf = gdf[gdf.geometry.area > 0.01]
     gdf.insert(1, "id", range(1, 1 + len(gdf)))
     return gdf
 
@@ -87,7 +91,7 @@ def coeffEmpriseSol(bati, parcelle) :
     for i in list(coeff.columns):
          if i not in ['id_par','surf_par', 'surf_bat', 'ces', 'geometry', "non-batie", "batie", "cesMax", "test", "bufBati"]:
             coeff = coeff.drop(i, axis=1)
-    coeff.crs = ('+init=epsg:2154')
+    coeff.crs = "EPSG:2154"
     return(coeff)
 
 #Sélection des parcelles en fonction des paramètres renseignées par l'utilisateur
@@ -163,15 +167,14 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     bati_buf_bbox = explode(bati_buf_bbox)
     bati_buf_bbox.reset_index(drop=True)
     parcellesBaties.reset_index(drop=True)
-    bati_buf_bbox.to_file('bati_buf_bbox.shp')
-    parcellesBaties.to_file('parcellesBaties.shp')
     try:
         intersection = tryOverlay(bati_buf_bbox, parcellesBaties, how='intersection') #intersection entre les parcelles et le bounding
     except:
-        parcellesBaties = parcellesBaties.buffer(-0.01)
+        parcellesBaties.geometry = parcellesBaties.buffer(-0.01)
         parcellesBaties = explode(parcellesBaties)
         parcellesBaties = parcellesBaties[parcellesBaties.geometry.area > 0.001]
-        parcellesBaties = parcellesBaties.buffer(0.01, cap_style=2, join_style=2)
+        parcellesBaties.geometry = parcellesBaties.buffer(0.01, cap_style=2, join_style=2)
+        bati_buf_bbox = bati_buf_bbox[bati_buf_bbox.geometry.area > 1]
         intersection = tryOverlay(bati_buf_bbox, parcellesBaties, how='intersection')
     intersection = intersection[intersection.id_par == intersection.id_par_1] #Maintien des parties du BoundingBox correspondant au bâti de la parcelle
     intersection = explode(intersection)
@@ -180,7 +183,7 @@ def test_emprise_batie(parcellesBaties, bati, exclues=None):
     parc = parcellesBaties.loc[parcellesBaties['id_par'].isin(liste_id_inter)]
     try:
         difference = tryOverlay(parc, intersection, how='difference') #Difference entre les parcelles divisibles et le bounding box du bâti
-    except TopologicalError:
+    except:
         parc2 = parc.copy()
         parc2.geometry = parc2.buffer(-0.01)
         difference = tryOverlay(parc2, intersection, how='difference')
@@ -202,11 +205,9 @@ def routeCadastrees(route, potentiel):
     print('\n   ##  Exclusion des routes cadastrées   ##   ')
     # buffer de 5m sur les routes
     route.geometry = route.buffer(5)
-    route = route.set_geometry("geometry")
     parcelles = potentiel.copy()
     print('\n - Calcul du CES des routes')
-    route.crs = "EPSG:2154"
-    intersection = gpd.overlay(route, parcelles, how='intersection')
+    intersection = tryOverlay(route, parcelles, how='intersection')
     dissolve = intersection.dissolve(by='id_par').reset_index()
     dissolve.insert(2, "surf_route", dissolve.geometry.area)
     dissolve["surf_route"] = dissolve.geometry.area
@@ -241,7 +242,7 @@ def filtre(potentiel, couche, buffer, nom, exclues=None):
     filtre = couche.copy()
     filtre.crs = "EPSG:2154"
     if buffer != 0:
-        filtre.geometry = filtre.geometry.buffer(buffer)
+        filtre.geometry = filtre.buffer(buffer)
     difference = gpd.overlay(potentiel, filtre, how='difference')
     intersection = gpd.overlay(potentiel, filtre, how='intersection')
     # intersection = potentiel[potentiel.geometry.intersects(filtre.geometry.any())]

@@ -297,6 +297,9 @@ def lancement(donnees):
         emprise_vide = test_emprise_vide(parcelle_vide)
     #Test des parcelles baties identifiées
     parcelle_batie = selection[selection["Potentiel"] == "Division parcellaire"]
+    parcelle_potentiel = pd.concat([parcelle_vide, parcelle_batie])
+    parcelle_potentiel = explode(parcelle_potentiel)
+    parcelle_potentiel = parcelle_potentiel[parcelle_potentiel.geometry.area >10]
     global boundingBox
     try:
         emprise_batie, boundingBox, exclues = test_emprise_batie(parcelle_batie, bati, exclues)
@@ -306,18 +309,21 @@ def lancement(donnees):
     global potentiel_emprise
     parcelle_vide = parcelle_vide.loc[parcelle_vide['id_par'].isin(i for i in emprise_vide['id_par'])]
     liste_id_vide = [ i for i in emprise_vide['id_par']]
-    potentiel_emprise = pd.concat([emprise_batie, selection_initiale.loc[selection_initiale['id_par'].isin(set(liste_id_vide))]])
+    potentiel_emprise = pd.concat([emprise_batie, parcelle_potentiel.loc[parcelle_potentiel['id_par'].isin(set(liste_id_vide))]])
     potentiel_emprise = explode(potentiel_emprise)
+    potentiel_emprise = potentiel_emprise[potentiel_emprise.geometry.area > potentiel_emprise['non-batie']]
     boundingBox = pd.concat([boundingBox, parcelle_vide])
+    boundingBox = explode(boundingBox)
     boundingBox.reset_index(inplace=True)
     boundingBox.loc[boundingBox['id_par'].isnull(), "id_par"] = boundingBox["id_par_1"]
+    boundingBox = boundingBox[boundingBox.geometry.area > boundingBox['non-batie']]
     boundingBox = boundingBox[boundingBox["geometry"].is_valid]
     boundingBox = boundingBox[boundingBox["geometry"].notnull()]
     #boundingBox["Surf"] = round(boundingBox.geometry.area, 2)
     boundingBox.drop("id_par_1", axis=1)
     global potentiel
     liste_id = [i for i in emprise_vide["id_par"]] + [i for i in boundingBox["id_par_1"]]
-    potentiel = selection_initiale.loc[selection_initiale['id_par'].isin(set(liste_id))]
+    potentiel = parcelle_potentiel.loc[parcelle_potentiel['id_par'].isin(set(liste_id))]
     try:
         exclues = exclues.loc[~exclues['id_par'].isin(set(liste_id + [i for i in emprise_batie["id_par"]]))]
         exclues.loc[exclues.geometry.isna(), "test_emprise"]
@@ -354,22 +360,22 @@ def lancement(donnees):
     #chemins["Voies ferrées"].plot(ax=ax, color='black', linestyle='dashed', legend=True)
     #routes_in_enveloppe.plot(ax=ax, color='red', linewidth=0.1, legend=True)
     #potentiel_emprise.plot(column='type', legend=True)
-    fig, ax = plt.subplots(figsize=(12, 8))
-    potentiel.plot(ax=ax, column='Potentiel', legend=True)
-    # Pie chart of potentiel parcelle complète
-    potentiel_sum = potentiel.groupby("Potentiel").sum()
-    batie = round(potentiel_sum["surf_par"][0] / 10000, 0)
-    vide = round(potentiel_sum["surf_par"][1] / 10000, 0)
-    sizes = [batie, vide]
-    labels = 'Dents creuses ({} ha)'.format(batie), 'Division parcellaire ({} ha)'.format(vide)
-    somme = round((potentiel_sum["surf_par"][0] + potentiel_sum["surf_par"][1]) / 10000, 0)
-    colors = ['#1f77b4', '#17becf']
-    fig1, ax1 = plt.subplots()
-    ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%',
-            shadow=False, startangle=90)
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-    ax1.set_title("Répartition du potentiel foncier estimé à : {} ha".format(somme))
-    plt.show()
+    # fig, ax = plt.subplots(figsize=(12, 8))
+    # potentiel.plot(ax=ax, column='Potentiel', legend=True)
+    # # Pie chart of potentiel parcelle complète
+    # potentiel_sum = potentiel.groupby("Potentiel").sum()
+    # batie = round(potentiel_sum["surf_par"][0] / 10000, 0)
+    # vide = round(potentiel_sum["surf_par"][1] / 10000, 0)
+    # sizes = [batie, vide]
+    # labels = 'Dents creuses ({} ha)'.format(batie), 'Division parcellaire ({} ha)'.format(vide)
+    # somme = round((potentiel_sum["surf_par"][0] + potentiel_sum["surf_par"][1]) / 10000, 0)
+    # colors = ['#1f77b4', '#17becf']
+    # fig1, ax1 = plt.subplots()
+    # ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%',
+    #         shadow=False, startangle=90)
+    # ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    # ax1.set_title("Répartition du potentiel foncier estimé à : {} ha".format(somme))
+    # plt.show()
 
 @eel.expose
 def dataviz(couche):
