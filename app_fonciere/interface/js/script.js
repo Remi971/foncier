@@ -134,7 +134,7 @@ $(".group").on('click','.btn-test', function(){
         $(divParent).children("i").html("<img src='/images/polygon.svg'>")
       }else if (something === 'Points'){
         $(divParent).children("i").html("<img src='/images/point.svg'>")
-      }else if (something === 'LineString' || something == 'MultiString'){
+      }else if (something === 'LineString' || something == 'MultiLineString'){
           $(divParent).children("i").html("<img src='/images/line.svg'>")
       }
       if (condition1 || condition2){
