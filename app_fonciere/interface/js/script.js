@@ -127,14 +127,14 @@ $(".group").on('click','.btn-test', function(){
         geomPoly = ['Polygon', 'MultiPolygon'].includes(something),
         condition1 = (data1 && geomPoly === false) ? true : false,
         data2 = ["Routes", "Voies ferrées"].includes(key),
-        geomLine = ['LineString', 'MultiString'].includes(something),
+        geomLine = ['LineString', 'MultiLineString'].includes(something),
         condition2 = (data2 && geomLine === false) ? true : false,
         condition3 = something === 'Couche vide';
       if (something === 'MultiPolygon' || something === 'Polygon') {
         $(divParent).children("i").html("<img src='/images/polygon.svg'>")
       }else if (something === 'Points'){
         $(divParent).children("i").html("<img src='/images/point.svg'>")
-      }else if (something === 'LineString' || something == 'MultiLineString'){
+      }else if (something === 'LineString' || something === 'MultiLineString'){
           $(divParent).children("i").html("<img src='/images/line.svg'>")
       }
       if (condition1 || condition2){
